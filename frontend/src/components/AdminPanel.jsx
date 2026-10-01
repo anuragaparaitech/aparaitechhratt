@@ -1,0 +1,1258 @@
+import React, { useState, useEffect, useRef } from 'react'
+import Chart from 'chart.js/auto'
+import * as XLSX from 'xlsx'
+import { employeeAPI, attendanceAPI, holidayAPI, faceAPI } from '../services/api'
+import { API_URL } from '../services/api'
+import AddEmployeeModal from './AddEmployeeModal'
+import MarkAttendanceModal from './MarkAttendanceModal'
+import HolidayTable from './HolidayTable'
+import HolidayFormModal from './HolidayFormModal'
+import EmployeeProfileModal from './EmployeeProfileModal'
+import OverallAttendance from './OverallAttendance'
+
+function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange }) {
+  // Helper: is this section currently visible?
+  const show = (id) => activeSection === id
+  const [employees, setEmployees] = useState([])
+  const [attendance, setAttendance] = useState([])
+  const [liveSessions, setLiveSessions] = useState([])
+  const [lastLiveUpdate, setLastLiveUpdate] = useState(null)
+  const [liveDetailEmp, setLiveDetailEmp] = useState(null) // popup for detail view
+
+  // Search & Filter States
+  const [liveSearch, setLiveSearch] = useState('')
+  const [empSearch, setEmpSearch] = useState('')
+  const [attNameSearch, setAttNameSearch] = useState('')
+  const [attDateFilter, setAttDateFilter] = useState('')
+  const [attStatusFilter, setAttStatusFilter] = useState('')
+  const [attDeptFilter, setAttDeptFilter] = useState('')
+  const [autoNameSearch, setAutoNameSearch] = useState('')
+  const [autoDateFilter, setAutoDateFilter] = useState('')
+  const [loadingLogs, setLoadingLogs] = useState(false)
+  const [logsError, setLogsError] = useState(false)
+
+  // View More / View Less Pagination Limits
+  const [empLimit, setEmpLimit] = useState(5)
+  const [autoLimit, setAutoLimit] = useState(5)
+  const [attLimit, setAttLimit] = useState(5)
+
+  // Reset limits when filters change
+  useEffect(() => {
+    setEmpLimit(5)
+  }, [empSearch])
+
+  useEffect(() => {
+    setAutoLimit(5)
+  }, [autoNameSearch, autoDateFilter])
+
+  useEffect(() => {
+    setAttLimit(5)
+  }, [attNameSearch, attDateFilter, attStatusFilter, attDeptFilter])
+
+  // Modal States
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isMarkOpen, setIsMarkOpen] = useState(false)
+  const [selectedEmp, setSelectedEmp] = useState(null)
+
+  // Holiday States
+  const [holidays, setHolidays] = useState([])
+  const [isHolidayOpen, setIsHolidayOpen] = useState(false)
+  const [selectedHoliday, setSelectedHoliday] = useState(null)
+
+  // Missing Checkouts State
+  const [missingCheckouts, setMissingCheckouts] = useState([])
+
+  // ── Employee Profile States ─────────────────────────────────────────
+  const [profileEmp, setProfileEmp] = useState(null)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+
+  // Chart Ref
+  const chartRef = useRef(null)
+  const chartInstance = useRef(null)
+
+  // Fetch initial data
+  const fetchData = async () => {
+    setLoadingLogs(true)
+    setLogsError(false)
+    try {
+      const empsData = await employeeAPI.getAll()
+      const attsData = await attendanceAPI.getAll()
+      const holsData = await holidayAPI.getAll()
+      const missingData = await attendanceAPI.getMissingCheckouts()
+      
+      setEmployees(empsData.employees || [])
+      setAttendance(Array.isArray(attsData) ? attsData : (attsData.data || attsData.records || []))
+      setLiveSessions(Array.isArray(attsData) ? [] : (attsData.liveSessions || []))
+      setLastLiveUpdate(new Date())
+      setHolidays(holsData.holidays || [])
+      setMissingCheckouts(missingData.missing || [])
+    } catch (err) {
+      console.error(err)
+      setLogsError(true)
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch database logs'
+      showToast(`❌ ${errorMsg}`, '#dc2626')
+    } finally {
+      setLoadingLogs(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+
+    // Setup live check-ins polling interval (every 15 seconds)
+    const interval = setInterval(async () => {
+      try {
+        const attsData = await attendanceAPI.getAll()
+        setLiveSessions(Array.isArray(attsData) ? [] : (attsData.liveSessions || []))
+        setLastLiveUpdate(new Date())
+      } catch (err) {
+        console.error('Polling error', err)
+      }
+    }, 15000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Render & Update Chart.js Monthly Overview
+  useEffect(() => {
+    if (!chartRef.current) return
+
+    const currentMonth = new Date().toISOString().slice(0, 7)
+    const monthRecords = attendance.filter(r => r.date.startsWith(currentMonth))
+    const full = monthRecords.filter(r => r.status === 'full-day').length
+    const half = monthRecords.filter(r => r.status === 'half-day').length
+    const quarter = monthRecords.filter(r => r.status === 'quarter-day').length
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy()
+    }
+
+    const ctx = chartRef.current.getContext('2d')
+    chartInstance.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Full Day', 'Half Day', 'Quarter Day'],
+        datasets: [{
+          data: [full, half, quarter],
+          backgroundColor: ['#22c55e', '#f59e0b', '#a855f7'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#475569',
+              font: {
+                family: 'Inter',
+                size: 11
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy()
+      }
+    }
+  }, [attendance])
+
+  // Stat Counters
+  const totalRecords = attendance.length
+  const fullDays = attendance.filter(r => r.status === 'full-day').length
+  const halfDays = attendance.filter(r => r.status === 'half-day').length
+  const quarterDays = attendance.filter(r => r.status === 'quarter-day').length
+  const totalEmployees = employees.filter(e => e.role === 'employee').length
+  const activeEmployees = employees.filter(e => e.role === 'employee' && e.status === 'active').length
+  const checkedInNow = liveSessions.length
+
+  // Filtered Lists
+  const filteredLive = liveSessions.filter(emp => 
+    (emp.name || '').toLowerCase().includes(liveSearch.toLowerCase()) ||
+    (emp.empId || '').toLowerCase().includes(liveSearch.toLowerCase())
+  )
+
+  const filteredEmployees = employees.filter(emp => {
+    if (emp.role === 'admin') return false
+    const match = empSearch.toLowerCase()
+    return (
+      (emp.name || '').toLowerCase().includes(match) ||
+      (emp.empId || '').toLowerCase().includes(match) ||
+      (emp.email || '').toLowerCase().includes(match)
+    )
+  })
+
+  const filteredAttendance = [...attendance].filter(rec => {
+    const nameMatch = (rec.employeeName || '').toLowerCase().includes(attNameSearch.toLowerCase())
+    const dateMatch = attDateFilter ? rec.date === attDateFilter : true
+    const statusMatch = attStatusFilter ? rec.status === attStatusFilter : true
+    const deptMatch = attDeptFilter ? (rec.department || '') === attDeptFilter : true
+    return nameMatch && dateMatch && statusMatch && deptMatch
+  }).sort((a, b) => b.date.localeCompare(a.date))
+
+  const autoCheckoutRecords = [...attendance].filter(rec => {
+    if (rec.statusReason !== 'System Auto Checkout') return false
+    const nameMatch = (rec.employeeName || '').toLowerCase().includes(autoNameSearch.toLowerCase()) || 
+                      (rec.employeeId || '').toLowerCase().includes(autoNameSearch.toLowerCase())
+    const dateMatch = autoDateFilter ? rec.date === autoDateFilter : true
+    return nameMatch && dateMatch
+  }).sort((a, b) => b.date.localeCompare(a.date))
+
+  // Department list for dropdown filter
+  const departments = [...new Set(employees.filter(e => e.role === 'employee').map(e => e.department))]
+
+  // Event Handlers
+  const handleToggleStatus = async (email) => {
+    try {
+      const response = await employeeAPI.toggleStatus(email)
+      showToast(`✅ Status updated to ${response.status}`, '#1e5a7a')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Failed to toggle employee status', '#dc2626')
+    }
+  }
+
+  const handleDeleteEmployee = async (email, name) => {
+    if (!window.confirm(`⚠️ Delete ${name} and all their attendance records? This cannot be undone!`)) return
+    try {
+      await employeeAPI.delete(email)
+      showToast(`🗑️ Employee ${name} deleted`, '#dc2626')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Failed to delete employee', '#dc2626')
+    }
+  }
+
+  const handleDeleteAttendance = async (id) => {
+    if (!window.confirm('Delete this attendance record?')) return
+    try {
+      await attendanceAPI.deleteRecord(id)
+      showToast('🗑️ Record deleted', '#dc2626')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Failed to delete record', '#dc2626')
+    }
+  }
+
+  const handleDeleteHoliday = async (id) => {
+    if (!window.confirm('⚠️ Are you sure you want to delete this holiday record? This cannot be undone!')) return
+    try {
+      await holidayAPI.delete(id)
+      showToast('🗑️ Holiday deleted successfully', '#dc2626')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Failed to delete holiday', '#dc2626')
+    }
+  }
+
+  const handleManualCheckout = async (email, name) => {
+    if (!window.confirm(`⚠️ Force check out ${name} (${email})? This will record their checkout time as 7:30 PM and send a policy warning email.`)) return
+    try {
+      await attendanceAPI.performManualCheckout(email, currentUser.name || 'Admin')
+      showToast(`✅ ${name} checked out successfully!`, '#22c55e')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      const errorMsg = err.response?.data?.message || 'Failed to force check out'
+      showToast(`❌ ${errorMsg}`, '#dc2626')
+    }
+  }
+
+  const handleClearAllAttendance = async () => {
+    if (!window.confirm('⚠️ Delete ALL attendance records? This cannot be undone.')) return
+    try {
+      await attendanceAPI.clearAll()
+      showToast('🗑️ All attendance records cleared', '#dc2626')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Failed to clear attendance logs', '#dc2626')
+    }
+  }
+
+  const handleDeleteAllEmployees = async () => {
+    if (!window.confirm('⚠️ Are you sure you want to delete ALL employees (except Admin)? This will also delete all their attendance records! This cannot be undone!')) return
+    if (!window.confirm('⚠️ FINAL WARNING: This will permanently delete all employee data. Are you absolutely sure?')) return
+    try {
+      await employeeAPI.deleteAll()
+      showToast('🗑️ All employees deleted', '#dc2626')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Failed to delete directory', '#dc2626')
+    }
+  }
+
+  // Export spreadsheet using SheetJS
+  const getTodayStr = () => new Date().toISOString().split('T')[0]
+
+  const handleExportAllAttendance = () => {
+    if (!attendance.length) {
+      alert('No attendance data available to export')
+      return
+    }
+    const data = [['Date', 'Emp ID', 'Employee', 'Department', 'Check-In', 'Check-Out', 'Hours', 'Status', 'Reason']]
+    attendance.forEach(r => data.push([
+      r.date, r.employeeId, r.employeeName, r.department, r.checkIn, r.checkOut, r.workingHours, r.status, r.statusReason
+    ]))
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance')
+    XLSX.writeFile(wb, `Attendance_${getTodayStr()}.xlsx`)
+    showToast('📊 Exported Full Attendance Sheet', '#15803d')
+  }
+
+  const handleExportFiltered = () => {
+    if (!filteredAttendance.length) {
+      alert('No filtered attendance records to export')
+      return
+    }
+    const data = [['Date', 'Emp ID', 'Employee', 'Dept', 'Check-In', 'Check-Out', 'Hours', 'Status']]
+    filteredAttendance.forEach(r => data.push([
+      r.date, r.employeeId, r.employeeName, r.department, r.checkIn, r.checkOut, r.workingHours, r.status
+    ]))
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Filtered_Attendance')
+    XLSX.writeFile(wb, `Filtered_Attendance.xlsx`)
+    showToast('📊 Filtered Export Complete', '#2c6e9e')
+  }
+
+  const handleExportEmployees = () => {
+    const activeEmps = employees.filter(e => e.role === 'employee')
+    if (!activeEmps.length) {
+      alert('No employee data available to export')
+      return
+    }
+    const data = [['Emp ID', 'Name', 'Email', 'Department', 'Status']]
+    activeEmps.forEach(e => data.push([
+      e.empId, e.name, e.email, e.department, e.status
+    ]))
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Employees')
+    XLSX.writeFile(wb, `Employees_${getTodayStr()}.xlsx`)
+    showToast('📊 Exported Employee Data', '#16a34a')
+  }
+
+  // Holiday Stats Calculations
+  const currentYear = new Date().getFullYear().toString()
+  const holidaysThisYear = holidays.filter(h => h.holidayDate.startsWith(currentYear)).length
+  const todayStrStr = new Date().toISOString().split('T')[0]
+  const upcomingHolidays = holidays
+    .filter(h => h.holidayDate >= todayStrStr)
+    .sort((a, b) => a.holidayDate.localeCompare(b.holidayDate))
+  const nextHoliday = upcomingHolidays.length > 0 ? upcomingHolidays[0] : null
+
+  // ── Section label map for breadcrumb ────────────────────────────────────
+  const SECTION_LABELS = {
+    overview:     { icon: 'fa-th-large',            label: 'Dashboard Overview' },
+    overall:      { icon: 'fa-chart-line',         label: 'Overall Attendance Dashboard' },
+    live:         { icon: 'fa-eye',                 label: 'Live Check-Ins Today' },
+    employees:    { icon: 'fa-users',               label: 'Employee Data' },
+    attendance:   { icon: 'fa-calendar-check',      label: 'Attendance Logs & Reports' },
+    missing:      { icon: 'fa-exclamation-triangle', label: 'Missing Checkouts' },
+    autocheckout: { icon: 'fa-robot',               label: 'Automatic Checkout Records' },
+    holidays:     { icon: 'fa-umbrella-beach',      label: 'Holiday Management' },
+    data:         { icon: 'fa-database',            label: 'Data Management' },
+  }
+  const currentSection = SECTION_LABELS[activeSection] || SECTION_LABELS.overview
+
+  return (
+    <div id="adminPanel">
+
+      {/* ── Section Breadcrumb ───────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '10px',
+        marginBottom: '1.2rem', padding: '10px 18px',
+        background: 'linear-gradient(135deg, #1e5a7a08, #2563eb08)',
+        border: '1px solid #e2e8f0', borderRadius: '14px'
+      }}>
+        <i className={`fas ${currentSection.icon}`} style={{ color: '#1e5a7a', fontSize: '1rem' }}></i>
+        <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem' }}>{currentSection.label}</span>
+        <span style={{ marginLeft: 'auto', fontSize: '0.74rem', color: '#94a3b8' }}>Admin Panel</span>
+      </div>
+      {/* ── Stats Grid (always visible on overview) ─────────────────────── */}
+      {show('overview') && (<>
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="icon">📋</div>
+          <div className="value">{totalRecords}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Total Records</div>
+        </div>
+        <div className="stat-card">
+          <div className="icon">✅</div>
+          <div className="value">{fullDays}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Full Days</div>
+        </div>
+        <div className="stat-card">
+          <div className="icon">⚠️</div>
+          <div className="value">{halfDays}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Half Days</div>
+        </div>
+        <div className="stat-card">
+          <div className="icon">🟡</div>
+          <div className="value">{quarterDays}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Quarter Days</div>
+        </div>
+        <div className="stat-card">
+          <div className="icon">👥</div>
+          <div className="value">{totalEmployees}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Employees</div>
+        </div>
+        <div className="stat-card">
+          <div className="icon">🟢</div>
+          <div className="value">{activeEmployees}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Active</div>
+        </div>
+        <div className="stat-card">
+          <div className="icon">🔴</div>
+          <div className="value">{checkedInNow}</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Checked In Now</div>
+        </div>
+      </div>
+
+      {/* Monthly Chart Card */}
+      <div className="section-card">
+        <div className="section-header">
+          <h2><i className="fas fa-chart-pie" style={{ marginRight: '8px' }}></i> Monthly Attendance Overview (Current Month)</h2>
+        </div>
+        <div className="chart-container">
+          <canvas ref={chartRef} width="300" height="200"></canvas>
+        </div>
+      </div>
+      </>)}
+
+      {/* ── Overall Attendance Dashboard ─────────────────────────────────── */}
+      {show('overall') && (
+        <OverallAttendance 
+          employees={employees}
+          attendance={attendance}
+          liveSessions={liveSessions}
+          holidays={holidays}
+          onRefresh={fetchData}
+        />
+      )}
+
+      {/* ── Live Check Ins Table ─────────────────────────────────────────── */}
+      {show('live') && (<>
+      <div className="section-card">
+        <div className="section-header">
+          <h2>
+            <i className="fas fa-eye" style={{ marginRight: '8px' }}></i> Live Checked-In Today
+            <span className="live-badge" style={{ marginLeft: '8px' }}>LIVE</span>
+            <span style={{ fontSize: '0.72rem', fontWeight: 400, color: '#64748b', marginLeft: '12px' }}>
+              {filteredLive.length} employee{filteredLive.length !== 1 ? 's' : ''} checked in
+            </span>
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            {lastLiveUpdate && (
+              <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                🔄 Updated {lastLiveUpdate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+            <input
+              type="text"
+              className="filter-input"
+              placeholder="🔍 Search name / ID"
+              style={{ width: '220px' }}
+              value={liveSearch}
+              onChange={(e) => setLiveSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>EMPLOYEE</th>
+                <th>EMP ID</th>
+                <th>DEPARTMENT</th>
+                <th>DATE</th>
+                <th>CHECK-IN TIME</th>
+                <th>STATUS</th>
+                <th>DETAILS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLive.length > 0 ? (
+                filteredLive.map(emp => {
+                  // Format date: YYYY-MM-DD → DD-MM-YYYY
+                  const [yr, mo, dy] = (emp.date || '').split('-')
+                  const formattedDate = emp.date ? `${dy}-${mo}-${yr}` : '—'
+
+                  // Format time: HH:MM (24h) → HH:MM AM/PM
+                  const formatTime = (t) => {
+                    if (!t) return '—'
+                    const [hStr, mStr] = t.split(':')
+                    const h = parseInt(hStr, 10)
+                    const ampm = h >= 12 ? 'PM' : 'AM'
+                    const h12 = h % 12 === 0 ? 12 : h % 12
+                    return `${String(h12).padStart(2, '0')}:${mStr} ${ampm}`
+                  }
+
+                  return (
+                    <tr
+                      key={emp.employeeEmail}
+                      style={{ cursor: 'pointer' }}
+                      title="Click to view details"
+                      onClick={() => setLiveDetailEmp(emp)}
+                    >
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          {/* Avatar with initials */}
+                          <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #1e5a7a, #2563eb)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#fff', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
+                          }}>
+                            {(emp.name || '?').charAt(0).toUpperCase()}
+                          </div>
+                          <strong>{emp.name}</strong>
+                        </div>
+                      </td>
+                      <td><strong>{emp.empId}</strong></td>
+                      <td>{emp.department}</td>
+                      <td style={{ fontWeight: 600, color: '#1e5a7a' }}>{formattedDate}</td>
+                      <td>
+                        <span className="status-badge status-checkedin" style={{ background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' }}>
+                          🟢 {formatTime(emp.checkInTime)}
+                        </span>
+                      </td>
+                      <td><span className="live-badge">● Active</span></td>
+                      <td>
+                        <button
+                          className="mark-btn"
+                          style={{ padding: '4px 10px', fontSize: '0.76rem', background: '#1e5a7a' }}
+                          onClick={(e) => { e.stopPropagation(); setLiveDetailEmp(emp) }}
+                        >
+                          <i className="fas fa-info-circle" style={{ marginRight: '4px' }}></i>View
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '28px' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '6px' }}>🕐</div>
+                    No employees have checked in today yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Live Detail Popup ──────────────────────────────────────────────── */}
+      {liveDetailEmp && (() => {
+        const emp = liveDetailEmp
+        const [yr, mo, dy] = (emp.date || '').split('-')
+        const formattedDate = emp.date ? `${dy}-${mo}-${yr}` : '—'
+        const formatTime = (t) => {
+          if (!t) return '—'
+          const [hStr, mStr] = t.split(':')
+          const h = parseInt(hStr, 10)
+          const ampm = h >= 12 ? 'PM' : 'AM'
+          const h12 = h % 12 === 0 ? 12 : h % 12
+          return `${String(h12).padStart(2, '0')}:${mStr} ${ampm}`
+        }
+        // Look up today's attendance record for this employee (for checkout + face data)
+        const todayStr = new Date().toISOString().split('T')[0]
+        const attRec = attendance.find(r => r.employeeEmail === emp.employeeEmail && r.date === todayStr)
+
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 9999,
+              background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+            }}
+            onClick={() => setLiveDetailEmp(null)}
+          >
+            <div
+              style={{
+                background: '#fff', borderRadius: '16px', padding: '2rem',
+                width: '100%', maxWidth: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                position: 'relative'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close */}
+              <button
+                onClick={() => setLiveDetailEmp(null)}
+                style={{
+                  position: 'absolute', top: '14px', right: '14px',
+                  background: '#f1f5f9', border: 'none', borderRadius: '50%',
+                  width: '32px', height: '32px', cursor: 'pointer',
+                  fontSize: '1rem', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >✕</button>
+
+              {/* Header */}
+              <div style={{ textAlign: 'center', marginBottom: '1.4rem' }}>
+                <div style={{
+                  width: '70px', height: '70px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #1e5a7a, #2563eb)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 800, fontSize: '1.6rem',
+                  margin: '0 auto 10px'
+                }}>
+                  {(emp.name || '?').charAt(0).toUpperCase()}
+                </div>
+                <h3 style={{ margin: '0 0 2px', color: '#0f172a', fontSize: '1.15rem' }}>{emp.name}</h3>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>{emp.employeeEmail}</p>
+                <span className="live-badge" style={{ display: 'inline-block', marginTop: '6px' }}>● Currently Active</span>
+              </div>
+
+              {/* Detail Rows */}
+              {[
+                { icon: '🪪', label: 'Employee ID', value: emp.empId },
+                { icon: '🏢', label: 'Department', value: emp.department },
+                { icon: '📅', label: 'Check-In Date', value: formattedDate },
+                { icon: '⏰', label: 'Check-In Time', value: formatTime(emp.checkInTime) },
+                { icon: '🚪', label: 'Check-Out Time', value: attRec?.checkOut ? formatTime(attRec.checkOut) : 'Not yet checked out' },
+                { icon: '📊', label: 'Attendance Status', value: attRec?.status ? attRec.status.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Checked In (Pending)' },
+                {
+                  icon: '🔍', label: 'Face Verification',
+                  value: attRec?.faceVerified === true
+                    ? `✅ Verified (${attRec.faceScore || 0}% confidence)`
+                    : attRec?.faceVerified === false
+                      ? `❌ Failed (${attRec.faceScore || 0}% confidence)`
+                      : '—'
+                },
+              ].map(({ icon, label, value }) => (
+                <div key={label} style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                  padding: '8px 0', borderBottom: '1px solid #f1f5f9'
+                }}>
+                  <span style={{ color: '#64748b', fontSize: '0.84rem', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <span>{icon}</span> {label}
+                  </span>
+                  <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.84rem', textAlign: 'right', maxWidth: '55%' }}>{value}</span>
+                </div>
+              ))}
+
+              <button
+                onClick={() => setLiveDetailEmp(null)}
+                className="g-button"
+                style={{ width: '100%', marginTop: '1.2rem', background: '#1e5a7a', justifyContent: 'center' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )
+      })()}
+      </>)}
+
+      {/* ── Missing Checkouts ───────────────────────────────────────────── */}
+      {show('missing') && (<>
+      <div className="section-card" style={{ borderLeft: '4px solid #ea580c' }}>
+        <div className="section-header">
+          <h2>
+            <i className="fas fa-exclamation-triangle" style={{ color: '#ea580c', marginRight: '8px' }}></i> 
+            Missing Checkouts (Pending Action)
+            {missingCheckouts.length > 0 && (
+              <span className="live-badge" style={{ background: '#ea580c', marginLeft: '8px', color: 'white' }}>{missingCheckouts.length} PENDING</span>
+            )}
+          </h2>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>EMP ID</th>
+                <th>NAME</th>
+                <th>EMAIL</th>
+                <th>DEPT</th>
+                <th>CHECK-IN</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {missingCheckouts.length > 0 ? (
+                missingCheckouts.map(emp => (
+                  <tr key={emp._id}>
+                    <td>{emp.date}</td>
+                    <td><strong>{emp.empId}</strong></td>
+                    <td>{emp.name}</td>
+                    <td>{emp.email}</td>
+                    <td>{emp.department}</td>
+                    <td><span className="status-badge status-checkedin">🔴 {emp.checkInTime}</span></td>
+                    <td>
+                      <button 
+                        className="g-button danger" 
+                        onClick={() => handleManualCheckout(emp.email, emp.name)}
+                        style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', background: '#ea580c', border: 'none', cursor: 'pointer' }}
+                      >
+                        <i className="fas fa-sign-out-alt" style={{ marginRight: '4px' }}></i> Force Check Out
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                    No missing checkouts recorded (All check-ins resolved successfully).
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </>)}
+
+      {/* ── Employee Data ───────────────────────────────────────────────── */}
+      {show('employees') && (<>
+      <div className="section-card">
+        <div className="section-header">
+          <h2><i className="fas fa-users" style={{ marginRight: '8px' }}></i> Employee Data</h2>
+          <div className="filter-bar">
+            <input 
+              type="text" 
+              className="filter-input" 
+              placeholder="🔍 Name / ID / Email" 
+              value={empSearch}
+              onChange={(e) => setEmpSearch(e.target.value)}
+            />
+            <button className="g-button success" onClick={() => setIsAddOpen(true)}>
+              <i className="fas fa-user-plus"></i> Add Employee
+            </button>
+          </div>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>EMP ID</th>
+                <th>NAME</th>
+                <th>EMAIL</th>
+                <th>DEPT</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEmployees.length > 0 ? (
+                filteredEmployees.slice(0, empLimit).map(emp => (
+                  <tr key={emp.email}>
+                    <td><strong>{emp.empId}</strong></td>
+                    <td>{emp.name}</td>
+                    <td>{emp.email}</td>
+                    <td>{emp.department}</td>
+                    <td>
+                      <span className={`status-badge ${emp.status === 'active' ? 'status-active' : 'status-inactive'}`}>
+                        {emp.status}
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        className="btn-icon" 
+                        title={emp.status === 'active' ? 'Disable Account' : 'Enable Account'} 
+                        onClick={() => handleToggleStatus(emp.email)}
+                      >
+                        <i className={`fas ${emp.status === 'active' ? 'fa-ban' : 'fa-check-circle'}`}></i>
+                      </button>
+                      <button 
+                        className="mark-btn" 
+                        onClick={() => {
+                          setSelectedEmp(emp)
+                          setIsMarkOpen(true)
+                        }}
+                        style={{ marginRight: '6px' }}
+                      >
+                        <i className="fas fa-pen-alt" style={{ marginRight: '4px' }}></i> Mark
+                      </button>
+                      <button 
+                        className="mark-btn" 
+                        onClick={() => {
+                          setProfileEmp(emp)
+                          setIsProfileOpen(true)
+                        }}
+                        style={{ background: '#2563eb', marginRight: '6px' }}
+                      >
+                        <i className="fas fa-user-cog" style={{ marginRight: '4px' }}></i> Profile
+                      </button>
+                      <button 
+                        className="btn-icon" 
+                        style={{ color: '#e11d48' }} 
+                        title="Delete Employee" 
+                        onClick={() => handleDeleteEmployee(emp.email, emp.name)}
+                      >
+                        <i className="fas fa-user-minus"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', color: '#64748b' }}>No employees found</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* View More / View Less for Employee Data */}
+        {filteredEmployees.length > 5 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.2rem', paddingBottom: '0.8rem', flexWrap: 'wrap' }}>
+            {empLimit > 5 && (
+              <button 
+                className="g-button"
+                style={{ background: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => setEmpLimit(prev => Math.max(5, prev - 5))}
+              >
+                <i className="fas fa-chevron-up"></i> View Less
+              </button>
+            )}
+            {empLimit < filteredEmployees.length && (
+              <button 
+                className="g-button"
+                style={{ background: '#1e5a7a', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => setEmpLimit(prev => Math.min(filteredEmployees.length, prev + 5))}
+              >
+                <i className="fas fa-chevron-down"></i> View More
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      </>)}
+
+      {/* ── Attendance Logs & Reports ─────────────────────────────────────── */}
+      {show('attendance') && (<>
+      <div className="section-card">
+        <div className="section-header">
+          <h2><i className="fas fa-calendar-alt" style={{ marginRight: '8px' }}></i> Attendance Logs & Reports</h2>
+          <div className="filter-bar">
+            <input 
+              type="text" 
+              className="filter-input" 
+              placeholder="🔍 Employee Name" 
+              value={attNameSearch}
+              onChange={(e) => setAttNameSearch(e.target.value)}
+            />
+            <input 
+              type="date" 
+              className="filter-input" 
+              value={attDateFilter}
+              onChange={(e) => setAttDateFilter(e.target.value)}
+            />
+            <select 
+              className="filter-input dept-filter" 
+              value={attDeptFilter}
+              onChange={(e) => setAttDeptFilter(e.target.value)}
+            >
+              <option value="">All Departments</option>
+              {departments.map(dept => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+            <select 
+              className="filter-input" 
+              value={attStatusFilter}
+              onChange={(e) => setAttStatusFilter(e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="full-day">Full Day</option>
+              <option value="half-day">Half Day</option>
+              <option value="quarter-day">Quarter Day</option>
+            </select>
+            <button 
+              className="g-button excel" 
+              onClick={handleExportFiltered} 
+              style={{ background: '#2c6e9e' }}
+            >
+              <i className="fas fa-download"></i> Export Filtered
+            </button>
+          </div>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>EMP ID</th>
+                <th>EMPLOYEE</th>
+                <th>DEPT</th>
+                <th>CHECK-IN</th>
+                <th>CHECK-OUT</th>
+                <th>HOURS</th>
+                <th>STATUS</th>
+                <th>VERIFICATION</th>
+                <th>SOURCE</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loadingLogs ? (
+                <tr>
+                  <td colSpan="11" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                    <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Loading attendance logs...
+                  </td>
+                </tr>
+              ) : logsError ? (
+                <tr>
+                  <td colSpan="11" style={{ textAlign: 'center', color: '#dc2626', padding: '20px', fontWeight: 'bold' }}>
+                    ⚠️ Unable to load attendance logs. Please try again.
+                  </td>
+                </tr>
+              ) : filteredAttendance.length > 0 ? (
+                filteredAttendance.slice(0, attLimit).map(rec => {
+                  let cls = 'status-quarter'
+                  let txt = rec.status || '—'
+                  let badgeStyle = undefined
+ 
+                  if (rec.status === 'full-day') {
+                    cls = 'status-full'
+                    txt = 'Full Day'
+                  } else if (rec.status === 'half-day') {
+                    cls = 'status-half'
+                    txt = 'Half Day'
+                  } else if (rec.status === 'quarter-day') {
+                    cls = 'status-quarter'
+                    txt = 'Quarter Day'
+                  } else if (rec.status === 'holiday') {
+                    cls = ''
+                    txt = 'Holiday'
+                    badgeStyle = { background: '#dbeafe', color: '#1d4ed8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
+                  } else if (rec.status === 'worked-on-holiday') {
+                    cls = ''
+                    txt = 'Worked on Holiday'
+                    badgeStyle = { background: '#f3e8ff', color: '#7e22ce', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
+                  }
+ 
+                  return (
+                    <tr key={rec._id}>
+                      <td>{rec.date}</td>
+                      <td><strong>{rec.employeeId || '—'}</strong></td>
+                      <td>{rec.employeeName}</td>
+                      <td>{rec.department}</td>
+                      <td>{rec.checkIn}</td>
+                      <td>
+                        {rec.checkOut || '—'}
+                        {rec.logoutType === 'Admin Physical Logout' && (
+                          <div style={{ fontSize: '0.68rem', color: '#b45309', fontWeight: 'bold', marginTop: '2px' }}>
+                            [Admin Physical Logout]
+                          </div>
+                        )}
+                      </td>
+                      <td>{rec.workingHours || '—'}</td>
+                      <td><span className={`status-badge ${cls}`} style={badgeStyle}>{txt}</span></td>
+                      <td>
+                        {rec.faceVerified !== null && rec.faceVerified !== undefined ? (
+                          <div>
+                            <div style={{ fontWeight: 600, color: rec.faceVerified ? '#16a34a' : '#dc2626', fontSize: '0.82rem' }}>
+                              {rec.faceVerified ? '✅ Verified' : '❌ Failed'} ({rec.faceScore || 0}%)
+                            </div>
+                            {rec.faceVerifiedAt && (
+                              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+                                {new Date(rec.faceVerifiedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        {rec.markedBy === 'Admin' ? (
+                          <span style={{ background: '#fef3c7', color: '#d97706', padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <i className="fas fa-user-shield"></i> Admin Entry
+                          </span>
+                        ) : (
+                          <span style={{ color: '#64748b', fontSize: '0.82rem' }}>
+                            Employee Entry
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <button 
+                          className="btn-icon" 
+                          style={{ color: '#e11d48' }} 
+                          onClick={() => handleDeleteAttendance(rec._id)}
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan="11" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                    No attendance records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* View More / View Less for Attendance Logs */}
+        {filteredAttendance.length > 5 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.2rem', paddingBottom: '0.8rem', flexWrap: 'wrap' }}>
+            {attLimit > 5 && (
+              <button 
+                className="g-button"
+                style={{ background: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => setAttLimit(prev => Math.max(5, prev - 5))}
+              >
+                <i className="fas fa-chevron-up"></i> View Less
+              </button>
+            )}
+            {attLimit < filteredAttendance.length && (
+              <button 
+                className="g-button"
+                style={{ background: '#1e5a7a', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => setAttLimit(prev => Math.min(filteredAttendance.length, prev + 5))}
+              >
+                <i className="fas fa-chevron-down"></i> View More
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      </>)}
+
+      {/* ── Automatic Checkout Records ───────────────────────────────────── */}
+      {show('autocheckout') && (<>
+      <div className="section-card">
+        <div className="section-header">
+          <h2><i className="fas fa-robot" style={{ marginRight: '8px' }}></i> Automatic Checkout Records</h2>
+          <div className="filter-bar">
+            <input 
+              type="text" 
+              className="filter-input" 
+              placeholder="🔍 Employee Name / ID" 
+              value={autoNameSearch}
+              onChange={(e) => setAutoNameSearch(e.target.value)}
+            />
+            <input 
+              type="date" 
+              className="filter-input" 
+              value={autoDateFilter}
+              onChange={(e) => setAutoDateFilter(e.target.value)}
+            />
+            {(autoNameSearch || autoDateFilter) && (
+              <button 
+                className="g-button" 
+                style={{ background: '#64748b', padding: '6px 12px', fontSize: '0.75rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                onClick={() => {
+                  setAutoNameSearch('')
+                  setAutoDateFilter('')
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>EMPLOYEE NAME</th>
+                <th>EMPLOYEE ID</th>
+                <th>DEPARTMENT</th>
+                <th>CHECK-IN DATE</th>
+                <th>CHECK-IN TIME</th>
+                <th>AUTO CHECKOUT DATE</th>
+                <th>AUTO CHECKOUT TIME</th>
+                <th>CHECKOUT TYPE</th>
+                <th>STATUS</th>
+                <th>PERFORMED BY</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loadingLogs ? (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                    <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Loading attendance logs...
+                  </td>
+                </tr>
+              ) : logsError ? (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', color: '#dc2626', padding: '20px', fontWeight: 'bold' }}>
+                    ⚠️ Unable to load attendance logs. Please try again.
+                  </td>
+                </tr>
+              ) : autoCheckoutRecords.length > 0 ? (
+                autoCheckoutRecords.slice(0, autoLimit).map(rec => (
+                  <tr key={rec._id}>
+                    <td>{rec.employeeName}</td>
+                    <td><strong>{rec.employeeId || '—'}</strong></td>
+                    <td>{rec.department}</td>
+                    <td>{rec.date}</td>
+                    <td>{rec.checkIn}</td>
+                    <td>{rec.date}</td>
+                    <td><span className="status-badge status-checkedin" style={{ background: '#fef3c7', color: '#d97706' }}>🔴 {rec.checkOut}</span></td>
+                    <td><span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '0.8rem' }}>System Auto Checkout</span></td>
+                    <td><span className="status-badge" style={{ background: '#cbd5e1', color: '#1e293b', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>Auto Checked Out</span></td>
+                    <td><strong>System</strong></td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                    No attendance records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* View More / View Less for Automatic Checkout Records */}
+        {autoCheckoutRecords.length > 5 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.2rem', paddingBottom: '0.8rem', flexWrap: 'wrap' }}>
+            {autoLimit > 5 && (
+              <button 
+                className="g-button"
+                style={{ background: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => setAutoLimit(prev => Math.max(5, prev - 5))}
+              >
+                <i className="fas fa-chevron-up"></i> View Less
+              </button>
+            )}
+            {autoLimit < autoCheckoutRecords.length && (
+              <button 
+                className="g-button"
+                style={{ background: '#1e5a7a', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => setAutoLimit(prev => Math.min(autoCheckoutRecords.length, prev + 5))}
+              >
+                <i className="fas fa-chevron-down"></i> View More
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      </>)}
+
+      {/* ── Holiday Management ───────────────────────────────────────────── */}
+      {show('holidays') && (<>
+      <div className="section-card">
+        <div className="section-header">
+          <h2><i className="fas fa-umbrella-beach" style={{ marginRight: '8px' }}></i> Holiday Management</h2>
+          <button className="g-button success" onClick={() => {
+            setSelectedHoliday(null)
+            setIsHolidayOpen(true)
+          }}>
+            <i className="fas fa-plus"></i> Declare Holiday
+          </button>
+        </div>
+
+        {/* Holiday Stats Card */}
+        <div className="employee-stats-summary" style={{ background: '#f1f5f9', borderRadius: '20px', padding: '1.2rem', marginBottom: '1.5rem', display: 'flex', gap: '2.5rem', flexWrap: 'wrap', color: '#1e293b' }}>
+          <div>
+            <strong style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>📅 Holidays ({currentYear})</strong>
+            <br />
+            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e5a7a' }}>{holidaysThisYear}</span>
+          </div>
+          <div>
+            <strong style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>🔔 Next Holiday</strong>
+            <br />
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: '#1e5a7a' }}>
+              {nextHoliday ? `${nextHoliday.holidayName} (${nextHoliday.holidayDate})` : 'No upcoming holidays'}
+            </span>
+          </div>
+        </div>
+
+        {/* Holiday Records Table */}
+        <HolidayTable 
+          holidays={holidays} 
+          onEditClick={(holiday) => {
+            setSelectedHoliday(holiday)
+            setIsHolidayOpen(true)
+          }} 
+          onDeleteClick={handleDeleteHoliday} 
+          isAdmin={true} 
+        />
+      </div>
+      </>)}
+
+      {/* ── Data Management ─────────────────────────────────────────────── */}
+      {show('data') && (<>
+      <div className="section-card">
+        <div className="section-header">
+          <h2><i className="fas fa-database" style={{ marginRight: '8px' }}></i> Data Management</h2>
+        </div>
+        <div className="action-buttons-group">
+          <button className="g-button excel" onClick={handleExportAllAttendance}>
+            <i className="fas fa-file-excel"></i> Export All Attendance
+          </button>
+          <button className="g-button success" onClick={handleExportEmployees}>
+            <i className="fas fa-users"></i> Export Employees
+          </button>
+          <button className="g-button danger" onClick={handleClearAllAttendance}>
+            <i className="fas fa-trash"></i> Clear All Attendance
+          </button>
+          <button className="g-button danger" onClick={handleDeleteAllEmployees} style={{ background: '#b91c1c' }}>
+            <i className="fas fa-user-slash"></i> Delete All Employees
+          </button>
+        </div>
+      </div>
+      </>)}
+
+      {/* ── Modals (always rendered, controlled by open state) ───────────── */}
+      <AddEmployeeModal 
+        isOpen={isAddOpen} 
+        onClose={() => setIsAddOpen(false)} 
+        onEmployeeAdded={fetchData} 
+        showToast={showToast} 
+      />
+
+      <MarkAttendanceModal 
+        isOpen={isMarkOpen} 
+        onClose={() => {
+          setIsMarkOpen(false)
+          setSelectedEmp(null)
+        }} 
+        employee={selectedEmp} 
+        onAttendanceMarked={fetchData} 
+        showToast={showToast} 
+      />
+
+      <HolidayFormModal 
+        isOpen={isHolidayOpen}
+        onClose={() => {
+          setIsHolidayOpen(false)
+          setSelectedHoliday(null)
+        }}
+        onHolidaySaved={fetchData}
+        holidayToEdit={selectedHoliday}
+        showToast={showToast}
+      />
+
+      {/* Reusable Employee Profile Modal */}
+      <EmployeeProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => {
+          setIsProfileOpen(false)
+          setProfileEmp(null)
+        }}
+        employee={profileEmp}
+        isAdmin={true}
+        showToast={showToast}
+        onUpdated={fetchData}
+      />
+    </div>
+  )
+}
+
+export default AdminPanel
