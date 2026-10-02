@@ -636,7 +636,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 ● SYSTEM OPERATIONAL
               </span>
               <span style={{ color: '#93c5fd', fontSize: '0.78rem' }}>
-                Optenix Geofence (200m) Active • Shift Automation Active
+                Aparaitech Software Geofence (200m) Active • Shift Automation Active
               </span>
             </div>
             <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: '800', letterSpacing: '-0.02em' }}>

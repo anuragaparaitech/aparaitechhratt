@@ -97,8 +97,8 @@ export const reportsAPI = {
     const res = await api.get('/api/reports/daily', { params });
     return res.data;
   },
-  getTodayStatus: async () => {
-    const res = await api.get('/api/reports/daily/today-status');
+  getTodayStatus: async (date = null) => {
+    const res = await api.get('/api/reports/daily/today-status', { params: date ? { date } : {} });
     return res.data;
   },
   submitMailBlast: async (data) => {

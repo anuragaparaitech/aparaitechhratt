@@ -19,7 +19,7 @@
       "bundleIdentifier": "com.aparaitech.workportal",
       "infoPlist": {
         "NSCameraUsageDescription": "Aparaitech Work Portal requires camera access for secure Face Recognition attendance check-in.",
-        "NSLocationWhenInUseUsageDescription": "Aparaitech Work Portal requires location access to verify geofence presence at Optenix Tech Solution office."
+        "NSLocationWhenInUseUsageDescription": "Aparaitech Work Portal requires location access to verify geofence presence at Aparaitech Software office."
       }
     },
     "android": {

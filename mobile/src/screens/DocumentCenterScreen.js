@@ -235,7 +235,7 @@ export default function DocumentCenterScreen({ navigation }) {
                   <Text style={styles.companyHeading}>APARAITECH SOFTWARE</Text>
                   <Text style={styles.companySub}>& TECH SOLUTIONS PRIVATE LIMITED</Text>
                   <Text style={styles.companyLocation}>
-                    Optenix Tech Solution, Hinjawadi Phase 1, Pune, Maharashtra 411057
+                    Aparaitech Software, Hinjawadi Phase 1, Pune, Maharashtra 411057
                   </Text>
                   <Text style={styles.companyContact}>contact@aparaitech.org • www.aparaitech.org</Text>
                   <View style={styles.letterDivider} />

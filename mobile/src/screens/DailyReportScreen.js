@@ -23,8 +23,19 @@ export default function DailyReportScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('form'); // 'form' | 'history'
   const [pastReports, setPastReports] = useState([]);
 
-  // Auto-filled info
-  const todayDate = new Date().toISOString().split('T')[0];
+  // Date helpers (Asia/Kolkata)
+  const getKolkataDate = (daysAgo = 0) => {
+    const d = new Date();
+    if (daysAgo) d.setDate(d.getDate() - daysAgo);
+    const kStr = d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const kDate = new Date(kStr);
+    const y = kDate.getFullYear();
+    const m = String(kDate.getMonth() + 1).padStart(2, '0');
+    const day = String(kDate.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const [reportDate, setReportDate] = useState(() => getKolkataDate(0));
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   // Form Fields
@@ -38,15 +49,10 @@ export default function DailyReportScreen({ navigation }) {
   const [remarks, setRemarks] = useState('');
   const [existingReport, setExistingReport] = useState(null);
 
-  useEffect(() => {
-    fetchTodayStatus();
-    fetchPastReports();
-  }, []);
-
-  const fetchTodayStatus = async () => {
+  const fetchReportForDate = async (targetDate) => {
     try {
       setLoading(true);
-      const res = await reportsAPI.getTodayStatus();
+      const res = await reportsAPI.getTodayStatus(targetDate);
       if (res?.submitted && res.report) {
         setExistingReport(res.report);
         setConnectedCalls(String(res.report.connectedCalls || ''));
@@ -57,13 +63,28 @@ export default function DailyReportScreen({ navigation }) {
         setFinalizeConversions(String(res.report.finalizeConversions ?? 0));
         setFullConversions(String(res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0)));
         setRemarks(res.report.remarks || '');
+      } else {
+        setExistingReport(null);
+        setConnectedCalls('');
+        setCallsAbove3Min('');
+        setGroupsCreated('');
+        setMembersInGroups('');
+        setOnboardingConversions('0');
+        setFinalizeConversions('0');
+        setFullConversions('0');
+        setRemarks('');
       }
     } catch (err) {
-      console.warn('Today report status error:', err);
+      console.warn('Report status error for date:', targetDate, err);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchReportForDate(reportDate);
+    fetchPastReports();
+  }, [reportDate]);
 
   const fetchPastReports = async () => {
     try {
@@ -89,6 +110,7 @@ export default function DailyReportScreen({ navigation }) {
     setSubmitting(true);
     try {
       const payload = {
+        reportDate,
         connectedCalls: Number(connectedCalls) || 0,
         callsAbove3Min: Number(callsAbove3Min) || 0,
         groupsCreated: Number(groupsCreated) || 0,
@@ -101,8 +123,8 @@ export default function DailyReportScreen({ navigation }) {
       };
 
       const res = await reportsAPI.submitDaily(payload);
-      Alert.alert('✅ Success', res.message || 'Daily working report recorded successfully.');
-      fetchTodayStatus();
+      Alert.alert('✅ Success', res.message || `Daily working report for ${reportDate} recorded successfully.`);
+      fetchReportForDate(reportDate);
       fetchPastReports();
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Submission failed';
@@ -157,19 +179,58 @@ export default function DailyReportScreen({ navigation }) {
                   <Text style={[styles.autoValue, { color: theme.text }]}>{currentUser?.department || 'BDA'}</Text>
                 </View>
                 <View style={styles.autoItem}>
-                  <Text style={styles.autoLabel}>Date</Text>
-                  <Text style={[styles.autoValue, { color: theme.text }]}>{todayDate}</Text>
-                </View>
-                <View style={styles.autoItem}>
-                  <Text style={styles.autoLabel}>Time</Text>
-                  <Text style={[styles.autoValue, { color: theme.text }]}>{currentTime}</Text>
-                </View>
-                <View style={styles.autoItem}>
                   <Text style={styles.autoLabel}>Status</Text>
                   <Text style={[styles.autoValue, { color: existingReport ? '#15803d' : '#d97706' }]}>
                     {existingReport ? 'Submitted (Can Edit)' : 'Pending'}
                   </Text>
                 </View>
+                <View style={styles.autoItem}>
+                  <Text style={styles.autoLabel}>Submission Time</Text>
+                  <Text style={[styles.autoValue, { color: theme.text }]}>{currentTime}</Text>
+                </View>
+              </View>
+
+              {/* Date Selection Box */}
+              <View style={styles.dateSelectorBox}>
+                <View style={styles.dateHeaderRow}>
+                  <Text style={[styles.dateSelectorLabel, { color: theme.text }]}>📅 Report Date:</Text>
+                  <TextInput
+                    style={[styles.dateInput, { color: theme.text, borderColor: '#2563eb' }]}
+                    value={reportDate}
+                    onChangeText={setReportDate}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+                <View style={styles.dateChipsRow}>
+                  <TouchableOpacity
+                    style={[styles.dateChip, reportDate === getKolkataDate(0) && styles.dateChipActive]}
+                    onPress={() => setReportDate(getKolkataDate(0))}
+                  >
+                    <Text style={[styles.dateChipText, reportDate === getKolkataDate(0) && styles.dateChipTextActive]}>
+                      Today
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.dateChip, reportDate === getKolkataDate(1) && styles.dateChipActive]}
+                    onPress={() => setReportDate(getKolkataDate(1))}
+                  >
+                    <Text style={[styles.dateChipText, reportDate === getKolkataDate(1) && styles.dateChipTextActive]}>
+                      Yesterday
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.dateChip, reportDate === getKolkataDate(2) && styles.dateChipActive]}
+                    onPress={() => setReportDate(getKolkataDate(2))}
+                  >
+                    <Text style={[styles.dateChipText, reportDate === getKolkataDate(2) && styles.dateChipTextActive]}>
+                      2 Days Ago
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.dateHelperText}>
+                  ℹ️ You can submit or update the daily report for any date at any time.
+                </Text>
               </View>
             </View>
 
@@ -593,5 +654,64 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#64748b',
     marginTop: 6
+  },
+  dateSelectorBox: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9'
+  },
+  dateHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8
+  },
+  dateSelectorLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1e293b'
+  },
+  dateInput: {
+    borderWidth: 1.5,
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    fontSize: 13,
+    fontWeight: '700',
+    minWidth: 120,
+    textAlign: 'center',
+    backgroundColor: '#ffffff'
+  },
+  dateChipsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 6
+  },
+  dateChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  dateChipActive: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb'
+  },
+  dateChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569'
+  },
+  dateChipTextActive: {
+    color: '#ffffff'
+  },
+  dateHelperText: {
+    fontSize: 10,
+    color: '#64748b',
+    fontStyle: 'italic',
+    marginTop: 2
   }
 });

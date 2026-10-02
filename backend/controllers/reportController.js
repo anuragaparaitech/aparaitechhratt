@@ -36,10 +36,12 @@ export const submitDailyReport = async (req, res) => {
       finalizeConversions = 0,
       fullConversions = 0,
       todayConversions = 0,
+      reportDate,
       remarks = ''
     } = req.body
 
-    const { dateStr, timeStr } = getKolkataDateTime()
+    const { dateStr: todayKolkata, timeStr } = getKolkataDateTime()
+    const targetDate = reportDate && /^\d{4}-\d{2}-\d{2}$/.test(reportDate) ? reportDate : todayKolkata
 
     let onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0)
     let finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0)
@@ -54,10 +56,10 @@ export const submitDailyReport = async (req, res) => {
       fullNum = conversionsNum
     }
 
-    // Check if report already exists for today by this employee -> upsert
+    // Check if report already exists for targetDate by this employee -> upsert
     let report = await DailyReport.findOne({
       employeeEmail: user.email.toLowerCase(),
-      reportDate: dateStr
+      reportDate: targetDate
     })
 
     if (report) {
@@ -86,7 +88,7 @@ export const submitDailyReport = async (req, res) => {
       employeeEmail: user.email.toLowerCase(),
       employeeName: user.name,
       teamName: user.department || 'BDA',
-      reportDate: dateStr,
+      reportDate: targetDate,
       reportTime: timeStr,
       connectedCalls: Math.max(0, parseInt(connectedCalls, 10) || 0),
       callsAbove3Min: Math.max(0, parseInt(callsAbove3Min, 10) || 0),
@@ -160,16 +162,18 @@ export const getDailyReports = async (req, res) => {
 export const getTodayDailyStatus = async (req, res) => {
   try {
     const user = req.user
+    const { date } = req.query
     const { dateStr } = getKolkataDateTime()
+    const targetDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : dateStr
 
     const report = await DailyReport.findOne({
       employeeEmail: user.email.toLowerCase(),
-      reportDate: dateStr
+      reportDate: targetDate
     })
 
     return res.status(200).json({
       success: true,
-      todayDate: dateStr,
+      todayDate: targetDate,
       submitted: !!report,
       report: report || null
     })

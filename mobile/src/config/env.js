@@ -1,13 +1,13 @@
 // Aparaitech Work Portal Mobile Configuration
 export const API_BASE_URL = 'https://aparaitech-software-attendance-protal-9l04.onrender.com';
 
-// Corporate Geofence Reference - Optenix Tech Solution, Hinjawadi Phase 1, Pune
+// Corporate Geofence Reference - Aparaitech Software, Hinjawadi Phase 1, Pune
 export const OFFICE_GEOFENCE = {
-  name: 'Optenix Tech Solution (Hinjawadi)',
+  name: 'Aparaitech Software (Hinjawadi)',
   latitude: 18.596077,
   longitude: 73.718054,
   radiusMeters: 200,
-  address: 'Optenix Tech Solution, Hinjawadi Phase 1, Pune, Maharashtra 411057'
+  address: 'Aparaitech Software, Hinjawadi Phase 1, Pune, Maharashtra 411057'
 };
 
 export const GEOFENCE_CONFIG = OFFICE_GEOFENCE;

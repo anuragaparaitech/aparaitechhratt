@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { attendanceAPI, holidayAPI, faceAPI } from '../services/api'
+import { attendanceAPI, holidayAPI, faceAPI, reportsAPI } from '../services/api'
 import { API_URL } from '../services/api'
 import ChangePwdModal from './ChangePwdModal'
 import FaceVerificationModal from './FaceVerificationModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
+import DailyReportModal from './DailyReportModal'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
@@ -13,6 +14,8 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   const [isPwdOpen, setIsPwdOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [holidays, setHolidays] = useState([])
+  const [dailyModalOpen, setDailyModalOpen] = useState(false)
+  const [checkoutReportPrompt, setCheckoutReportPrompt] = useState(false)
 
   // ── Face Verification States ─────────────────────────────────────────────────
   const [faceVerifyOpen, setFaceVerifyOpen] = useState(false)
@@ -136,7 +139,16 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
     setFaceVerifyOpen(true)
   }
 
-  const handleCheckOut = () => {
+  const handleCheckOut = async () => {
+    try {
+      const res = await reportsAPI.getTodayStatus()
+      if (!res?.submitted) {
+        setCheckoutReportPrompt(true)
+        return
+      }
+    } catch (err) {
+      console.warn('Could not verify daily report status:', err.message)
+    }
     setFaceVerifyMode('checkout')
     setFaceVerifyOpen(true)
   }
@@ -283,12 +295,11 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
                 </div>
               </div>
 
-              <div className="action-buttons" style={{ margin: '1rem 0 0.5rem' }}>
+              <div className="action-buttons" style={{ margin: '1rem 0 0.5rem', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <button 
                   className="btn-checkin" 
                   onClick={handleCheckIn}
                   disabled={loading || activeSession !== null || (todayRecord && todayRecord.checkOut !== '')}
-                  style={{ marginRight: '1rem' }}
                 >
                   <i className="fas fa-sign-in-alt" style={{ marginRight: '6px' }}></i> Check In
                 </button>
@@ -299,6 +310,28 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
                   disabled={loading || activeSession === null || (todayRecord && todayRecord.checkOut !== '')}
                 >
                   <i className="fas fa-sign-out-alt" style={{ marginRight: '6px' }}></i> Check Out
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDailyModalOpen(true)}
+                  style={{
+                    padding: '12px 18px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #2563eb',
+                    background: '#eff6ff',
+                    color: '#1d4ed8',
+                    fontWeight: '700',
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.1)'
+                  }}
+                  title="Submit or edit your daily work report for today or any previous date"
+                >
+                  <i className="fas fa-file-signature"></i> 📝 Daily Work Report
                 </button>
               </div>
 
@@ -604,6 +637,107 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
           faceAPI.get(currentUser.email).then(d => {
             if (d.success && d.enrolled) setEnrolledFaceUrl(d.faceImageUrl)
           }).catch(() => {})
+        }}
+      />
+
+      {/* Daily Report Pre-checkout Reminder Modal */}
+      {checkoutReportPrompt && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '460px',
+            width: '100%',
+            padding: '24px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>📝</div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+              Daily Work Report Pending
+            </h3>
+            <p style={{ fontSize: '0.92rem', color: '#64748b', lineHeight: 1.5, marginBottom: '20px' }}>
+              You haven't submitted your daily work report for today yet. It is recommended to submit before leaving, but you can also submit it later at any time.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setCheckoutReportPrompt(false)
+                  setDailyModalOpen(true)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                }}
+              >
+                ✍️ Fill Daily Report Now
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCheckoutReportPrompt(false)
+                  setFaceVerifyMode('checkout')
+                  setFaceVerifyOpen(true)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  borderRadius: '10px',
+                  background: '#f1f5f9',
+                  color: '#334155',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  border: '1px solid #cbd5e1',
+                  cursor: 'pointer'
+                }}
+              >
+                Proceed to Check Out (Submit Later)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCheckoutReportPrompt(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  marginTop: '4px'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Daily Report Modal */}
+      <DailyReportModal
+        isOpen={dailyModalOpen}
+        onClose={() => setDailyModalOpen(false)}
+        currentUser={currentUser}
+        showToast={showToast}
+        onSuccess={() => {
+          showToast('✅ Daily report submitted successfully!', '#22c55e')
         }}
       />
     </div>

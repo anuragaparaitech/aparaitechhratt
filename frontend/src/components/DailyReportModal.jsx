@@ -19,6 +19,42 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
     date: '',
     time: ''
   })
+  const [reportDate, setReportDate] = useState('')
+
+  const loadReportForDate = async (targetDate) => {
+    try {
+      const res = await reportsAPI.getTodayStatus(targetDate)
+      if (res.success && res.report) {
+        setExistingReport(res.report)
+        setFormData({
+          connectedCalls: res.report.connectedCalls || 0,
+          callsAbove3Min: res.report.callsAbove3Min || 0,
+          groupsCreated: res.report.groupsCreated || 0,
+          membersInGroups: res.report.membersInGroups || 0,
+          onboardingConversions: res.report.onboardingConversions ?? 0,
+          finalizeConversions: res.report.finalizeConversions ?? 0,
+          fullConversions: res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0),
+          todayConversions: res.report.todayConversions || 0,
+          remarks: res.report.remarks || ''
+        })
+      } else {
+        setExistingReport(null)
+        setFormData({
+          connectedCalls: 0,
+          callsAbove3Min: 0,
+          groupsCreated: 0,
+          membersInGroups: 0,
+          onboardingConversions: 0,
+          finalizeConversions: 0,
+          fullConversions: 0,
+          todayConversions: 0,
+          remarks: ''
+        })
+      }
+    } catch (err) {
+      console.warn('Could not load report status for date:', targetDate, err.message)
+    }
+  }
 
   // Format today's date and time in IST (Asia/Kolkata)
   useEffect(() => {
@@ -38,28 +74,18 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
       const timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`
 
       setAutoInfo({ date: dateStr, time: timeStr })
-
-      // Check if user already submitted a report today
-      reportsAPI.getTodayStatus().then(res => {
-        if (res.success && res.report) {
-          setExistingReport(res.report)
-          setFormData({
-            connectedCalls: res.report.connectedCalls || 0,
-            callsAbove3Min: res.report.callsAbove3Min || 0,
-            groupsCreated: res.report.groupsCreated || 0,
-            membersInGroups: res.report.membersInGroups || 0,
-            onboardingConversions: res.report.onboardingConversions ?? 0,
-            finalizeConversions: res.report.finalizeConversions ?? 0,
-            fullConversions: res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0),
-            todayConversions: res.report.todayConversions || 0,
-            remarks: res.report.remarks || ''
-          })
-        }
-      }).catch(err => {
-        console.warn('Could not load today status:', err.message)
-      })
+      setReportDate(dateStr)
+      loadReportForDate(dateStr)
     }
   }, [isOpen, currentUser])
+
+  const handleDateChange = (e) => {
+    const newDate = e.target.value
+    if (newDate) {
+      setReportDate(newDate)
+      loadReportForDate(newDate)
+    }
+  }
 
   if (!isOpen || !currentUser) return null
 
@@ -83,6 +109,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
     try {
       const payload = {
         ...formData,
+        reportDate,
         todayConversions: totalConversions
       }
       const res = await reportsAPI.submitDaily(payload)
@@ -174,12 +201,12 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
             color: '#065f46'
           }}>
             <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
-            You already submitted a report for today at <strong>{existingReport.reportTime}</strong>. Submitting again will update your figures.
+            Report for <strong>{reportDate}</strong> found (logged at {existingReport.reportTime}). Submitting again will update the record.
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ padding: '1.5rem' }}>
-          {/* Section: Auto-Filled Details */}
+          {/* Section: Auto-Filled Details & Date Selector */}
           <div style={{
             background: '#f8fafc',
             border: '1px solid #e2e8f0',
@@ -188,15 +215,38 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
             marginBottom: '1.25rem',
             fontSize: '0.85rem'
           }}>
-            <div style={{ fontWeight: '700', color: '#0a192f', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <i className="fas fa-id-badge" style={{ color: '#2563eb' }}></i> Employee Auto-Filled Information
+            <div style={{ fontWeight: '700', color: '#0a192f', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <i className="fas fa-id-badge" style={{ color: '#2563eb' }}></i> Employee Auto-Filled Information
+              </div>
+              <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '600' }}>
+                📅 You can change the date below to submit/edit past reports anytime
+              </span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', color: '#475569' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', color: '#475569', alignItems: 'center' }}>
               <div><strong>Name:</strong> {currentUser.name}</div>
               <div><strong>Emp ID:</strong> {currentUser.empId || 'AP-EMP'}</div>
               <div><strong>Email:</strong> {currentUser.email}</div>
               <div><strong>Team:</strong> {currentUser.department || 'BDA'}</div>
-              <div><strong>Date:</strong> {autoInfo.date}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <strong>Date:</strong>
+                <input
+                  type="date"
+                  value={reportDate}
+                  onChange={handleDateChange}
+                  style={{
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    border: '1.5px solid #2563eb',
+                    background: '#eff6ff',
+                    fontSize: '0.82rem',
+                    fontWeight: '700',
+                    color: '#1e40af',
+                    cursor: 'pointer'
+                  }}
+                  title="Select any particular date to submit or edit your daily report"
+                />
+              </div>
               <div><strong>Time:</strong> {autoInfo.time}</div>
             </div>
           </div>

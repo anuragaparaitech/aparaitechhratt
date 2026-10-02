@@ -42,13 +42,13 @@ export const SHIFTS = {
 }
 
 // ── GEOFENCE CONFIGURATION ───────────────────────────────────────────────────
-// Optenix Tech Solution: https://www.google.com/maps/place/Optenix+Tech+Solution/@18.5966851,73.7186756,18.38z/data=!4m6!3m5!1s0x3bc2bb006c6157fb:0x5482f6d4f4b3809b!8m2!3d18.5962139!4d73.7185487
+// Aparaitech Software: Lat 18.596077, Lon 73.718054
 export const GEOFENCE = {
-  name: 'Optenix Tech Solution',
+  name: 'Aparaitech Software',
   latitude: 18.596077,
   longitude: 73.718054,
   allowedRadiusMeters: 200, // 200 meters office boundary
-  googleMapsUrl: 'https://www.google.com/maps/place/Optenix+Tech+Solution/@18.596077,73.718054,18.38z'
+  googleMapsUrl: 'https://www.google.com/maps/place/Aparaitech+Software/@18.596077,73.718054,18.38z'
 }
 
 /**
@@ -77,7 +77,7 @@ export const calculateDistanceMeters = (lat1, lon1, lat2 = GEOFENCE.latitude, lo
 }
 
 /**
- * Checks whether given coordinates are within the Optenix Tech Solution geofence perimeter
+ * Checks whether given coordinates are within the Aparaitech Software geofence perimeter
  */
 export const isWithinGeofence = (lat, lon, allowedRadius = GEOFENCE.allowedRadiusMeters) => {
   const dist = calculateDistanceMeters(lat, lon)

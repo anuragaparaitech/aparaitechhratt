@@ -13,7 +13,7 @@ import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { attendanceAPI } from '../services/api';
+import { attendanceAPI, reportsAPI } from '../services/api';
 import { verifyGeofence } from '../services/locationService';
 import { OFFICE_GEOFENCE, SHIFTS } from '../config/env';
 
@@ -105,16 +105,7 @@ export default function AttendanceScreen({ navigation }) {
     }
   };
 
-  const handleStartPunch = async (mode) => {
-    // Check geofence
-    if (geofenceResult && !geofenceResult.inside) {
-      Alert.alert(
-        'Geofence Verification Failed',
-        `You are ${geofenceResult.distance}m away from Optenix Tech Solution. Attendance must be recorded within ${OFFICE_GEOFENCE.radiusMeters}m of the office center.`
-      );
-      return;
-    }
-
+  const proceedToPunch = async (mode) => {
     if (!cameraPermission?.granted) {
       const perm = await requestCameraPermission();
       if (!perm.granted) {
@@ -125,6 +116,49 @@ export default function AttendanceScreen({ navigation }) {
 
     setPunchMode(mode);
     setCameraModalVisible(true);
+  };
+
+  const handleStartPunch = async (mode) => {
+    // Check geofence
+    if (geofenceResult && !geofenceResult.inside) {
+      Alert.alert(
+        'Geofence Verification Failed',
+        `You are ${geofenceResult.distance}m away from Aparaitech Software. Attendance must be recorded within ${OFFICE_GEOFENCE.radiusMeters}m of the office center.`
+      );
+      return;
+    }
+
+    // If check-out, remind employee to submit daily work report
+    if (mode === 'check-out') {
+      try {
+        const reportStatus = await reportsAPI.getTodayStatus();
+        if (!reportStatus?.submitted) {
+          Alert.alert(
+            '📝 Daily Work Report Pending',
+            "You haven't submitted your daily work report for today yet. It is recommended to submit before leaving, but you can also submit it later at any time.",
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel'
+              },
+              {
+                text: '✍️ Fill Report Now',
+                onPress: () => navigation.navigate('DailyReport')
+              },
+              {
+                text: 'Check Out (Submit Later)',
+                onPress: () => proceedToPunch('check-out')
+              }
+            ]
+          );
+          return;
+        }
+      } catch (err) {
+        console.warn('Daily report pre-checkout check error:', err?.message);
+      }
+    }
+
+    proceedToPunch(mode);
   };
 
   const handleCaptureAndPunch = async () => {
@@ -171,7 +205,7 @@ export default function AttendanceScreen({ navigation }) {
         {/* Office & Geofence GPS Card */}
         <View style={[styles.card, { backgroundColor: theme.cardBackground }]}>
           <View style={styles.cardHeader}>
-            <Text style={[styles.cardTitle, { color: theme.text }]}>📍 Optenix Geofence Status</Text>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>📍 Aparaitech Software Geofence Status</Text>
             <TouchableOpacity onPress={requestLocationAndVerify}>
               <Text style={styles.refreshGps}>🔄 Refresh GPS</Text>
             </TouchableOpacity>

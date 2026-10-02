@@ -101,7 +101,7 @@ export const checkIn = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found' })
     }
 
-    // Geofence Validation: Optenix Tech Solution (Lat: 18.596077, Lon: 73.718054, Radius: 200m)
+    // Geofence Validation: Aparaitech Software (Lat: 18.596077, Lon: 73.718054, Radius: 200m)
     let locationVerified = null
     let locationDistanceMeters = null
     if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {

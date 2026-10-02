@@ -163,7 +163,7 @@ export default function ProfileScreen({ navigation }) {
             </View>
             <View style={styles.tagItem}>
               <Ionicons name="location" size={14} color="#3b82f6" />
-              <Text style={styles.tagText}>Optenix Geofence 200m</Text>
+              <Text style={styles.tagText}>Aparaitech Software Geofence 200m</Text>
             </View>
           </View>
         </View>
