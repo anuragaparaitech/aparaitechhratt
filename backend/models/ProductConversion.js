@@ -93,6 +93,24 @@ const ProductConversionSchema = new mongoose.Schema({
     type: String,
     default: '',
     trim: true
+  },
+  receiptUrl: {
+    type: String,
+    default: ''
+  },
+  receiptName: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  finalizeReceiptUrl: {
+    type: String,
+    default: ''
+  },
+  finalizeReceiptName: {
+    type: String,
+    default: '',
+    trim: true
   }
 }, {
   timestamps: true

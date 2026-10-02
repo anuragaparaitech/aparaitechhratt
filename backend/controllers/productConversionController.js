@@ -44,7 +44,9 @@ export const createConversion = async (req, res) => {
       paymentType,
       paymentUtr,
       remarks,
-      customDate
+      customDate,
+      receiptUrl,
+      receiptName
     } = req.body
 
     if (!candidateName || !candidateEmail || !candidatePhone || !collegeName || !paymentType || !paymentUtr) {
@@ -109,7 +111,9 @@ export const createConversion = async (req, res) => {
       loggedByName: emp?.name || user.name || 'Team Associate',
       loggedByEmail: user.email.toLowerCase().trim(),
       teamName: emp?.department || 'BDA Team',
-      remarks: (remarks || '').trim()
+      remarks: (remarks || '').trim(),
+      receiptUrl: receiptUrl || '',
+      receiptName: receiptName || ''
     })
 
     await newRecord.save()
@@ -217,7 +221,7 @@ export const getConversions = async (req, res) => {
 export const finalizePayment = async (req, res) => {
   try {
     const { id } = req.params
-    const { finalizeUtr, remarks } = req.body
+    const { finalizeUtr, remarks, finalizeReceiptUrl, finalizeReceiptName } = req.body
 
     if (!finalizeUtr || !finalizeUtr.trim()) {
       return res.status(400).json({
@@ -241,6 +245,10 @@ export const finalizePayment = async (req, res) => {
     conversion.finalizeAmount = 4500
     conversion.totalPaid = (conversion.amount || 1500) + 4500
     conversion.status = 'completed'
+    if (finalizeReceiptUrl) {
+      conversion.finalizeReceiptUrl = finalizeReceiptUrl
+      conversion.finalizeReceiptName = finalizeReceiptName || ''
+    }
     if (remarks) {
       conversion.remarks = conversion.remarks
         ? `${conversion.remarks} | Finalize: ${remarks.trim()}`

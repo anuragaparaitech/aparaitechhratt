@@ -38,10 +38,15 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
     collegeName: '',
     paymentType: 'onboarding',
     paymentUtr: '',
-    remarks: ''
+    remarks: '',
+    receiptUrl: '',
+    receiptName: ''
   })
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [filePreview, setFilePreview] = useState(null)
+  const [fileType, setFileType] = useState('') // 'image' | 'pdf'
+  const [fileLoading, setFileLoading] = useState(false)
 
   if (!isOpen) return null
 
@@ -51,6 +56,50 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     if (errorMsg) setErrorMsg('')
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Limit to 10MB
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg('Receipt file size must be less than 10 MB.')
+      return
+    }
+
+    setFileLoading(true)
+    setErrorMsg('')
+    const isImg = file.type.startsWith('image/')
+    const isPdf = file.type === 'application/pdf'
+    setFileType(isImg ? 'image' : isPdf ? 'pdf' : 'other')
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64Data = event.target.result
+      setFormData(prev => ({
+        ...prev,
+        receiptUrl: base64Data,
+        receiptName: file.name
+      }))
+      setFilePreview(base64Data)
+      setFileLoading(false)
+    }
+    reader.onerror = () => {
+      setErrorMsg('Failed to read receipt file.')
+      setFileLoading(false)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveFile = () => {
+    setFormData(prev => ({
+      ...prev,
+      receiptUrl: '',
+      receiptName: ''
+    }))
+    setFilePreview(null)
+    setFileType('')
   }
 
   const handleSubmit = async (e) => {
@@ -108,8 +157,12 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
         collegeName: '',
         paymentType: 'onboarding',
         paymentUtr: '',
-        remarks: ''
+        remarks: '',
+        receiptUrl: '',
+        receiptName: ''
       })
+      setFilePreview(null)
+      setFileType('')
 
       if (onSuccess) onSuccess(data.conversion)
       onClose()
@@ -393,6 +446,152 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
             <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
               Enter the bank transaction UTR or receipt number proving the {selectedOpt.amountDisplay} payment.
             </div>
+          </div>
+
+          {/* Payment Receipt / Screenshot Upload Section */}
+          <div style={{ marginBottom: '1.15rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>📸 Payment Screenshot / Receipt Proof</span>
+                <span style={{ fontSize: '0.72rem', fontWeight: '600', color: '#0284c7', background: '#e0f2fe', padding: '1px 6px', borderRadius: '4px' }}>
+                  Recommended
+                </span>
+              </label>
+              {filePreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveFile}
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#ef4444',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <i className="fas fa-trash-alt"></i> Remove
+                </button>
+              )}
+            </div>
+
+            {!filePreview ? (
+              <label style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px 20px',
+                border: '2px dashed #93c5fd',
+                borderRadius: '12px',
+                background: '#f8fafc',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textAlign: 'center'
+              }}>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp, application/pdf"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '50%',
+                  background: '#dbeafe',
+                  color: '#2563eb',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.25rem',
+                  marginBottom: '8px'
+                }}>
+                  <i className="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div style={{ fontSize: '0.86rem', fontWeight: '700', color: '#1e40af', marginBottom: '2px' }}>
+                  Click to Upload Payment Screenshot or Receipt
+                </div>
+                <div style={{ fontSize: '0.73rem', color: '#64748b' }}>
+                  Supports UPI payment screenshot, Bank slip, or Receipt (PNG, JPG, WEBP, PDF up to 10MB)
+                </div>
+              </label>
+            ) : (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px',
+                borderRadius: '12px',
+                background: '#f0fdf4',
+                border: '1.5px solid #86efac'
+              }}>
+                {fileType === 'image' ? (
+                  <img
+                    src={filePreview}
+                    alt="Receipt Preview"
+                    style={{
+                      width: '64px',
+                      height: '64px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      border: '1px solid #bbf7d0',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.06)'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '8px',
+                    background: '#e0f2fe',
+                    color: '#0284c7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.75rem'
+                  }}>
+                    <i className="fas fa-file-pdf"></i>
+                  </div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    color: '#166534',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    ✓ {formData.receiptName || 'Payment Receipt Attached'}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#15803d', marginTop: '2px' }}>
+                    Payment proof attached successfully. Admin & Team can verify receipt against UTR.
+                  </div>
+                </div>
+                <label style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  color: '#334155',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}>
+                  Change
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg, image/jpg, image/webp, application/pdf"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Remarks */}

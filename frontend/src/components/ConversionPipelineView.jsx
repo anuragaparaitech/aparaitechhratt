@@ -14,6 +14,13 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
   const [finalizeRemarks, setFinalizeRemarks] = useState('')
   const [finalizing, setFinalizing] = useState(false)
   const [finalizeError, setFinalizeError] = useState('')
+  const [finalizeReceiptUrl, setFinalizeReceiptUrl] = useState('')
+  const [finalizeReceiptName, setFinalizeReceiptName] = useState('')
+  const [finalizeFilePreview, setFinalizeFilePreview] = useState(null)
+  const [finalizeFileType, setFinalizeFileType] = useState('')
+
+  // Receipt Preview Modal State
+  const [viewingReceipt, setViewingReceipt] = useState(null)
 
   const fetchConversions = async () => {
     try {
@@ -45,7 +52,29 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
     setFinalizeUtr('')
     setFinalizeRemarks('')
     setFinalizeError('')
+    setFinalizeReceiptUrl('')
+    setFinalizeReceiptName('')
+    setFinalizeFilePreview(null)
+    setFinalizeFileType('')
     setFinalizeModalOpen(true)
+  }
+
+  const handleFinalizeFileChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setFinalizeError('File size must be under 10MB.')
+      return
+    }
+    const isImg = file.type.startsWith('image/')
+    setFinalizeFileType(isImg ? 'image' : 'pdf')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      setFinalizeReceiptUrl(ev.target.result)
+      setFinalizeReceiptName(file.name)
+      setFinalizeFilePreview(ev.target.result)
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleFinalizeSubmit = async (e) => {
@@ -66,7 +95,9 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
         },
         body: JSON.stringify({
           finalizeUtr: finalizeUtr.trim(),
-          remarks: finalizeRemarks.trim()
+          remarks: finalizeRemarks.trim(),
+          finalizeReceiptUrl,
+          finalizeReceiptName
         })
       })
 
@@ -440,7 +471,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                         )}
                       </td>
 
-                      {/* UTR */}
+                      {/* UTR & Receipt Proof */}
                       <td style={{ padding: '14px 16px', fontFamily: 'monospace', fontSize: '0.82rem' }}>
                         <div style={{ color: '#0f172a', fontWeight: '700' }}>{item.paymentUtr}</div>
                         {item.finalizeUtr && (
@@ -448,6 +479,70 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                             Fin: {item.finalizeUtr}
                           </div>
                         )}
+                        <div style={{ marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {item.receiptUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setViewingReceipt({
+                                url: item.receiptUrl,
+                                name: item.receiptName || 'Payment Receipt Proof',
+                                candidate: item.candidateName,
+                                stage: item.paymentType === 'onboarding' ? '1st Part Onboarding (₹1,500)' : item.paymentType === 'finalize' ? '2nd Part Finalize (₹4,500)' : 'Complete Full Payment (₹6,000)',
+                                utr: item.paymentUtr,
+                                date: item.onboardingDate
+                              })}
+                              style={{
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                background: '#eff6ff',
+                                border: '1px solid #93c5fd',
+                                color: '#1d4ed8',
+                                fontSize: '0.72rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="Click to view payment screenshot/receipt proof"
+                            >
+                              <i className="fas fa-file-invoice-dollar"></i> View Receipt
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontStyle: 'italic', fontFamily: 'sans-serif' }}>
+                              No receipt attached
+                            </span>
+                          )}
+                          {item.finalizeReceiptUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setViewingReceipt({
+                                url: item.finalizeReceiptUrl,
+                                name: item.finalizeReceiptName || 'Finalize Payment Receipt Proof',
+                                candidate: item.candidateName,
+                                stage: '2nd Part Finalize Payment (₹4,500)',
+                                utr: item.finalizeUtr,
+                                date: item.finalizeDate || item.onboardingDate
+                              })}
+                              style={{
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                background: '#ecfdf5',
+                                border: '1px solid #86efac',
+                                color: '#15803d',
+                                fontSize: '0.72rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="Click to view finalize payment screenshot/receipt proof"
+                            >
+                              <i className="fas fa-check-double"></i> Fin Receipt
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       {/* Onboarding Date */}
@@ -631,6 +726,63 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                 />
               </div>
 
+              {/* Finalize Payment Receipt Upload */}
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  Finalize Payment Receipt / Screenshot (Optional)
+                </label>
+                {!finalizeFilePreview ? (
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '10px 14px',
+                    border: '1.5px dashed #cbd5e1',
+                    borderRadius: '10px',
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                    fontSize: '0.82rem',
+                    color: '#475569'
+                  }}>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={handleFinalizeFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <i className="fas fa-camera" style={{ color: '#2563eb' }}></i>
+                    <span>Attach ₹4,500 receipt screenshot</span>
+                  </label>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    background: '#f0fdf4',
+                    border: '1px solid #86efac',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: '#166534', fontWeight: '700' }}>
+                      <i className="fas fa-check-circle"></i>
+                      <span>{finalizeReceiptName || 'Receipt Attached'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFinalizeReceiptUrl('')
+                        setFinalizeReceiptName('')
+                        setFinalizeFilePreview(null)
+                      }}
+                      style={{ border: 'none', background: 'transparent', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer', fontWeight: '700' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div style={{ marginBottom: '1.25rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
                   Closing Remarks (Optional)
@@ -687,6 +839,185 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Receipt / Screenshot Full Preview Modal ── */}
+      {viewingReceipt && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.82)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 999999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '650px',
+            width: '100%',
+            maxHeight: '92vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '14px 20px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#f8fafc'
+            }}>
+              <div>
+                <div style={{ fontWeight: '800', color: '#0f172a', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fas fa-file-invoice-dollar" style={{ color: '#2563eb' }}></i>
+                  <span>Payment Receipt / Screenshot</span>
+                </div>
+                <div style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '2px' }}>
+                  Candidate: <strong>{viewingReceipt.candidate}</strong> • {viewingReceipt.stage}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingReceipt(null)}
+                style={{
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748b'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Info Strip */}
+            <div style={{
+              padding: '10px 20px',
+              background: '#eff6ff',
+              borderBottom: '1px solid #bfdbfe',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.82rem'
+            }}>
+              <div>
+                <span style={{ color: '#1e40af', fontWeight: '600' }}>UTR / Ref ID: </span>
+                <code style={{ background: '#ffffff', padding: '2px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: '800', color: '#0f172a' }}>
+                  {viewingReceipt.utr}
+                </code>
+              </div>
+              {viewingReceipt.date && (
+                <div style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                  📅 {viewingReceipt.date}
+                </div>
+              )}
+            </div>
+
+            {/* Image / File Viewer Area */}
+            <div style={{
+              flex: 1,
+              padding: '16px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#0f172a',
+              minHeight: '300px'
+            }}>
+              {viewingReceipt.url.startsWith('data:image/') || viewingReceipt.url.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ? (
+                <img
+                  src={viewingReceipt.url}
+                  alt={viewingReceipt.name || 'Payment Receipt'}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '62vh',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
+                  }}
+                />
+              ) : viewingReceipt.url.startsWith('data:application/pdf') ? (
+                <iframe
+                  src={viewingReceipt.url}
+                  title="PDF Receipt"
+                  style={{ width: '100%', height: '58vh', border: 'none', borderRadius: '8px', background: '#ffffff' }}
+                />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#ffffff' }}>
+                  <i className="fas fa-file-alt" style={{ fontSize: '3rem', color: '#94a3b8', marginBottom: '10px' }}></i>
+                  <div style={{ fontWeight: '700' }}>{viewingReceipt.name || 'Document Receipt'}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              padding: '12px 20px',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: '#ffffff'
+            }}>
+              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                📄 {viewingReceipt.name || 'Receipt Document'}
+              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <a
+                  href={viewingReceipt.url}
+                  download={viewingReceipt.name || 'payment-receipt.png'}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    fontWeight: '700',
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <i className="fas fa-download"></i> Open / Download Full
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setViewingReceipt(null)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#475569',
+                    fontWeight: '700',
+                    fontSize: '0.82rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
