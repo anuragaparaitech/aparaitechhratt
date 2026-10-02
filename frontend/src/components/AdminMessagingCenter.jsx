@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { employeeAPI, API_URL } from '../services/api'
-import axios from 'axios'
+import { employeeAPI, messageAPI } from '../services/api'
 
 function AdminMessagingCenter({ currentUser, showToast }) {
   const [employees, setEmployees] = useState([])
@@ -58,14 +57,10 @@ function AdminMessagingCenter({ currentUser, showToast }) {
   const fetchHistory = async () => {
     setLoadingHistory(true)
     try {
-      const token = localStorage.getItem('aparaitech_token')
-      const res = await axios.get(`${API_URL}/api/messages/admin/history`, {
-        params: { search: histSearch, type: histType, page, limit: 8 },
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.data.success) {
-        setHistory(res.data.data || [])
-        setTotalPages(res.data.pagination?.pages || 1)
+      const res = await messageAPI.getAdminHistory({ search: histSearch, type: histType, page, limit: 8 })
+      if (res.success) {
+        setHistory(res.data || [])
+        setTotalPages(res.pagination?.pages || 1)
       }
     } catch (err) {
       console.error(err)
@@ -118,7 +113,6 @@ function AdminMessagingCenter({ currentUser, showToast }) {
 
     setSending(true)
     try {
-      const token = localStorage.getItem('aparaitech_token')
       const payload = {
         subject,
         message,
@@ -129,21 +123,13 @@ function AdminMessagingCenter({ currentUser, showToast }) {
       
       let res
       if (selectedEmpIds.length === 1) {
-        res = await axios.post(
-          `${API_URL}/api/messages/send/${selectedEmpIds[0]}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
+        res = await messageAPI.sendSingle(selectedEmpIds[0], payload)
       } else {
-        res = await axios.post(
-          `${API_URL}/api/messages/send-bulk`,
-          { employeeIds: selectedEmpIds, ...payload },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
+        res = await messageAPI.sendBulk({ employeeIds: selectedEmpIds, ...payload })
       }
       
-      if (res.data.success) {
-        if (res.data.emailSent) {
+      if (res.success) {
+        if (res.emailSent) {
           showToast('✉️ Message(s) & Email(s) delivered successfully!', '#22c55e')
         } else {
           showToast('⚠️ Message(s) saved in-app, but email delivery failed.', '#eab308')
@@ -181,26 +167,21 @@ function AdminMessagingCenter({ currentUser, showToast }) {
     setBroadcasting(true)
     setBroadcastResult(null)
     try {
-      const token = localStorage.getItem('aparaitech_token')
-      const res = await axios.post(
-        `${API_URL}/api/messages/broadcast`,
-        {
-          subject: broadcastSubject,
-          message: broadcastMessage,
-          attachment: broadcastAttachment,
-          priority: broadcastPriority,
-          targetTeam: broadcastTeam,
-          scheduledFor: broadcastScheduleMode === 'later' ? broadcastScheduledFor : null
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      const res = await messageAPI.broadcast({
+        subject: broadcastSubject,
+        message: broadcastMessage,
+        attachment: broadcastAttachment,
+        priority: broadcastPriority,
+        targetTeam: broadcastTeam,
+        scheduledFor: broadcastScheduleMode === 'later' ? broadcastScheduledFor : null
+      })
 
-      if (res.data.success) {
+      if (res.success) {
         showToast('📢 Broadcast completed successfully!', '#22c55e')
         setBroadcastResult({
-          total: res.data.totalEmployees,
-          sent: res.data.sentCount,
-          failed: res.data.failedCount
+          total: res.totalEmployees,
+          sent: res.sentCount,
+          failed: res.failedCount
         })
         setBroadcastSubject('')
         setBroadcastMessage('')

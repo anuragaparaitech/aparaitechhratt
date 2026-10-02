@@ -247,8 +247,12 @@ export const messageAPI = {
     const response = await api.put(`/api/messages/${id}/archive`)
     return response.data
   },
-  sendSingle: async (data) => {
-    const response = await api.post('/api/messages/send', data)
+  sendSingle: async (employeeId, data) => {
+    const response = await api.post(`/api/messages/send/${employeeId}`, data)
+    return response.data
+  },
+  sendBulk: async (data) => {
+    const response = await api.post('/api/messages/send-bulk', data)
     return response.data
   },
   broadcast: async (data) => {

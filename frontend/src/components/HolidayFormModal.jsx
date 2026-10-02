@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { employeeAPI, API_URL } from '../services/api'
-import axios from 'axios'
+import { employeeAPI, holidayAPI } from '../services/api'
 
 function HolidayFormModal({ isOpen, onClose, onHolidaySaved, holidayToEdit, showToast }) {
   const [holidayName, setHolidayName] = useState('')
@@ -96,10 +95,10 @@ function HolidayFormModal({ isOpen, onClose, onHolidaySaved, holidayToEdit, show
       }
 
       if (holidayToEdit) {
-        await axios.put(`${API_URL}/api/holidays/${holidayToEdit._id}`, payload)
+        await holidayAPI.update(holidayToEdit._id, payload)
         showToast('✅ Holiday updated successfully!', '#22c55e')
       } else {
-        await axios.post(`${API_URL}/api/holidays`, payload)
+        await holidayAPI.create(payload)
         showToast('✅ Holiday declared & emails sent!', '#22c55e')
       }
 
