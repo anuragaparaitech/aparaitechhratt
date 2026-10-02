@@ -144,6 +144,30 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
             </div>
           </div>
         </div>
+        <a
+          href="/aparaitech-hrms.apk"
+          download="Aparaitech-HRMS.apk"
+          className="download-apk-navbar-btn"
+          title="Download latest Aparaitech Android App (.APK)"
+          style={{
+            textDecoration: 'none',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.25))',
+            color: '#34d399',
+            border: '1px solid rgba(52, 211, 153, 0.4)',
+            padding: '7px 12px',
+            borderRadius: '8px',
+            fontWeight: '700',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <i className="fab fa-android"></i>
+          <span>APK</span>
+        </a>
         <button
           className="install-app-btn"
           onClick={handleInstallApp}

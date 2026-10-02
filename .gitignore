@@ -26,6 +26,7 @@ Thumbs.db
 # Archives & binaries
 *.zip
 *.apk
+!frontend/public/*.apk
 *.exe
 *.dll
 assets/

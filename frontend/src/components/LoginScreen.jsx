@@ -496,6 +496,66 @@ function LoginScreen({ onLogin, showToast }) {
             </button>
           </form>
 
+          {/* Mobile App Download Card */}
+          <div style={{
+            marginTop: '1.25rem',
+            padding: '0.85rem 1rem',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+            border: '1.5px solid #a7f3d0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: '#10b981',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.2rem',
+                flexShrink: 0
+              }}>
+                <i className="fab fa-android"></i>
+              </div>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '0.82rem', color: '#065f46' }}>
+                  Aparaitech Mobile App
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#047857' }}>
+                  Direct APK for Android phones
+                </div>
+              </div>
+            </div>
+            <a
+              href="/aparaitech-hrms.apk"
+              download="Aparaitech-HRMS.apk"
+              style={{
+                textDecoration: 'none',
+                background: '#059669',
+                color: '#ffffff',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 6px rgba(5, 150, 105, 0.3)',
+                transition: 'all 0.2s'
+              }}
+            >
+              <i className="fas fa-download"></i>
+              <span>Install APK</span>
+            </a>
+          </div>
+
           {/* Security & Verification Guarantee */}
           <div style={{
             marginTop: '1.75rem',
