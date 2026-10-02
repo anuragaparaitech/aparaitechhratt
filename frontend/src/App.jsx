@@ -15,26 +15,24 @@ import axios from 'axios'
 const API_URL = import.meta.env.VITE_API_URL || 'https://aparaitech-software-attendance-protal-9l04.onrender.com'
 
 // ── Admin sidebar nav definition ────────────────────────────────────────────
-// Categorized into Working Portal Hub vs Attendance & System Operations
-const ADMIN_PORTAL_NAV = [
-  { id: 'dashboard',      icon: 'fa-home',               label: 'Working Hub',             tab: 'dashboard' },
-  { id: 'managerReports', icon: 'fa-file-invoice',       label: 'Team Reports & Pending',  tab: 'managerReports' },
-  { id: 'performance',    icon: 'fa-chart-pie',          label: 'Performance Analytics',   tab: 'performance' },
-  { id: 'leaderboard',    icon: 'fa-trophy',             label: 'Live Leaderboard',        tab: 'leaderboard' },
-  { id: 'revenue',        icon: 'fa-rupee-sign',         label: 'Revenue Tracker',         tab: 'revenue' },
-  { id: 'messaging',      icon: 'fa-envelope',           label: 'Messaging Center',        tab: 'messaging' },
-]
-
-const ADMIN_ATTENDANCE_NAV = [
-  { id: 'overview',       icon: 'fa-th-large',           label: 'Attendance Overview',     section: true },
-  { id: 'overall',        icon: 'fa-chart-line',         label: 'Overall Attendance',      section: true },
-  { id: 'live',           icon: 'fa-eye',                label: 'Live Check-Ins',          section: true },
-  { id: 'employees',      icon: 'fa-users',              label: 'Employee Directory',      section: true },
-  { id: 'attendance',     icon: 'fa-calendar-check',     label: 'Attendance Logs',         section: true },
-  { id: 'missing',        icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',      section: true },
-  { id: 'autocheckout',   icon: 'fa-robot',              label: 'Auto Checkout Records',   section: true },
-  { id: 'holidays',       icon: 'fa-umbrella-beach',     label: 'Holiday Management',      section: true },
-  { id: 'data',           icon: 'fa-database',           label: 'Data Management',         section: true },
+const ADMIN_NAV = [
+  // 1. Executive Operations & Performance
+  { id: 'overview',       icon: 'fa-tachometer-alt',      label: 'Executive Overview',      section: true,  group: 'Command Center' },
+  { id: 'live',           icon: 'fa-eye',                 label: 'Live Check-Ins',          section: true,  group: 'Command Center' },
+  { id: 'dailyReports',   icon: 'fa-clipboard-check',     label: 'Daily Working Reports',   section: true,  group: 'Command Center' },
+  { id: 'mailBlast',      icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
+  { id: 'revenue',        icon: 'fa-rupee-sign',          label: 'Revenue & Conversions',   section: true,  group: 'Command Center' },
+  { id: 'messaging',      icon: 'fa-envelope',            label: 'Messaging Center',        section: false, tab: 'messaging', group: 'Command Center' },
+  // 2. Workforce & Attendance Logs
+  { id: 'employees',      icon: 'fa-users',               label: 'Employee Directory',      section: true,  group: 'Workforce & Logs' },
+  { id: 'attendance',     icon: 'fa-calendar-check',      label: 'Attendance Logs',         section: true,  group: 'Workforce & Logs' },
+  { id: 'overall',        icon: 'fa-chart-line',          label: 'Overall Analytics',       section: true,  group: 'Workforce & Logs' },
+  { id: 'missing',        icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',      section: true,  group: 'Workforce & Logs' },
+  { id: 'autocheckout',   icon: 'fa-robot',               label: 'Auto Checkout Records',   section: true,  group: 'Workforce & Logs' },
+  { id: 'holidays',       icon: 'fa-umbrella-beach',      label: 'Holiday Management',      section: true,  group: 'Workforce & Logs' },
+  { id: 'data',           icon: 'fa-database',            label: 'Data Management',         section: true,  group: 'Workforce & Logs' },
+  // 3. Employee Portal Preview
+  { id: 'companyHub',     icon: 'fa-home',                label: 'Employee Portal View',    section: false, tab: 'companyHub', group: 'Portal Preview' },
 ]
 
 function App() {
@@ -44,7 +42,17 @@ function App() {
   })
 
   const [toast, setToast] = useState(null)
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTab] = useState(() => {
+    const saved = localStorage.getItem('aparaitech_current_user')
+    if (saved) {
+      try {
+        const u = JSON.parse(saved)
+        return u.role === 'admin' ? 'adminPanel' : 'dashboard'
+      } catch (e) {}
+    }
+    return 'dashboard'
+  })
+
   // Admin sub-section (which section of AdminPanel to show)
   const [adminSection, setAdminSection] = useState('overview')
   const [unreadCount, setUnreadCount] = useState(0)
@@ -57,8 +65,12 @@ function App() {
 
   // Reset tab selection when current user changes
   useEffect(() => {
-    setActiveTab('dashboard')
-    setAdminSection('overview')
+    if (currentUser?.role === 'admin') {
+      setActiveTab('adminPanel')
+      setAdminSection('overview')
+    } else {
+      setActiveTab('dashboard')
+    }
     fetchUnreadCount()
   }, [currentUser])
 
@@ -98,6 +110,12 @@ function App() {
   const handleLogin = (user) => {
     setCurrentUser(user)
     localStorage.setItem('aparaitech_current_user', JSON.stringify(user))
+    if (user.role === 'admin') {
+      setActiveTab('adminPanel')
+      setAdminSection('overview')
+    } else {
+      setActiveTab('dashboard')
+    }
     showToast(`🔓 Welcome back, ${user.name}!`, '#22c55e')
   }
 
@@ -128,14 +146,14 @@ function App() {
     color: active ? '#ffffff' : '#475569',
     border: 'none',
     borderRadius: '12px',
-    padding: '11px 16px',
+    padding: '10px 14px',
     textAlign: 'left',
     fontWeight: '600',
-    fontSize: '0.86rem',
+    fontSize: '0.84rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '10px',
     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
     width: '100%',
   })
@@ -154,26 +172,26 @@ function App() {
             <div className="sidebar-card" style={{
               background: '#ffffff',
               borderRadius: '24px',
-              padding: '1.75rem 1.25rem',
+              padding: '1.5rem 1.2rem',
               width: '260px',
               minWidth: '260px',
               boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 1px 0 rgba(0, 0, 0, 0.01)',
               border: '1px solid #e2e8f0',
               display: 'flex',
               flexDirection: 'column',
-              gap: '6px',
+              gap: '4px',
               minHeight: '620px',
               height: 'fit-content'
             }}>
 
               {currentUser.role === 'admin' ? (
                 <>
-                  {/* Working Portal Group */}
-                  <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
-                    🏢 Working Portal
+                  {/* Group 1: Command Center */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                    👑 Command Center
                   </div>
 
-                  {ADMIN_PORTAL_NAV.map(item => (
+                  {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
                     <button
                       key={item.id}
                       id={`adminNav_${item.id}`}
@@ -186,12 +204,30 @@ function App() {
                     </button>
                   ))}
 
-                  {/* Attendance & Gatekeeper Group */}
-                  <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '14px 0 6px', letterSpacing: '0.08em' }}>
-                    🔒 Attendance & Logs
+                  {/* Group 2: Workforce & Logs */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                    👥 Workforce & Logs
                   </div>
 
-                  {ADMIN_ATTENDANCE_NAV.map(item => (
+                  {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
+                    <button
+                      key={item.id}
+                      id={`adminNav_${item.id}`}
+                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                      style={sidebarBtnStyle(isAdminNavActive(item))}
+                      onClick={() => handleAdminNav(item)}
+                    >
+                      <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                      {item.label}
+                    </button>
+                  ))}
+
+                  {/* Group 3: Portal Preview */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                    🏢 Working Portal
+                  </div>
+
+                  {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
                     <button
                       key={item.id}
                       id={`adminNav_${item.id}`}
@@ -298,14 +334,43 @@ function App() {
             {/* ── Main Content Pane ────────────────────────────────────── */}
             <div className="content-pane" style={{ flex: 1, minWidth: '320px' }}>
 
-              {/* 1. Working Dashboard (Unified Post-Login Hub for Employees, Managers, Admins) */}
-              {activeTab === 'dashboard' && (
+              {/* 1. Admin Panel: Comprehensive Executive Control Center (Default for Admin) */}
+              {activeTab === 'adminPanel' && currentUser.role === 'admin' && (
+                <AdminPanel
+                  currentUser={currentUser}
+                  showToast={showToast}
+                  activeSection={adminSection}
+                  onSectionChange={(newSec) => {
+                    setAdminSection(newSec)
+                    setActiveTab('adminPanel')
+                  }}
+                />
+              )}
+
+              {/* 2. Employee Working Dashboard (Default for Employee / Manager) */}
+              {(activeTab === 'dashboard' || activeTab === 'companyHub') && (
                 <CompanyDashboard
                   currentUser={currentUser}
                   onNavigate={(targetTab) => {
-                    if (targetTab === 'attendance' && currentUser.role === 'admin') {
-                      setActiveTab('adminPanel')
-                      setAdminSection('live')
+                    if (currentUser.role === 'admin') {
+                      if (targetTab === 'attendance' || targetTab === 'dashboard') {
+                        setActiveTab('adminPanel')
+                        setAdminSection('overview')
+                      } else if (targetTab === 'performance') {
+                        setActiveTab('adminPanel')
+                        setAdminSection('dailyReports')
+                      } else if (targetTab === 'leaderboard') {
+                        setActiveTab('leaderboard')
+                      } else if (targetTab === 'revenue') {
+                        setActiveTab('adminPanel')
+                        setAdminSection('revenue')
+                      } else if (targetTab === 'messaging') {
+                        setActiveTab('messaging')
+                      } else if (targetTab === 'inbox') {
+                        setActiveTab('messaging')
+                      } else {
+                        setActiveTab(targetTab)
+                      }
                     } else {
                       setActiveTab(targetTab)
                     }
@@ -315,7 +380,7 @@ function App() {
                 />
               )}
 
-              {/* 2. Employee Attendance Panel (Existing intact Face Recognition + Geofence + Shift Punch) */}
+              {/* 3. Employee Attendance Panel (Existing Face Verification & Geofence intact) */}
               {activeTab === 'attendance' && (
                 <EmployeePanel
                   currentUser={currentUser}
@@ -327,7 +392,7 @@ function App() {
                 />
               )}
 
-              {/* 3. Performance Dashboard */}
+              {/* 4. Performance Dashboard */}
               {activeTab === 'performance' && (
                 <PerformanceDashboard
                   currentUser={currentUser}
@@ -335,7 +400,7 @@ function App() {
                 />
               )}
 
-              {/* 4. Live Leaderboard */}
+              {/* 5. Live Leaderboard */}
               {activeTab === 'leaderboard' && (
                 <LeaderboardView
                   currentUser={currentUser}
@@ -343,7 +408,7 @@ function App() {
                 />
               )}
 
-              {/* 5. Revenue Tracker */}
+              {/* 6. Revenue Tracker */}
               {activeTab === 'revenue' && (
                 <RevenueTrackerView
                   currentUser={currentUser}
@@ -351,21 +416,11 @@ function App() {
                 />
               )}
 
-              {/* 6. Manager / HR Team Reports Hub */}
+              {/* 7. Manager / HR Team Reports Hub */}
               {activeTab === 'managerReports' && (
                 <ManagerReportsView
                   currentUser={currentUser}
                   showToast={showToast}
-                />
-              )}
-
-              {/* 7. Admin Panel (All Existing Attendance & Gatekeeper Sections) */}
-              {activeTab === 'adminPanel' && currentUser.role === 'admin' && (
-                <AdminPanel
-                  currentUser={currentUser}
-                  showToast={showToast}
-                  activeSection={adminSection}
-                  onSectionChange={setAdminSection}
                 />
               )}
 
