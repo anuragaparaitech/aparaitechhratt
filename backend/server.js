@@ -9,6 +9,8 @@ import attendanceRoutes from './routes/attendanceRoutes.js'
 import holidayRoutes from './routes/holidayRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import faceRoutes from './routes/faceRoutes.js'
+import reportRoutes from './routes/reportRoutes.js'
+import analyticsRoutes from './routes/analyticsRoutes.js'
 import { initScheduler } from './services/schedulerService.js'
 
 // Load environment variables

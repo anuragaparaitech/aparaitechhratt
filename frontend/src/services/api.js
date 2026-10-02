@@ -183,4 +183,77 @@ export const faceAPI = {
   }
 }
 
+// ── Daily & Mail Blast Reports API ─────────────────────────────────────────────
+export const reportsAPI = {
+  submitDaily: async (data) => {
+    const response = await api.post('/api/reports/daily', data)
+    return response.data
+  },
+  getDaily: async (filters = {}) => {
+    const response = await api.get('/api/reports/daily', { params: filters })
+    return response.data
+  },
+  getTodayStatus: async () => {
+    const response = await api.get('/api/reports/daily/today-status')
+    return response.data
+  },
+  submitMailBlast: async (data) => {
+    const response = await api.post('/api/reports/mail-blast', data)
+    return response.data
+  },
+  getMailBlast: async (filters = {}) => {
+    const response = await api.get('/api/reports/mail-blast', { params: filters })
+    return response.data
+  }
+}
+
+// ── Performance & Working Portal Analytics API ─────────────────────────────────
+export const analyticsAPI = {
+  getMyPerformance: async () => {
+    const response = await api.get('/api/analytics/my-performance')
+    return response.data
+  },
+  getLeaderboard: async (period = 'month') => {
+    const response = await api.get('/api/analytics/leaderboard', { params: { period } })
+    return response.data
+  },
+  getRevenueTracker: async () => {
+    const response = await api.get('/api/analytics/revenue')
+    return response.data
+  },
+  getTeamOverview: async () => {
+    const response = await api.get('/api/analytics/team-overview')
+    return response.data
+  }
+}
+
+// ── Administrative & Employee Messaging API ────────────────────────────────────
+export const messageAPI = {
+  getEmployeeMessages: async () => {
+    const response = await api.get('/api/messages/employee')
+    return response.data
+  },
+  markAsRead: async (id) => {
+    const response = await api.put(`/api/messages/${id}/read`)
+    return response.data
+  },
+  toggleArchive: async (id) => {
+    const response = await api.put(`/api/messages/${id}/archive`)
+    return response.data
+  },
+  sendSingle: async (data) => {
+    const response = await api.post('/api/messages/send', data)
+    return response.data
+  },
+  broadcast: async (data) => {
+    const response = await api.post('/api/messages/broadcast', data)
+    return response.data
+  },
+  getAdminHistory: async (params = {}) => {
+    const response = await api.get('/api/messages/admin/history', { params })
+    return response.data
+  }
+}
+
 export default api
+

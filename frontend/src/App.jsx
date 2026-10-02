@@ -5,24 +5,36 @@ import AdminPanel from './components/AdminPanel'
 import EmployeePanel from './components/EmployeePanel'
 import AdminMessagingCenter from './components/AdminMessagingCenter'
 import EmployeeInbox from './components/EmployeeInbox'
+import CompanyDashboard from './components/CompanyDashboard'
+import PerformanceDashboard from './components/PerformanceDashboard'
+import LeaderboardView from './components/LeaderboardView'
+import RevenueTrackerView from './components/RevenueTrackerView'
+import ManagerReportsView from './components/ManagerReportsView'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://aparaitech-software-attendance-protal-9l04.onrender.com'
 
 // ── Admin sidebar nav definition ────────────────────────────────────────────
-// Each entry maps to a section rendered inside AdminPanel via the activeSection prop.
-// 'tab' entries (messaging) render a separate top-level component instead.
-const ADMIN_NAV = [
-  { id: 'overview',       icon: 'fa-th-large',           label: 'Dashboard Overview',      section: true  },
-  { id: 'overall',        icon: 'fa-chart-line',         label: 'Overall Attendance',      section: true  },
-  { id: 'live',           icon: 'fa-eye',                label: 'Live Check-Ins',           section: true  },
-  { id: 'employees',      icon: 'fa-users',              label: 'Employee Data',            section: true  },
-  { id: 'attendance',     icon: 'fa-calendar-check',     label: 'Attendance Logs',          section: true  },
-  { id: 'missing',        icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',       section: true  },
-  { id: 'autocheckout',   icon: 'fa-robot',              label: 'Auto Checkout Records',    section: true  },
-  { id: 'holidays',       icon: 'fa-umbrella-beach',     label: 'Holiday Management',       section: true  },
-  { id: 'data',           icon: 'fa-database',           label: 'Data Management',          section: true  },
-  { id: 'messaging',      icon: 'fa-envelope',           label: 'Messaging Center',         section: false, tab: 'messaging' },
+// Categorized into Working Portal Hub vs Attendance & System Operations
+const ADMIN_PORTAL_NAV = [
+  { id: 'dashboard',      icon: 'fa-home',               label: 'Working Hub',             tab: 'dashboard' },
+  { id: 'managerReports', icon: 'fa-file-invoice',       label: 'Team Reports & Pending',  tab: 'managerReports' },
+  { id: 'performance',    icon: 'fa-chart-pie',          label: 'Performance Analytics',   tab: 'performance' },
+  { id: 'leaderboard',    icon: 'fa-trophy',             label: 'Live Leaderboard',        tab: 'leaderboard' },
+  { id: 'revenue',        icon: 'fa-rupee-sign',         label: 'Revenue Tracker',         tab: 'revenue' },
+  { id: 'messaging',      icon: 'fa-envelope',           label: 'Messaging Center',        tab: 'messaging' },
+]
+
+const ADMIN_ATTENDANCE_NAV = [
+  { id: 'overview',       icon: 'fa-th-large',           label: 'Attendance Overview',     section: true },
+  { id: 'overall',        icon: 'fa-chart-line',         label: 'Overall Attendance',      section: true },
+  { id: 'live',           icon: 'fa-eye',                label: 'Live Check-Ins',          section: true },
+  { id: 'employees',      icon: 'fa-users',              label: 'Employee Directory',      section: true },
+  { id: 'attendance',     icon: 'fa-calendar-check',     label: 'Attendance Logs',         section: true },
+  { id: 'missing',        icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',      section: true },
+  { id: 'autocheckout',   icon: 'fa-robot',              label: 'Auto Checkout Records',   section: true },
+  { id: 'holidays',       icon: 'fa-umbrella-beach',     label: 'Holiday Management',      section: true },
+  { id: 'data',           icon: 'fa-database',           label: 'Data Management',         section: true },
 ]
 
 function App() {
@@ -41,6 +53,8 @@ function App() {
     setToast({ message, bg })
   }
 
+  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr'
+
   // Reset tab selection when current user changes
   useEffect(() => {
     setActiveTab('dashboard')
@@ -50,14 +64,14 @@ function App() {
 
   // Periodic polling for unread messages (every 30 seconds)
   useEffect(() => {
-    if (currentUser && currentUser.role === 'employee') {
+    if (currentUser && currentUser.role !== 'admin') {
       const interval = setInterval(fetchUnreadCount, 30000)
       return () => clearInterval(interval)
     }
   }, [currentUser])
 
   const fetchUnreadCount = async () => {
-    if (currentUser && currentUser.role === 'employee') {
+    if (currentUser && currentUser.role !== 'admin') {
       try {
         const token = localStorage.getItem('aparaitech_token')
         const response = await axios.get(`${API_URL}/api/messages/employee`, {
@@ -97,16 +111,15 @@ function App() {
   // Navigate to an admin section or top-level tab
   const handleAdminNav = (item) => {
     if (item.section) {
-      setActiveTab('dashboard')
+      setActiveTab('adminPanel')
       setAdminSection(item.id)
     } else {
       setActiveTab(item.tab)
     }
   }
 
-  // Helper: is this nav item currently active?
   const isAdminNavActive = (item) => {
-    if (item.section) return activeTab === 'dashboard' && adminSection === item.id
+    if (item.section) return activeTab === 'adminPanel' && adminSection === item.id
     return activeTab === item.tab
   }
 
@@ -115,10 +128,10 @@ function App() {
     color: active ? '#ffffff' : '#475569',
     border: 'none',
     borderRadius: '12px',
-    padding: '13px 18px',
+    padding: '11px 16px',
     textAlign: 'left',
     fontWeight: '600',
-    fontSize: '0.88rem',
+    fontSize: '0.86rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -135,32 +148,50 @@ function App() {
         <div className="app-container" style={{ display: 'block' }}>
           <Navbar currentUser={currentUser} onLogout={handleLogout} />
 
-          <div className="main-layout" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%' }}>
+          <div className="main-layout" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', padding: '1.5rem' }}>
 
             {/* ── Sidebar Navigation Card ──────────────────────────────── */}
             <div className="sidebar-card" style={{
               background: '#ffffff',
               borderRadius: '24px',
-              padding: '2rem 1.25rem',
+              padding: '1.75rem 1.25rem',
               width: '260px',
               minWidth: '260px',
-              boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 1px 0 rgba(0, 0, 0, 0.01), 0 0 0 1px rgba(0, 0, 0, 0.01)',
+              boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 1px 0 rgba(0, 0, 0, 0.01)',
               border: '1px solid #e2e8f0',
               display: 'flex',
               flexDirection: 'column',
-              gap: '10px',
+              gap: '6px',
               minHeight: '620px',
               height: 'fit-content'
             }}>
 
               {currentUser.role === 'admin' ? (
                 <>
-                  {/* Admin: section label */}
-                  <div style={{ fontWeight: '700', fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '14px', letterSpacing: '0.08em' }}>
-                    📌 Admin Navigation
+                  {/* Working Portal Group */}
+                  <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
+                    🏢 Working Portal
                   </div>
 
-                  {ADMIN_NAV.map(item => (
+                  {ADMIN_PORTAL_NAV.map(item => (
+                    <button
+                      key={item.id}
+                      id={`adminNav_${item.id}`}
+                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                      style={sidebarBtnStyle(isAdminNavActive(item))}
+                      onClick={() => handleAdminNav(item)}
+                    >
+                      <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                      {item.label}
+                    </button>
+                  ))}
+
+                  {/* Attendance & Gatekeeper Group */}
+                  <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '14px 0 6px', letterSpacing: '0.08em' }}>
+                    🔒 Attendance & Logs
+                  </div>
+
+                  {ADMIN_ATTENDANCE_NAV.map(item => (
                     <button
                       key={item.id}
                       id={`adminNav_${item.id}`}
@@ -175,9 +206,9 @@ function App() {
                 </>
               ) : (
                 <>
-                  {/* Employee: dashboard + inbox */}
-                  <div style={{ fontWeight: '700', fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '14px', letterSpacing: '0.08em' }}>
-                    📌 Navigation
+                  {/* Employee & Manager Navigation */}
+                  <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
+                    📌 Portal Navigation
                   </div>
 
                   <button
@@ -186,8 +217,56 @@ function App() {
                     onClick={() => setActiveTab('dashboard')}
                   >
                     <i className="fas fa-th-large" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Dashboard
+                    Working Dashboard
                   </button>
+
+                  <button
+                    className={`sidebar-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
+                    style={sidebarBtnStyle(activeTab === 'attendance')}
+                    onClick={() => setActiveTab('attendance')}
+                  >
+                    <i className="fas fa-fingerprint" style={{ width: '16px', textAlign: 'center' }}></i>
+                    Attendance & Punch
+                  </button>
+
+                  <button
+                    className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
+                    style={sidebarBtnStyle(activeTab === 'performance')}
+                    onClick={() => setActiveTab('performance')}
+                  >
+                    <i className="fas fa-chart-line" style={{ width: '16px', textAlign: 'center' }}></i>
+                    My Performance
+                  </button>
+
+                  <button
+                    className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                    style={sidebarBtnStyle(activeTab === 'leaderboard')}
+                    onClick={() => setActiveTab('leaderboard')}
+                  >
+                    <i className="fas fa-trophy" style={{ width: '16px', textAlign: 'center' }}></i>
+                    Leaderboard
+                  </button>
+
+                  <button
+                    className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
+                    style={sidebarBtnStyle(activeTab === 'revenue')}
+                    onClick={() => setActiveTab('revenue')}
+                  >
+                    <i className="fas fa-rupee-sign" style={{ width: '16px', textAlign: 'center' }}></i>
+                    Revenue Tracker
+                  </button>
+
+                  {/* Manager / HR Exclusive Navigation Item */}
+                  {isManagerOrAdmin && (
+                    <button
+                      className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'managerReports')}
+                      onClick={() => setActiveTab('managerReports')}
+                    >
+                      <i className="fas fa-file-invoice" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Team Reports Hub
+                    </button>
+                  )}
 
                   <button
                     id="employeeInboxTab"
@@ -196,7 +275,7 @@ function App() {
                     onClick={() => setActiveTab('inbox')}
                   >
                     <i className="fas fa-inbox" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Inbox
+                    Message Centre
                     {unreadCount > 0 && (
                       <span style={{
                         background: '#ef4444',
@@ -219,18 +298,25 @@ function App() {
             {/* ── Main Content Pane ────────────────────────────────────── */}
             <div className="content-pane" style={{ flex: 1, minWidth: '320px' }}>
 
-              {/* Admin: dashboard sections */}
-              {activeTab === 'dashboard' && currentUser.role === 'admin' && (
-                <AdminPanel
+              {/* 1. Working Dashboard (Unified Post-Login Hub for Employees, Managers, Admins) */}
+              {activeTab === 'dashboard' && (
+                <CompanyDashboard
                   currentUser={currentUser}
+                  onNavigate={(targetTab) => {
+                    if (targetTab === 'attendance' && currentUser.role === 'admin') {
+                      setActiveTab('adminPanel')
+                      setAdminSection('live')
+                    } else {
+                      setActiveTab(targetTab)
+                    }
+                  }}
                   showToast={showToast}
-                  activeSection={adminSection}
-                  onSectionChange={setAdminSection}
+                  unreadMessagesCount={unreadCount}
                 />
               )}
 
-              {/* Employee dashboard */}
-              {activeTab === 'dashboard' && currentUser.role === 'employee' && (
+              {/* 2. Employee Attendance Panel (Existing intact Face Recognition + Geofence + Shift Punch) */}
+              {activeTab === 'attendance' && (
                 <EmployeePanel
                   currentUser={currentUser}
                   setCurrentUser={(updatedUser) => {
@@ -241,13 +327,58 @@ function App() {
                 />
               )}
 
-              {/* Admin: Messaging Center */}
-              {activeTab === 'messaging' && currentUser.role === 'admin' && (
-                <AdminMessagingCenter currentUser={currentUser} showToast={showToast} />
+              {/* 3. Performance Dashboard */}
+              {activeTab === 'performance' && (
+                <PerformanceDashboard
+                  currentUser={currentUser}
+                  showToast={showToast}
+                />
               )}
 
-              {/* Employee: Inbox */}
-              {activeTab === 'inbox' && currentUser.role === 'employee' && (
+              {/* 4. Live Leaderboard */}
+              {activeTab === 'leaderboard' && (
+                <LeaderboardView
+                  currentUser={currentUser}
+                  showToast={showToast}
+                />
+              )}
+
+              {/* 5. Revenue Tracker */}
+              {activeTab === 'revenue' && (
+                <RevenueTrackerView
+                  currentUser={currentUser}
+                  showToast={showToast}
+                />
+              )}
+
+              {/* 6. Manager / HR Team Reports Hub */}
+              {activeTab === 'managerReports' && (
+                <ManagerReportsView
+                  currentUser={currentUser}
+                  showToast={showToast}
+                />
+              )}
+
+              {/* 7. Admin Panel (All Existing Attendance & Gatekeeper Sections) */}
+              {activeTab === 'adminPanel' && currentUser.role === 'admin' && (
+                <AdminPanel
+                  currentUser={currentUser}
+                  showToast={showToast}
+                  activeSection={adminSection}
+                  onSectionChange={setAdminSection}
+                />
+              )}
+
+              {/* 8. Admin: Messaging Center */}
+              {activeTab === 'messaging' && currentUser.role === 'admin' && (
+                <AdminMessagingCenter
+                  currentUser={currentUser}
+                  showToast={showToast}
+                />
+              )}
+
+              {/* 9. Employee / Manager: Inbox */}
+              {activeTab === 'inbox' && (
                 <EmployeeInbox
                   currentUser={currentUser}
                   showToast={showToast}

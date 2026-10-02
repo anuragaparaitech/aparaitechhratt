@@ -35,6 +35,8 @@ export const sendMessageToEmployee = async (req, res) => {
       attachmentPath = relPath ? relPath.substring(1) : null // Remove leading slash for local filepath
     }
 
+    const { subject, message, attachment, priority = 'normal', targetTeam = 'All', scheduledFor = null } = req.body
+
     // Create Message log
     const msg = new Message({
       senderAdminId: adminId,
@@ -43,6 +45,9 @@ export const sendMessageToEmployee = async (req, res) => {
       subject,
       message,
       attachmentUrl,
+      priority,
+      targetTeam,
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
       deliveryStatus: 'pending'
     })
 
@@ -152,21 +157,26 @@ export const sendBulkMessages = async (req, res) => {
 
 
 export const broadcastMessage = async (req, res) => {
-  const { subject, message, attachment } = req.body
+  const { subject, message, attachment, priority = 'normal', targetTeam = 'All', scheduledFor = null } = req.body
   const adminId = req.user._id
 
-  console.log(`[API Request] POST /api/messages/broadcast by Admin ID ${adminId}`)
+  console.log(`[API Request] POST /api/messages/broadcast by Admin ID ${adminId}, Team: ${targetTeam}, Priority: ${priority}`)
 
   if (!subject || !message) {
     return res.status(400).json({ success: false, message: 'Subject and message are required' })
   }
 
   try {
-    const activeEmployees = await Employee.find({ role: 'employee', status: 'active' })
+    let empQuery = { role: 'employee', status: 'active' }
+    if (targetTeam && targetTeam !== 'All') {
+      empQuery.department = targetTeam
+    }
+
+    const activeEmployees = await Employee.find(empQuery)
     if (activeEmployees.length === 0) {
       return res.status(200).json({
         success: true,
-        message: 'No active employees found to send messages to.',
+        message: 'No active employees found matching the target team.',
         sentCount: 0,
         failedCount: 0
       })
@@ -189,6 +199,9 @@ export const broadcastMessage = async (req, res) => {
       subject,
       message,
       attachmentUrl,
+      priority,
+      targetTeam,
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
       deliveryStatus: 'pending'
     })
 
@@ -281,36 +294,41 @@ export const getAdminMessageHistory = async (req, res) => {
 
 export const getEmployeeMessages = async (req, res) => {
   const employeeId = req.user._id
+  const userTeam = req.user.department
 
   console.log(`[API Request] GET /api/messages/employee for Employee ID ${employeeId}`)
 
   try {
-    // Find all messages that are broadcast OR directed to this specific employee
+    // Find all messages that are broadcast (to All or this employee's department) OR directed to this specific employee
     const records = await Message.find({
       $or: [
-        { isBroadcast: true },
+        { isBroadcast: true, targetTeam: { $in: ['All', userTeam, null, ''] } },
         { recipientEmployeeId: employeeId }
       ]
     })
       .populate('senderAdminId', 'name email')
       .sort({ createdAt: -1 })
 
-    // Map records to check if read
+    // Map records to check if read and archived
     const formattedRecords = records.map(rec => {
-      const isRead = rec.readBy.includes(employeeId)
+      const isRead = rec.readBy.some(id => id.toString() === employeeId.toString())
+      const isArchived = (rec.archivedBy || []).some(id => id.toString() === employeeId.toString())
       return {
         _id: rec._id,
         sender: rec.senderAdminId ? rec.senderAdminId.name : 'Administrator',
         subject: rec.subject,
         message: rec.message,
         attachmentUrl: rec.attachmentUrl,
+        priority: rec.priority || 'normal',
+        targetTeam: rec.targetTeam || 'All',
         isBroadcast: rec.isBroadcast,
         isRead,
+        isArchived,
         createdAt: rec.createdAt
       }
     })
 
-    const unreadCount = formattedRecords.filter(r => !r.isRead).length
+    const unreadCount = formattedRecords.filter(r => !r.isRead && !r.isArchived).length
 
     return res.status(200).json({
       success: true,
@@ -336,7 +354,7 @@ export const markMessageAsRead = async (req, res) => {
     }
 
     // Add employee to readBy if not already read
-    if (!msg.readBy.includes(employeeId)) {
+    if (!msg.readBy.some(eid => eid.toString() === employeeId.toString())) {
       msg.readBy.push(employeeId)
       await msg.save()
     }
@@ -347,6 +365,41 @@ export const markMessageAsRead = async (req, res) => {
     })
   } catch (error) {
     console.error(`[API Error] Error marking message read:`, error.stack)
+    return res.status(500).json({ success: false, message: 'Server error', error: error.message })
+  }
+}
+
+export const toggleArchiveMessage = async (req, res) => {
+  const { id } = req.params
+  const employeeId = req.user._id
+
+  try {
+    const msg = await Message.findById(id)
+    if (!msg) {
+      return res.status(404).json({ success: false, message: 'Message not found' })
+    }
+
+    if (!msg.archivedBy) msg.archivedBy = []
+    const idx = msg.archivedBy.findIndex(eid => eid.toString() === employeeId.toString())
+
+    let isArchived = false
+    if (idx > -1) {
+      msg.archivedBy.splice(idx, 1)
+      isArchived = false
+    } else {
+      msg.archivedBy.push(employeeId)
+      isArchived = true
+    }
+
+    await msg.save()
+
+    return res.status(200).json({
+      success: true,
+      message: isArchived ? 'Message archived' : 'Message unarchived',
+      isArchived
+    })
+  } catch (error) {
+    console.error(`[API Error] Error toggling archive message:`, error)
     return res.status(500).json({ success: false, message: 'Server error', error: error.message })
   }
 }

@@ -13,6 +13,9 @@ function AdminMessagingCenter({ currentUser, showToast }) {
   const [message, setMessage] = useState('')
   const [attachment, setAttachment] = useState(null)
   const [attachmentName, setAttachmentName] = useState('')
+  const [priority, setPriority] = useState('normal') // 'normal' | 'important' | 'urgent'
+  const [scheduleMode, setScheduleMode] = useState('now') // 'now' | 'later'
+  const [scheduledFor, setScheduledFor] = useState('')
   const [sending, setSending] = useState(false)
 
   // Broadcast Message Form States
@@ -20,6 +23,10 @@ function AdminMessagingCenter({ currentUser, showToast }) {
   const [broadcastMessage, setBroadcastMessage] = useState('')
   const [broadcastAttachment, setBroadcastAttachment] = useState(null)
   const [broadcastAttachmentName, setBroadcastAttachmentName] = useState('')
+  const [broadcastPriority, setBroadcastPriority] = useState('normal')
+  const [broadcastTeam, setBroadcastTeam] = useState('All') // 'All' | 'BDA' | 'Development' | 'HR' | 'Management'
+  const [broadcastScheduleMode, setBroadcastScheduleMode] = useState('now')
+  const [broadcastScheduledFor, setBroadcastScheduledFor] = useState('')
   const [broadcasting, setBroadcasting] = useState(false)
   const [broadcastResult, setBroadcastResult] = useState(null) // { total, sent, failed }
 
@@ -112,18 +119,25 @@ function AdminMessagingCenter({ currentUser, showToast }) {
     setSending(true)
     try {
       const token = localStorage.getItem('aparaitech_token')
+      const payload = {
+        subject,
+        message,
+        attachment,
+        priority,
+        scheduledFor: scheduleMode === 'later' ? scheduledFor : null
+      }
       
       let res
       if (selectedEmpIds.length === 1) {
         res = await axios.post(
           `${API_URL}/api/messages/send/${selectedEmpIds[0]}`,
-          { subject, message, attachment },
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         )
       } else {
         res = await axios.post(
           `${API_URL}/api/messages/send-bulk`,
-          { employeeIds: selectedEmpIds, subject, message, attachment },
+          { employeeIds: selectedEmpIds, ...payload },
           { headers: { Authorization: `Bearer ${token}` } }
         )
       }
@@ -158,7 +172,11 @@ function AdminMessagingCenter({ currentUser, showToast }) {
       return
     }
 
-    if (!window.confirm('⚠️ WARNING: You are broadcasting this email to ALL active employees. Proceed?')) return
+    const confirmMsg = broadcastTeam === 'All'
+      ? '⚠️ WARNING: You are broadcasting this message to ALL active employees. Proceed?'
+      : `⚠️ WARNING: You are broadcasting this message to team "${broadcastTeam}". Proceed?`
+
+    if (!window.confirm(confirmMsg)) return
 
     setBroadcasting(true)
     setBroadcastResult(null)
@@ -166,7 +184,14 @@ function AdminMessagingCenter({ currentUser, showToast }) {
       const token = localStorage.getItem('aparaitech_token')
       const res = await axios.post(
         `${API_URL}/api/messages/broadcast`,
-        { subject: broadcastSubject, message: broadcastMessage, attachment: broadcastAttachment },
+        {
+          subject: broadcastSubject,
+          message: broadcastMessage,
+          attachment: broadcastAttachment,
+          priority: broadcastPriority,
+          targetTeam: broadcastTeam,
+          scheduledFor: broadcastScheduleMode === 'later' ? broadcastScheduledFor : null
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
@@ -431,6 +456,62 @@ function AdminMessagingCenter({ currentUser, showToast }) {
               </div>
             </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Priority Level:</label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  style={{
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.88rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  <option value="normal">⚪ Normal Priority</option>
+                  <option value="important">🟠 Important Priority</option>
+                  <option value="urgent">🔴 Urgent Priority</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Delivery Timing:</label>
+                <select
+                  value={scheduleMode}
+                  onChange={(e) => setScheduleMode(e.target.value)}
+                  style={{
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.88rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  <option value="now">⚡ Send Immediately</option>
+                  <option value="later">⏰ Schedule for Later</option>
+                </select>
+              </div>
+
+              {scheduleMode === 'later' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Schedule Date & Time:</label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledFor}
+                    onChange={(e) => setScheduledFor(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.88rem'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
             <button 
               type="submit"
               className="g-button success"
@@ -503,6 +584,83 @@ function AdminMessagingCenter({ currentUser, showToast }) {
                   </span>
                 )}
               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Recipient Audience:</label>
+                <select
+                  value={broadcastTeam}
+                  onChange={(e) => setBroadcastTeam(e.target.value)}
+                  style={{
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.88rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  <option value="All">👥 All Active Employees</option>
+                  <option value="BDA">📈 Business Development (BDA)</option>
+                  <option value="Development">💻 Software Development</option>
+                  <option value="HR">🤝 Human Resources (HR)</option>
+                  <option value="Management">🏢 Leadership / Management</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Priority Level:</label>
+                <select
+                  value={broadcastPriority}
+                  onChange={(e) => setBroadcastPriority(e.target.value)}
+                  style={{
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.88rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  <option value="normal">⚪ Normal Priority</option>
+                  <option value="important">🟠 Important Priority</option>
+                  <option value="urgent">🔴 Urgent Priority</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Delivery Timing:</label>
+                <select
+                  value={broadcastScheduleMode}
+                  onChange={(e) => setBroadcastScheduleMode(e.target.value)}
+                  style={{
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.88rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  <option value="now">⚡ Send Immediately</option>
+                  <option value="later">⏰ Schedule for Later</option>
+                </select>
+              </div>
+
+              {broadcastScheduleMode === 'later' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#64748b' }}>Schedule Date & Time:</label>
+                  <input
+                    type="datetime-local"
+                    value={broadcastScheduledFor}
+                    onChange={(e) => setBroadcastScheduledFor(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.88rem'
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             <button 

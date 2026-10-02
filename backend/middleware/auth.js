@@ -93,3 +93,14 @@ export const adminOnly = (req, res, next) => {
     })
   }
 }
+
+export const managerOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'hr')) {
+    next()
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden: Access restricted to managers and administrators only"
+    })
+  }
+}

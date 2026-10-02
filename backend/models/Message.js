@@ -32,7 +32,24 @@ const MessageSchema = new mongoose.Schema({
     enum: ['delivered', 'failed', 'pending'],
     default: 'pending'
   },
+  priority: {
+    type: String,
+    enum: ['normal', 'important', 'urgent'],
+    default: 'normal'
+  },
+  targetTeam: {
+    type: String,
+    default: 'All'
+  },
+  scheduledFor: {
+    type: Date,
+    default: null
+  },
   readBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Employee'
+  }],
+  archivedBy: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Employee'
   }]
