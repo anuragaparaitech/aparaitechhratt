@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import * as faceapi from 'face-api.js'
 import { employeeAPI, faceAPI, API_URL } from '../services/api'
 import WebcamCaptureModal from './WebcamCaptureModal'
+import { SHIFTS } from '../utils/shiftsAndGeo'
 
 const MODELS_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights'
 const MIN_FACE_SCORE = 0.60
@@ -24,6 +25,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
   const [dob, setDob] = useState('')
   const [designation, setDesignation] = useState('')
   const [department, setDepartment] = useState('Development')
+  const [shift, setShift] = useState('shift_1')
   const [status, setStatus] = useState('active')
   const [profileImage, setProfileImage] = useState('')
   const [profilePreview, setProfilePreview] = useState('')
@@ -57,6 +59,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       setDob(employee.dob || '')
       setDesignation(employee.designation || '')
       setDepartment(employee.department || 'Development')
+      setShift(employee.shift || (employee.department === 'Development' || employee.department === 'Software Development' ? 'shift_1' : 'shift_2'))
       setStatus(employee.status || 'active')
       setProfileImage(employee.profileImageUrl || '')
       setProfilePreview(employee.profileImageUrl ? `${API_URL}${employee.profileImageUrl}` : '')
@@ -247,6 +250,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
         dob: dob,
         designation: designation.trim(),
         department,
+        shift,
         status
       }
 
@@ -266,6 +270,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       employee.phone = res.employee.phone
       employee.designation = res.employee.designation
       employee.department = res.employee.department
+      employee.shift = res.employee.shift
       employee.status = res.employee.status
       employee.profileImageUrl = res.employee.profileImageUrl
       setProfilePreview(res.employee.profileImageUrl ? `${API_URL}${res.employee.profileImageUrl}` : '')
@@ -470,11 +475,24 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                     </div>
                     <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                       <div style={{ flex: 1, minWidth: '220px' }}>
-                        <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Joining Date</small>
-                        <p style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: 600, margin: '4px 0 0' }}>{employee.joinDate || '—'}</p>
+                        <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Shift</small>
+                        <div style={{ marginTop: '4px' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            background: (SHIFTS[shift] || SHIFTS.shift_1).color,
+                            color: '#fff',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            padding: '3px 9px',
+                            borderRadius: '6px'
+                          }}>
+                            {(SHIFTS[shift] || SHIFTS.shift_1).label}
+                          </span>
+                        </div>
                       </div>
                       <div style={{ flex: 1, minWidth: '220px' }}>
-                        {/* Empty spacing block */}
+                        <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Joining Date</small>
+                        <p style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: 600, margin: '4px 0 0' }}>{employee.joinDate || '—'}</p>
                       </div>
                     </div>
 
@@ -578,12 +596,6 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                         />
                       </div>
                       <div style={{ flex: 1, minWidth: '220px' }}>
-                        {/* Empty/aligned */}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
-                      <div style={{ flex: 1, minWidth: '220px' }}>
                         <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Department *</label>
                         <select
                           className="auth-input"
@@ -593,13 +605,33 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                           style={{ margin: '4px 0 0', width: '100%', height: '42px' }}
                         >
                           <option value="Development">Development</option>
+                          <option value="Software Development">Software Development</option>
                           <option value="Design">Design</option>
                           <option value="Marketing">Marketing</option>
                           <option value="Sales">Sales</option>
+                          <option value="BDA">BDA</option>
                           <option value="HR">HR</option>
                           <option value="Finance">Finance</option>
                           <option value="Operations">Operations</option>
                           <option value="Management">Management</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: '220px' }}>
+                        <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Work Shift *</label>
+                        <select
+                          className="auth-input"
+                          value={shift}
+                          onChange={e => setShift(e.target.value)}
+                          disabled={!isAdmin}
+                          required
+                          style={{ margin: '4px 0 0', width: '100%', height: '42px' }}
+                        >
+                          <option value="shift_1">Shift 1 (07:00 AM - 11:00 AM) • Software</option>
+                          <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM) • BDA Phase 1</option>
+                          <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM) • BDA Phase 2</option>
                         </select>
                       </div>
                       <div style={{ flex: 1, minWidth: '220px' }}>

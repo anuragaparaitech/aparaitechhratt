@@ -3,7 +3,7 @@ import ActiveSession from '../models/ActiveSession.js'
 import Employee from '../models/Employee.js'
 import Holiday from '../models/Holiday.js'
 import AuditLog from '../models/AuditLog.js'
-import { getAttendanceStatus, getStatusReason, calcHours, timeToMinutes } from '../utils/helpers.js'
+import { getAttendanceStatus, getStatusReason, calcHours, timeToMinutes, SHIFTS, GEOFENCE, isWithinGeofence } from '../utils/helpers.js'
 import {
   sendCheckInEmail,
   sendCheckOutEmail,
@@ -92,13 +92,33 @@ export const getAttendanceRecords = async (req, res) => {
 }
 
 export const checkIn = async (req, res) => {
-  const { email, checkInTime } = req.body
+  const { email, checkInTime, latitude, longitude } = req.body
   const today = new Date().toISOString().split('T')[0]
   
   try {
     const employee = await Employee.findOne({ email: email.toLowerCase() })
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' })
+    }
+
+    // Geofence Validation: Optenix Tech Solution (Lat: 18.5962139, Lon: 73.7185487, Radius: 200m)
+    let locationVerified = null
+    let locationDistanceMeters = null
+    if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
+      const geoCheck = isWithinGeofence(latitude, longitude)
+      locationDistanceMeters = geoCheck.distance
+      locationVerified = geoCheck.within
+
+      // 250m threshold allows reasonable tolerance for indoor smartphone GPS drift
+      if (!geoCheck.within && geoCheck.distance > 250) {
+        console.warn(`[Geofence Block] ${employee.email} attempted check-in ${geoCheck.distance}m away from ${geoCheck.officeName}`)
+        return res.status(403).json({
+          message: `Location outside office premises (${geoCheck.officeName}). You are ${geoCheck.distance}m away (allowed within ${geoCheck.allowedRadius}m). Attendance must be marked at office.`,
+          distance: geoCheck.distance,
+          allowedRadius: geoCheck.allowedRadius,
+          officeName: geoCheck.officeName
+        })
+      }
     }
     
     // Check if employee is already checked in for today
@@ -112,6 +132,9 @@ export const checkIn = async (req, res) => {
     if (completedAttendance) {
       return res.status(400).json({ message: 'Attendance already completed for today' })
     }
+
+    const assignedShift = employee.shift || (employee.department === 'Development' ? 'shift_1' : 'shift_2')
+    const shiftInfo = SHIFTS[assignedShift] || SHIFTS.shift_1
     
     const session = new ActiveSession({
       employeeEmail: employee.email,
@@ -119,7 +142,10 @@ export const checkIn = async (req, res) => {
       name: employee.name,
       department: employee.department,
       checkInTime,
-      date: today
+      date: today,
+      shift: assignedShift,
+      latitude: latitude || null,
+      longitude: longitude || null
     })
     await session.save()
 
@@ -134,7 +160,12 @@ export const checkIn = async (req, res) => {
       checkOut: '',
       workingHours: '—',
       status: 'pending',
-      statusReason: 'Active check-in (pending check-out)'
+      statusReason: `Active check-in [${shiftInfo.name}]`,
+      shift: assignedShift,
+      latitude: latitude || null,
+      longitude: longitude || null,
+      locationVerified,
+      locationDistanceMeters
     })
     await attendanceRecord.save()
 
@@ -143,20 +174,50 @@ export const checkIn = async (req, res) => {
       console.error('Non-blocking check-in email error:', err.message)
     })
     
-    res.status(201).json({ message: 'Checked in successfully', session })
+    res.status(201).json({
+      message: 'Checked in successfully',
+      session,
+      shift: shiftInfo,
+      geofence: locationDistanceMeters !== null ? {
+        verified: locationVerified,
+        distanceMeters: locationDistanceMeters,
+        officeName: GEOFENCE.name
+      } : null
+    })
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
 
 export const checkOut = async (req, res) => {
-  const { email, checkOutTime } = req.body
+  const { email, checkOutTime, latitude, longitude } = req.body
   const today = new Date().toISOString().split('T')[0]
   
   try {
     const session = await ActiveSession.findOne({ employeeEmail: email.toLowerCase(), date: today })
     if (!session) {
       return res.status(400).json({ message: 'No active check-in found for today' })
+    }
+
+    const employee = await Employee.findOne({ email: email.toLowerCase() })
+
+    // Geofence Validation if coordinates provided
+    let locationVerified = null
+    let locationDistanceMeters = null
+    if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
+      const geoCheck = isWithinGeofence(latitude, longitude)
+      locationDistanceMeters = geoCheck.distance
+      locationVerified = geoCheck.within
+
+      if (!geoCheck.within && geoCheck.distance > 250) {
+        console.warn(`[Geofence Block] ${email} attempted check-out ${geoCheck.distance}m away from ${geoCheck.officeName}`)
+        return res.status(403).json({
+          message: `Location outside office premises (${geoCheck.officeName}). You are ${geoCheck.distance}m away (allowed within ${geoCheck.allowedRadius}m).`,
+          distance: geoCheck.distance,
+          allowedRadius: geoCheck.allowedRadius,
+          officeName: geoCheck.officeName
+        })
+      }
     }
     
     // Check if today is a holiday
@@ -170,9 +231,12 @@ export const checkOut = async (req, res) => {
       }
     }
 
-    // Calculate details
-    let status = getAttendanceStatus(session.checkInTime, checkOutTime)
-    let statusReason = getStatusReason(session.checkInTime, checkOutTime)
+    const assignedShift = session.shift || (employee && employee.shift) || (session.department === 'Development' ? 'shift_1' : 'shift_2')
+    const shiftInfo = SHIFTS[assignedShift] || SHIFTS.shift_1
+
+    // Calculate status and reason according to assigned shift
+    let status = getAttendanceStatus(session.checkInTime, checkOutTime, assignedShift)
+    let statusReason = getStatusReason(session.checkInTime, checkOutTime, assignedShift)
     
     if (isHoliday) {
       status = 'worked-on-holiday'
@@ -181,7 +245,7 @@ export const checkOut = async (req, res) => {
 
     const workingHours = calcHours(session.checkInTime, checkOutTime)
     
-    // Check if record exists (e.g. manual update existed, though unlikely)
+    // Check if record exists
     let record = await Attendance.findOne({ employeeEmail: email.toLowerCase(), date: today })
     
     if (record) {
@@ -190,6 +254,11 @@ export const checkOut = async (req, res) => {
       record.status = status
       record.workingHours = workingHours
       record.statusReason = statusReason
+      record.shift = assignedShift
+      if (latitude !== undefined) record.latitude = latitude
+      if (longitude !== undefined) record.longitude = longitude
+      if (locationVerified !== null) record.locationVerified = locationVerified
+      if (locationDistanceMeters !== null) record.locationDistanceMeters = locationDistanceMeters
       await record.save()
     } else {
       record = new Attendance({
@@ -202,7 +271,12 @@ export const checkOut = async (req, res) => {
         checkOut: checkOutTime,
         status,
         workingHours,
-        statusReason
+        statusReason,
+        shift: assignedShift,
+        latitude: latitude || null,
+        longitude: longitude || null,
+        locationVerified,
+        locationDistanceMeters
       })
       await record.save()
     }
@@ -210,8 +284,8 @@ export const checkOut = async (req, res) => {
     // Remove active check-in session
     await ActiveSession.deleteOne({ _id: session._id })
 
-    // Calculate if early checkout (Expected Closing time is 18:30)
-    const expectedOutMin = 18 * 60 + 30 // 1110 minutes
+    // Calculate if early checkout based on assigned shift end time
+    const expectedOutMin = shiftInfo.endMin - shiftInfo.graceMinutes
     const checkoutMinutes = timeToMinutes(checkOutTime)
     const isEarly = !isHoliday && checkoutMinutes ? (checkoutMinutes < expectedOutMin) : false
     const earlyDiff = isEarly ? (expectedOutMin - checkoutMinutes) : 0
@@ -253,29 +327,21 @@ export const checkOut = async (req, res) => {
 }
 
 export const manualMark = async (req, res) => {
-  const { email, date, status, checkIn, checkOut } = req.body
+  const { email, date, status, checkIn, checkOut, shift } = req.body
   
   try {
     const employee = await Employee.findOne({ email: email.toLowerCase() })
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' })
     }
+
+    const assignedShift = shift || employee.shift || (employee.department === 'Development' ? 'shift_1' : 'shift_2')
     
     let finalStatus = status
     if (checkIn && !checkOut) {
       finalStatus = 'pending'
     } else if (!finalStatus && checkIn && checkOut) {
-      const inMin = timeToMinutes(checkIn)
-      const outMin = timeToMinutes(checkOut)
-      const diffMin = outMin - inMin
-      
-      if (diffMin >= 480) { // 8 hours or more
-        finalStatus = 'full-day'
-      } else if (diffMin >= 240) { // 4 hours or more
-        finalStatus = 'half-day'
-      } else {
-        finalStatus = 'quarter-day'
-      }
+      finalStatus = getAttendanceStatus(checkIn, checkOut, assignedShift)
     }
     if (!finalStatus) finalStatus = 'full-day'
 
@@ -287,7 +353,7 @@ export const manualMark = async (req, res) => {
     } else if (checkIn && !checkOut) {
       statusReason = 'Active check-in (pending check-out)'
     } else if (checkIn && checkOut) {
-      statusReason = `Manually marked by Admin (${checkIn} - ${checkOut})`
+      statusReason = getStatusReason(checkIn, checkOut, assignedShift) || `Manually marked by Admin (${checkIn} - ${checkOut})`
     }
     
     const workingHours = (status === 'holiday' || !checkOut) ? '—' : calcHours(checkIn, checkOut)
@@ -301,6 +367,7 @@ export const manualMark = async (req, res) => {
       record.status = finalStatus
       record.workingHours = workingHours
       record.statusReason = statusReason
+      record.shift = assignedShift
       record.markedBy = 'Admin'
       await record.save()
     } else {
@@ -315,6 +382,7 @@ export const manualMark = async (req, res) => {
         status: finalStatus,
         workingHours,
         statusReason,
+        shift: assignedShift,
         markedBy: 'Admin'
       })
       await record.save()

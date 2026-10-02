@@ -40,6 +40,11 @@ const EmployeeSchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  shift: {
+    type: String,
+    enum: ['shift_1', 'shift_2', 'shift_3'],
+    default: 'shift_1'
+  },
   phone: {
     type: String
   },

@@ -15,29 +15,31 @@ if (!fs.existsSync(PROFILE_UPLOADS_DIR)) {
 
 const DEFAULT_PWD = 'Aparaitech123@'
 
-// Predefined Active Employees (7086 - 7102 + Anurag Nand, Vivek Jagtap, Mahesh)
+// Predefined Active Employees:
+// - Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
+// - BDA / Sales Active Members -> Shift 2 (11:00 AM - 05:00 PM)
 const activeEmployeesList = [
-  { empId: '7086', name: 'Disha Kale', email: 'kaledisha868@gmail.com', phone: '8767416802', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7088', name: 'Shweta Vijay Chougale', email: 'shwetachougale2004@gmail.com', phone: '8010252987', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7089', name: 'Dnyaneshwari Sanjay Dandagawhal', email: 'dandagaehaldnyaneshwari@gmail.com', phone: '9307293946', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7090', name: 'Sejal Milind Pethe', email: 'sejalpethe640@gmail.com', phone: '7058668138', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7091', name: 'Anmol Mohan Ugale', email: 'anmolugale13@gmail.com', phone: '9021625125', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7092', name: 'Shraddha Dipak Dhepe', email: 'shraddhadhepe610@gmail.com', phone: '8208591006', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7094', name: 'Shital Kantilal Bhade', email: 'shitalbhade74@gmail.com', phone: '8830292849', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7095', name: 'Vaishnavi Deepak Patil', email: 'patilvaishnavi30102003@gmail.com', phone: '7709232088', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7096', name: 'Ashvini Sanjay Rajput', email: 'rajputashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7097', name: 'Vikesh Kumar', email: 'kvikesh535@gmail.com', phone: '8793039515', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7100', name: 'Tanmay Bhapkar', email: 'bhapkartanmay88@gmail.com', phone: '9172875676', department: 'BDA', designation: 'BDA', status: 'active' },
-  { empId: '7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', phone: '7666921571', department: 'Development', designation: 'Software developer', status: 'active' },
-  { empId: '7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', phone: '7249830281', department: 'Development', designation: 'Software developer', status: 'active' },
-  // Core Active Team Members
-  { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Development', designation: 'Software developer', status: 'active' },
-  { empId: '7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active' },
-  { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active' }
+  { empId: '7086', name: 'Disha Kale', email: 'kaledisha868@gmail.com', phone: '8767416802', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7088', name: 'Shweta Vijay Chougale', email: 'shwetachougale2004@gmail.com', phone: '8010252987', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7089', name: 'Dnyaneshwari Sanjay Dandagawhal', email: 'dandagaehaldnyaneshwari@gmail.com', phone: '9307293946', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7090', name: 'Sejal Milind Pethe', email: 'sejalpethe640@gmail.com', phone: '7058668138', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7091', name: 'Anmol Mohan Ugale', email: 'anmolugale13@gmail.com', phone: '9021625125', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7092', name: 'Shraddha Dipak Dhepe', email: 'shraddhadhepe610@gmail.com', phone: '8208591006', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7094', name: 'Shital Kantilal Bhade', email: 'shitalbhade74@gmail.com', phone: '8830292849', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7095', name: 'Vaishnavi Deepak Patil', email: 'patilvaishnavi30102003@gmail.com', phone: '7709232088', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7096', name: 'Ashvini Sanjay Rajput', email: 'rajputashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7097', name: 'Vikesh Kumar', email: 'kvikesh535@gmail.com', phone: '8793039515', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: '7100', name: 'Tanmay Bhapkar', email: 'bhapkartanmay88@gmail.com', phone: '9172875676', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  // Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
+  { empId: '7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', phone: '7666921571', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: '7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', phone: '7249830281', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: '7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' }
 ]
 
 
@@ -121,6 +123,7 @@ export const seedDatabase = async () => {
         if (emp.phone) existingEmp.phone = emp.phone
         if (emp.department) existingEmp.department = emp.department
         if (emp.designation) existingEmp.designation = emp.designation
+        existingEmp.shift = emp.shift || (existingEmp.department === 'Development' ? 'shift_1' : 'shift_2')
         await existingEmp.save()
       } else {
         await Employee.create({
@@ -132,7 +135,8 @@ export const seedDatabase = async () => {
           designation: emp.designation || '',
           phone: emp.phone || '',
           role: 'employee',
-          status: 'active'
+          status: 'active',
+          shift: emp.shift || (emp.department === 'Development' ? 'shift_1' : 'shift_2')
         })
       }
     }
@@ -169,7 +173,7 @@ export const getAllEmployees = async (req, res) => {
 }
 
 export const addEmployee = async (req, res) => {
-  const { empId, name, email, department, password, joiningDate, phone, dob } = req.body
+  const { empId, name, email, department, password, joiningDate, phone, dob, shift } = req.body
   
   try {
     const existingEmail = await Employee.findOne({ email: email.toLowerCase() })
@@ -210,6 +214,7 @@ export const addEmployee = async (req, res) => {
       department,
       role: 'employee',
       status: 'active',
+      shift: shift || (department === 'Development' ? 'shift_1' : 'shift_2'),
       joinDate: joiningDate || new Date().toISOString().split('T')[0],
       phone: phone || '',
       dob: dob || ''
@@ -275,7 +280,7 @@ export const deleteAllEmployees = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
   const { email } = req.params
-  const { name, phone, designation, department, status, profileImageBase64, dob } = req.body
+  const { name, phone, designation, department, status, profileImageBase64, dob, shift } = req.body
 
   try {
     const employee = await Employee.findOne({ email: email.toLowerCase() })
@@ -289,6 +294,7 @@ export const updateEmployee = async (req, res) => {
     if (designation !== undefined) employee.designation = designation
     if (department !== undefined) employee.department = department
     if (status !== undefined) employee.status = status
+    if (shift !== undefined) employee.shift = shift
 
     // Handle base64 profile image if provided
     if (profileImageBase64) {

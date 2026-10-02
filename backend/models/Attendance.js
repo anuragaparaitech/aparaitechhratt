@@ -78,6 +78,25 @@ const AttendanceSchema = new mongoose.Schema({
   },
   faceVerifiedAt: {
     type: Date // Timestamp of verification
+  },
+  // Shift and Geofence Verification Fields
+  shift: {
+    type: String,
+    enum: ['shift_1', 'shift_2', 'shift_3'],
+    default: 'shift_1'
+  },
+  latitude: {
+    type: Number
+  },
+  longitude: {
+    type: Number
+  },
+  locationVerified: {
+    type: Boolean,
+    default: null
+  },
+  locationDistanceMeters: {
+    type: Number
   }
 }, {
   timestamps: true

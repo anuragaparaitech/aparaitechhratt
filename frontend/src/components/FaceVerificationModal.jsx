@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import * as faceapi from 'face-api.js'
 import { API_URL } from '../services/api'
+import { getCurrentGpsLocation, GEOFENCE } from '../utils/shiftsAndGeo'
 
 /**
  * FaceVerificationModal — FIXED
@@ -85,6 +86,16 @@ function FaceVerificationModal({
   const [bgLoading, setBgLoading] = useState(false) // models loading in background
   const [bgReady, setBgReady] = useState(false)     // models + descriptor ready
 
+  // ── Geofence GPS State ──────────────────────────────────────────────────────
+  const [gpsData, setGpsData] = useState({
+    loading: true,
+    coords: null,
+    error: null,
+    distance: null,
+    isWithin: null,
+    message: ''
+  })
+
   const MAX_RETRIES = 3
   const modeLabel = mode === 'checkin' ? 'Check-In' : 'Check-Out'
   const modeColor = mode === 'checkin' ? '#22c55e' : '#ef4444'
@@ -113,6 +124,7 @@ function FaceVerificationModal({
     setRetryCount(0)
     setBgLoading(false)
     setBgReady(false)
+    setGpsData({ loading: true, coords: null, error: null, distance: null, isWithin: null, message: '' })
   }, [stopStream])
 
   // ── Lifecycle: open / close ─────────────────────────────────────────────────
@@ -121,6 +133,32 @@ function FaceVerificationModal({
       log('Modal opened — starting camera immediately')
       setRetryCount(0)
       startCameraThenLoad()
+
+      // Fetch Geofence GPS location
+      setGpsData({ loading: true, coords: null, error: null, distance: null, isWithin: null, message: '' })
+      getCurrentGpsLocation(8000).then(res => {
+        if (res.success) {
+          setGpsData({
+            loading: false,
+            coords: { latitude: res.latitude, longitude: res.longitude },
+            distance: res.distance,
+            isWithin: res.isWithinGeofence,
+            error: null,
+            message: res.geoMessage
+          })
+          log(`GPS coordinates retrieved: lat ${res.latitude}, lon ${res.longitude}, distance ${res.distance}m, within: ${res.isWithinGeofence}`)
+        } else {
+          setGpsData({
+            loading: false,
+            coords: null,
+            distance: null,
+            isWithin: null,
+            error: res.error,
+            message: res.error
+          })
+          log(`GPS acquisition error: ${res.error}`)
+        }
+      })
     } else {
       fullReset()
     }
@@ -430,7 +468,7 @@ function FaceVerificationModal({
         setPhase('verified')
         setStatusMsg(`Face verified successfully! Similarity: ${similarity}%`)
         setTimeout(() => {
-          if (onVerified) onVerified(imageDataUrl, similarity)
+          if (onVerified) onVerified(imageDataUrl, similarity, gpsData.coords)
         }, 1500)
       } else {
         log(`Verification FAILED — similarity ${similarity}% below required ${MIN_CONFIDENCE_PCT}%`)
@@ -506,7 +544,7 @@ function FaceVerificationModal({
   // ── Skip (no face enrolled — let employee proceed without verification) ────
   const handleSkip = () => {
     log('User chose to proceed without face verification')
-    if (onVerified) onVerified(null, null)
+    if (onVerified) onVerified(null, null, gpsData.coords)
   }
 
   // ── Cancel ──────────────────────────────────────────────────────────────────
@@ -557,6 +595,46 @@ function FaceVerificationModal({
             </p>
           </div>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* ── Office Geofence Indicator ────────────────────────────────────────── */}
+        <div style={{
+          marginBottom: '1rem',
+          padding: '8px 12px',
+          borderRadius: '10px',
+          fontSize: '0.8rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '6px',
+          background: gpsData.loading ? '#f8fafc' : (gpsData.isWithin ? '#f0fdf4' : '#fef2f2'),
+          border: `1px solid ${gpsData.loading ? '#e2e8f0' : (gpsData.isWithin ? '#86efac' : '#fca5a5')}`,
+          color: gpsData.loading ? '#64748b' : (gpsData.isWithin ? '#166534' : '#991b1b')
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>📍</span>
+            <span>
+              <strong>{GEOFENCE.name}: </strong>
+              {gpsData.loading ? (
+                <span>Acquiring GPS location...</span>
+              ) : gpsData.error ? (
+                <span>⚠️ {gpsData.error}</span>
+              ) : gpsData.isWithin ? (
+                <span>Verified at office ({gpsData.distance}m away)</span>
+              ) : (
+                <span>Outside office ({gpsData.distance}m away / max {GEOFENCE.allowedRadiusMeters}m allowed)</span>
+              )}
+            </span>
+          </div>
+          <a
+            href={GEOFENCE.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#0284c7', fontSize: '0.74rem', textDecoration: 'underline', fontWeight: 600 }}
+          >
+            Office Map ↗
+          </a>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════

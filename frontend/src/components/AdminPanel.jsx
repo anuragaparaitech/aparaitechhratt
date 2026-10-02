@@ -9,6 +9,7 @@ import HolidayTable from './HolidayTable'
 import HolidayFormModal from './HolidayFormModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
 import OverallAttendance from './OverallAttendance'
+import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange }) {
   // Helper: is this section currently visible?
@@ -22,10 +23,12 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // Search & Filter States
   const [liveSearch, setLiveSearch] = useState('')
   const [empSearch, setEmpSearch] = useState('')
+  const [empShiftFilter, setEmpShiftFilter] = useState('')
   const [attNameSearch, setAttNameSearch] = useState('')
   const [attDateFilter, setAttDateFilter] = useState('')
   const [attStatusFilter, setAttStatusFilter] = useState('')
   const [attDeptFilter, setAttDeptFilter] = useState('')
+  const [attShiftFilter, setAttShiftFilter] = useState('')
   const [autoNameSearch, setAutoNameSearch] = useState('')
   const [autoDateFilter, setAutoDateFilter] = useState('')
   const [loadingLogs, setLoadingLogs] = useState(false)
@@ -39,7 +42,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // Reset limits when filters change
   useEffect(() => {
     setEmpLimit(5)
-  }, [empSearch])
+  }, [empSearch, empShiftFilter])
 
   useEffect(() => {
     setAutoLimit(5)
@@ -47,7 +50,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
 
   useEffect(() => {
     setAttLimit(5)
-  }, [attNameSearch, attDateFilter, attStatusFilter, attDeptFilter])
+  }, [attNameSearch, attDateFilter, attStatusFilter, attDeptFilter, attShiftFilter])
 
   // Modal States
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -180,11 +183,14 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   const filteredEmployees = employees.filter(emp => {
     if (emp.role === 'admin') return false
     const match = empSearch.toLowerCase()
-    return (
+    const textMatch = (
       (emp.name || '').toLowerCase().includes(match) ||
       (emp.empId || '').toLowerCase().includes(match) ||
       (emp.email || '').toLowerCase().includes(match)
     )
+    const empShift = emp.shift || (emp.department === 'Development' || emp.department === 'Software Development' ? 'shift_1' : 'shift_2')
+    const shiftMatch = empShiftFilter ? empShift === empShiftFilter : true
+    return textMatch && shiftMatch
   })
 
   const filteredAttendance = [...attendance].filter(rec => {
@@ -192,7 +198,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     const dateMatch = attDateFilter ? rec.date === attDateFilter : true
     const statusMatch = attStatusFilter ? rec.status === attStatusFilter : true
     const deptMatch = attDeptFilter ? (rec.department || '') === attDeptFilter : true
-    return nameMatch && dateMatch && statusMatch && deptMatch
+    const recShift = rec.shift || (rec.department === 'Development' || rec.department === 'Software Development' ? 'shift_1' : 'shift_2')
+    const shiftMatch = attShiftFilter ? recShift === attShiftFilter : true
+    return nameMatch && dateMatch && statusMatch && deptMatch && shiftMatch
   }).sort((a, b) => b.date.localeCompare(a.date))
 
   const autoCheckoutRecords = [...attendance].filter(rec => {
@@ -300,10 +308,17 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       alert('No attendance data available to export')
       return
     }
-    const data = [['Date', 'Emp ID', 'Employee', 'Department', 'Check-In', 'Check-Out', 'Hours', 'Status', 'Reason']]
-    attendance.forEach(r => data.push([
-      r.date, r.employeeId, r.employeeName, r.department, r.checkIn, r.checkOut, r.workingHours, r.status, r.statusReason
-    ]))
+    const data = [['Date', 'Emp ID', 'Employee', 'Department', 'Shift', 'Check-In', 'Check-Out', 'Hours', 'Status', 'Location', 'Reason']]
+    attendance.forEach(r => {
+      const sKey = r.shift || (r.department === 'Development' || r.department === 'Software Development' ? 'shift_1' : 'shift_2')
+      const shiftName = SHIFTS[sKey]?.name || r.shift || '—'
+      const loc = r.locationDistanceMeters !== undefined && r.locationDistanceMeters !== null
+        ? `${r.locationVerified ? 'Office' : 'Remote'} (${r.locationDistanceMeters}m)`
+        : '—'
+      data.push([
+        r.date, r.employeeId, r.employeeName, r.department, shiftName, r.checkIn, r.checkOut, r.workingHours, r.status, loc, r.statusReason
+      ])
+    })
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Attendance')
@@ -316,10 +331,17 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       alert('No filtered attendance records to export')
       return
     }
-    const data = [['Date', 'Emp ID', 'Employee', 'Dept', 'Check-In', 'Check-Out', 'Hours', 'Status']]
-    filteredAttendance.forEach(r => data.push([
-      r.date, r.employeeId, r.employeeName, r.department, r.checkIn, r.checkOut, r.workingHours, r.status
-    ]))
+    const data = [['Date', 'Emp ID', 'Employee', 'Dept', 'Shift', 'Check-In', 'Check-Out', 'Hours', 'Status', 'Location']]
+    filteredAttendance.forEach(r => {
+      const sKey = r.shift || (r.department === 'Development' || r.department === 'Software Development' ? 'shift_1' : 'shift_2')
+      const shiftName = SHIFTS[sKey]?.name || r.shift || '—'
+      const loc = r.locationDistanceMeters !== undefined && r.locationDistanceMeters !== null
+        ? `${r.locationVerified ? 'Office' : 'Remote'} (${r.locationDistanceMeters}m)`
+        : '—'
+      data.push([
+        r.date, r.employeeId, r.employeeName, r.department, shiftName, r.checkIn, r.checkOut, r.workingHours, r.status, loc
+      ])
+    })
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Filtered_Attendance')
@@ -333,10 +355,14 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       alert('No employee data available to export')
       return
     }
-    const data = [['Emp ID', 'Name', 'Email', 'Department', 'Status']]
-    activeEmps.forEach(e => data.push([
-      e.empId, e.name, e.email, e.department, e.status
-    ]))
+    const data = [['Emp ID', 'Name', 'Email', 'Department', 'Shift', 'Status']]
+    activeEmps.forEach(e => {
+      const sKey = e.shift || (e.department === 'Development' || e.department === 'Software Development' ? 'shift_1' : 'shift_2')
+      const shiftName = SHIFTS[sKey]?.name || e.shift || '—'
+      data.push([
+        e.empId, e.name, e.email, e.department, shiftName, e.status
+      ])
+    })
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Employees')
@@ -478,8 +504,10 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 <th>EMPLOYEE</th>
                 <th>EMP ID</th>
                 <th>DEPARTMENT</th>
+                <th>SHIFT</th>
                 <th>DATE</th>
                 <th>CHECK-IN TIME</th>
+                <th>LOCATION</th>
                 <th>STATUS</th>
                 <th>DETAILS</th>
               </tr>
@@ -500,6 +528,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                     const h12 = h % 12 === 0 ? 12 : h % 12
                     return `${String(h12).padStart(2, '0')}:${mStr} ${ampm}`
                   }
+
+                  const sKey = emp.shift || (emp.department === 'Development' || emp.department === 'Software Development' ? 'shift_1' : 'shift_2')
+                  const sInfo = SHIFTS[sKey] || SHIFTS.shift_1
 
                   return (
                     <tr
@@ -524,11 +555,33 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                       </td>
                       <td><strong>{emp.empId}</strong></td>
                       <td>{emp.department}</td>
+                      <td>
+                        <span style={{
+                          display: 'inline-block',
+                          background: sInfo.color,
+                          color: '#fff',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '2px 7px',
+                          borderRadius: '6px'
+                        }}>
+                          {sInfo.name.split(':')[0]}
+                        </span>
+                      </td>
                       <td style={{ fontWeight: 600, color: '#1e5a7a' }}>{formattedDate}</td>
                       <td>
                         <span className="status-badge status-checkedin" style={{ background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' }}>
                           🟢 {formatTime(emp.checkInTime)}
                         </span>
+                      </td>
+                      <td>
+                        {emp.latitude && emp.longitude ? (
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' }}>
+                            📍 Office Coordinates
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>—</span>
+                        )}
                       </td>
                       <td><span className="live-badge">● Active</span></td>
                       <td>
@@ -545,7 +598,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 })
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '28px' }}>
+                  <td colSpan="9" style={{ textAlign: 'center', color: '#64748b', padding: '28px' }}>
                     <div style={{ fontSize: '2rem', marginBottom: '6px' }}>🕐</div>
                     No employees have checked in today yet.
                   </td>
@@ -621,10 +674,23 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               {[
                 { icon: '🪪', label: 'Employee ID', value: emp.empId },
                 { icon: '🏢', label: 'Department', value: emp.department },
+                {
+                  icon: '⏰', label: 'Assigned Shift',
+                  value: (() => {
+                    const sKey = emp.shift || (emp.department === 'Development' || emp.department === 'Software Development' ? 'shift_1' : 'shift_2')
+                    return SHIFTS[sKey]?.name || '—'
+                  })()
+                },
                 { icon: '📅', label: 'Check-In Date', value: formattedDate },
                 { icon: '⏰', label: 'Check-In Time', value: formatTime(emp.checkInTime) },
                 { icon: '🚪', label: 'Check-Out Time', value: attRec?.checkOut ? formatTime(attRec.checkOut) : 'Not yet checked out' },
                 { icon: '📊', label: 'Attendance Status', value: attRec?.status ? attRec.status.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Checked In (Pending)' },
+                {
+                  icon: '📍', label: 'Office Geofence',
+                  value: attRec?.locationDistanceMeters !== undefined && attRec?.locationDistanceMeters !== null
+                    ? `${attRec.locationVerified ? '✅ Office Premises' : '⚠️ Remote'} (${attRec.locationDistanceMeters}m from ${GEOFENCE.name})`
+                    : 'Coordinates Recorded'
+                },
                 {
                   icon: '🔍', label: 'Face Verification',
                   value: attRec?.faceVerified === true
@@ -730,6 +796,17 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               value={empSearch}
               onChange={(e) => setEmpSearch(e.target.value)}
             />
+            <select
+              className="filter-input"
+              value={empShiftFilter}
+              onChange={(e) => setEmpShiftFilter(e.target.value)}
+              style={{ maxWidth: '240px' }}
+            >
+              <option value="">All Shifts</option>
+              <option value="shift_1">Shift 1 (07:00 AM - 11:00 AM) • Software</option>
+              <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM) • BDA Phase 1</option>
+              <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM) • BDA Phase 2</option>
+            </select>
             <button className="g-button success" onClick={() => setIsAddOpen(true)}>
               <i className="fas fa-user-plus"></i> Add Employee
             </button>
@@ -743,6 +820,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 <th>NAME</th>
                 <th>EMAIL</th>
                 <th>DEPT</th>
+                <th>SHIFT</th>
                 <th>STATUS</th>
                 <th>ACTIONS</th>
               </tr>
@@ -755,6 +833,25 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                     <td>{emp.name}</td>
                     <td>{emp.email}</td>
                     <td>{emp.department}</td>
+                    <td>
+                      {(() => {
+                        const sKey = emp.shift || (emp.department === 'Development' || emp.department === 'Software Development' ? 'shift_1' : 'shift_2')
+                        const sInfo = SHIFTS[sKey] || SHIFTS.shift_1
+                        return (
+                          <span style={{
+                            display: 'inline-block',
+                            background: sInfo.color,
+                            color: '#fff',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '3px 8px',
+                            borderRadius: '6px'
+                          }}>
+                            {sInfo.name.split(':')[0]}
+                          </span>
+                        )
+                      })()}
+                    </td>
                     <td>
                       <span className={`status-badge ${emp.status === 'active' ? 'status-active' : 'status-inactive'}`}>
                         {emp.status}
@@ -801,7 +898,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', color: '#64748b' }}>No employees found</td>
+                  <td colSpan="7" style={{ textAlign: 'center', color: '#64748b' }}>No employees found</td>
                 </tr>
               )}
             </tbody>
@@ -873,6 +970,16 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               <option value="half-day">Half Day</option>
               <option value="quarter-day">Quarter Day</option>
             </select>
+            <select 
+              className="filter-input" 
+              value={attShiftFilter}
+              onChange={(e) => setAttShiftFilter(e.target.value)}
+            >
+              <option value="">All Shifts</option>
+              <option value="shift_1">Shift 1 (07:00 AM - 11:00 AM)</option>
+              <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM)</option>
+              <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM)</option>
+            </select>
             <button 
               className="g-button excel" 
               onClick={handleExportFiltered} 
@@ -890,10 +997,12 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 <th>EMP ID</th>
                 <th>EMPLOYEE</th>
                 <th>DEPT</th>
+                <th>SHIFT</th>
                 <th>CHECK-IN</th>
                 <th>CHECK-OUT</th>
                 <th>HOURS</th>
                 <th>STATUS</th>
+                <th>LOCATION</th>
                 <th>VERIFICATION</th>
                 <th>SOURCE</th>
                 <th>ACTION</th>
@@ -902,13 +1011,13 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             <tbody>
               {loadingLogs ? (
                 <tr>
-                  <td colSpan="11" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                  <td colSpan="13" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
                     <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Loading attendance logs...
                   </td>
                 </tr>
               ) : logsError ? (
                 <tr>
-                  <td colSpan="11" style={{ textAlign: 'center', color: '#dc2626', padding: '20px', fontWeight: 'bold' }}>
+                  <td colSpan="13" style={{ textAlign: 'center', color: '#dc2626', padding: '20px', fontWeight: 'bold' }}>
                     ⚠️ Unable to load attendance logs. Please try again.
                   </td>
                 </tr>
@@ -943,6 +1052,25 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                       <td><strong>{rec.employeeId || '—'}</strong></td>
                       <td>{rec.employeeName}</td>
                       <td>{rec.department}</td>
+                      <td>
+                        {(() => {
+                          const sKey = rec.shift || (rec.department === 'Development' || rec.department === 'Software Development' ? 'shift_1' : 'shift_2')
+                          const sInfo = SHIFTS[sKey] || SHIFTS.shift_1
+                          return (
+                            <span style={{
+                              display: 'inline-block',
+                              background: sInfo.color,
+                              color: '#fff',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              padding: '2px 7px',
+                              borderRadius: '6px'
+                            }}>
+                              {sInfo.name.split(':')[0]}
+                            </span>
+                          )
+                        })()}
+                      </td>
                       <td>{rec.checkIn}</td>
                       <td>
                         {rec.checkOut || '—'}
@@ -954,6 +1082,20 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                       </td>
                       <td>{rec.workingHours || '—'}</td>
                       <td><span className={`status-badge ${cls}`} style={badgeStyle}>{txt}</span></td>
+                      <td>
+                        {rec.locationDistanceMeters !== undefined && rec.locationDistanceMeters !== null ? (
+                          <div style={{ fontSize: '0.78rem' }}>
+                            <span style={{ fontWeight: 600, color: rec.locationVerified ? '#16a34a' : '#dc2626' }}>
+                              {rec.locationVerified ? '📍 Office' : '⚠️ Remote'}
+                            </span>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                              {rec.locationDistanceMeters}m
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>—</span>
+                        )}
+                      </td>
                       <td>
                         {rec.faceVerified !== null && rec.faceVerified !== undefined ? (
                           <div>
@@ -995,7 +1137,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 })
               ) : (
                 <tr>
-                  <td colSpan="11" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                  <td colSpan="13" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
                     No attendance records found.
                   </td>
                 </tr>

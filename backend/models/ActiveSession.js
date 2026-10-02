@@ -26,6 +26,16 @@ const ActiveSessionSchema = new mongoose.Schema({
   date: {
     type: String,
     required: true // Format: YYYY-MM-DD
+  },
+  shift: {
+    type: String,
+    default: 'shift_1'
+  },
+  latitude: {
+    type: Number
+  },
+  longitude: {
+    type: Number
   }
 }, {
   timestamps: true

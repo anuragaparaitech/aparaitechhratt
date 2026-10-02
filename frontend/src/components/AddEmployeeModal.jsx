@@ -32,6 +32,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [department, setDepartment] = useState('Development')
+  const [shift, setShift] = useState('shift_1')
   const [password, setPassword] = useState('Aparaitech123@')
   const [joiningDate, setJoiningDate] = useState(() => new Date().toISOString().split('T')[0])
   const [phone, setPhone] = useState('')
@@ -61,6 +62,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
     setName('')
     setEmail('')
     setDepartment('Development')
+    setShift('shift_1')
     setPassword('Aparaitech123@')
     setJoiningDate(new Date().toISOString().split('T')[0])
     setPhone('')
@@ -321,6 +323,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         department,
+        shift,
         password: password || 'Aparaitech123@',
         joiningDate: joiningDate || new Date().toISOString().split('T')[0],
         phone: phone.trim(),
@@ -500,7 +503,15 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
               <select
                 className="auth-input"
                 value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setDepartment(val)
+                  if (val === 'Development' || val === 'Software Development') {
+                    setShift('shift_1')
+                  } else if (val === 'BDA' || val === 'Sales') {
+                    setShift('shift_2')
+                  }
+                }}
                 required
               >
                 <option value="BDA">BDA</option>
@@ -513,6 +524,19 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
                 <option value="Finance">Finance</option>
                 <option value="Operations">Operations</option>
                 <option value="Management">Management</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Work Shift *</label>
+              <select
+                className="auth-input"
+                value={shift}
+                onChange={(e) => setShift(e.target.value)}
+                required
+              >
+                <option value="shift_1">Shift 1: Software Developer (07:00 AM - 11:00 AM)</option>
+                <option value="shift_2">Shift 2: BDA Phase 1 (11:00 AM - 05:00 PM)</option>
+                <option value="shift_3">Shift 3: BDA Phase 2 (05:00 PM - 11:00 PM)</option>
               </select>
             </div>
             <div className="input-group">

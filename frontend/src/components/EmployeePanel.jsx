@@ -4,6 +4,7 @@ import { API_URL } from '../services/api'
 import ChangePwdModal from './ChangePwdModal'
 import FaceVerificationModal from './FaceVerificationModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
+import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   const [history, setHistory] = useState([])
@@ -68,13 +69,13 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   }, [currentUser.email])
 
   // ── Triggered by FaceVerificationModal after successful verification ──────────
-  const handleVerifiedCheckIn = async (capturedImageDataUrl, faceScore) => {
+  const handleVerifiedCheckIn = async (capturedImageDataUrl, faceScore, coords) => {
     setFaceVerifyOpen(false)
     setLoading(true)
     try {
       const time = getCurrentTimeStr()
       const today = new Date().toISOString().split('T')[0]
-      await attendanceAPI.checkIn(currentUser.email, time)
+      await attendanceAPI.checkIn(currentUser.email, time, coords)
       showToast(`✅ Checked in at ${time}`, '#22c55e')
       // Save photo + verification result asynchronously (non-blocking)
       if (capturedImageDataUrl) {
@@ -93,13 +94,13 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
     }
   }
 
-  const handleVerifiedCheckOut = async (capturedImageDataUrl, faceScore) => {
+  const handleVerifiedCheckOut = async (capturedImageDataUrl, faceScore, coords) => {
     setFaceVerifyOpen(false)
     setLoading(true)
     try {
       const time = getCurrentTimeStr()
       const today = new Date().toISOString().split('T')[0]
-      await attendanceAPI.checkOut(currentUser.email, time)
+      await attendanceAPI.checkOut(currentUser.email, time, coords)
       showToast(`✅ Checked out at ${time}`, '#22c55e')
       // Save photo + verification result asynchronously (non-blocking)
       if (capturedImageDataUrl) {
@@ -145,66 +146,98 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
       <div className="today-card">
         <h3><i className="fas fa-calendar-day" style={{ marginRight: '8px' }}></i> Today's Attendance Summary</h3>
         
-        <div className="today-info" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', margin: '1rem 0' }}>
-          <div>
-            <span>📅 Date: </span>
-            <strong>{getTodayStr()}</strong>
-          </div>
-          <div>
-            <span>🕐 Check-In: </span>
-            <strong>
-              {activeSession 
-                ? `${activeSession.checkInTime} (Active)` 
-                : (todayRecord ? todayRecord.checkIn : '—')}
-            </strong>
-          </div>
-          <div>
-            <span>🕒 Check-Out: </span>
-            <strong>
-              {todayRecord && todayRecord.checkOut ? todayRecord.checkOut : '—'}
-            </strong>
-          </div>
-          <div>
-            <span>📊 Status: </span>
-            <strong>
-              {activeSession ? (
-                '🟢 Working'
-              ) : todayRecord && todayRecord.checkOut ? (
-                <span className={`status-badge ${todayRecord.status === 'full-day' ? 'status-full' : (todayRecord.status === 'half-day' ? 'status-half' : 'status-quarter')}`}>
-                  {todayRecord.status === 'full-day' ? 'Full Day' : (todayRecord.status === 'half-day' ? 'Half Day' : 'Quarter Day')}
-                </span>
-              ) : (
-                '—'
-              )}
-            </strong>
-          </div>
-        </div>
+        {(() => {
+          const userShiftKey = currentUser?.shift || (currentUser?.department === 'Development' ? 'shift_1' : 'shift_2')
+          const userShift = SHIFTS[userShiftKey] || SHIFTS.shift_1
+          return (
+            <>
+              <div className="today-info" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', margin: '1rem 0' }}>
+                <div>
+                  <span>📅 Date: </span>
+                  <strong>{getTodayStr()}</strong>
+                </div>
+                <div>
+                  <span>⏰ Assigned Shift: </span>
+                  <span style={{
+                    background: userShift.color,
+                    color: '#fff',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    padding: '3px 8px',
+                    borderRadius: '6px'
+                  }}>
+                    {userShift.name} ({userShift.startTime} - {userShift.endTime})
+                  </span>
+                </div>
+                <div>
+                  <span>📍 Office Geofence: </span>
+                  <a
+                    href={GEOFENCE.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#0284c7', textDecoration: 'underline', fontWeight: 600, fontSize: '0.86rem' }}
+                  >
+                    {GEOFENCE.name} (200m) ↗
+                  </a>
+                </div>
+                <div>
+                  <span>🕐 Check-In: </span>
+                  <strong>
+                    {activeSession 
+                      ? `${activeSession.checkInTime} (Active)` 
+                      : (todayRecord ? todayRecord.checkIn : '—')}
+                  </strong>
+                </div>
+                <div>
+                  <span>🕒 Check-Out: </span>
+                  <strong>
+                    {todayRecord && todayRecord.checkOut ? todayRecord.checkOut : '—'}
+                  </strong>
+                </div>
+                <div>
+                  <span>📊 Status: </span>
+                  <strong>
+                    {activeSession ? (
+                      '🟢 Working'
+                    ) : todayRecord && todayRecord.checkOut ? (
+                      <span className={`status-badge ${todayRecord.status === 'full-day' ? 'status-full' : (todayRecord.status === 'half-day' ? 'status-half' : 'status-quarter')}`}>
+                        {todayRecord.status === 'full-day' ? 'Full Day' : (todayRecord.status === 'half-day' ? 'Half Day' : 'Quarter Day')}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </strong>
+                </div>
+              </div>
 
-        <div className="action-buttons" style={{ margin: '1rem 0 0.5rem' }}>
-          <button 
-            className="btn-checkin" 
-            onClick={handleCheckIn}
-            disabled={loading || activeSession !== null || (todayRecord && todayRecord.checkOut !== '')}
-            style={{ marginRight: '1rem' }}
-          >
-            <i className="fas fa-sign-in-alt" style={{ marginRight: '6px' }}></i> Check In
-          </button>
-          
-          <button 
-            className="btn-checkout" 
-            onClick={handleCheckOut}
-            disabled={loading || activeSession === null || (todayRecord && todayRecord.checkOut !== '')}
-          >
-            <i className="fas fa-sign-out-alt" style={{ marginRight: '6px' }}></i> Check Out
-          </button>
-        </div>
+              <div className="action-buttons" style={{ margin: '1rem 0 0.5rem' }}>
+                <button 
+                  className="btn-checkin" 
+                  onClick={handleCheckIn}
+                  disabled={loading || activeSession !== null || (todayRecord && todayRecord.checkOut !== '')}
+                  style={{ marginRight: '1rem' }}
+                >
+                  <i className="fas fa-sign-in-alt" style={{ marginRight: '6px' }}></i> Check In
+                </button>
+                
+                <button 
+                  className="btn-checkout" 
+                  onClick={handleCheckOut}
+                  disabled={loading || activeSession === null || (todayRecord && todayRecord.checkOut !== '')}
+                >
+                  <i className="fas fa-sign-out-alt" style={{ marginRight: '6px' }}></i> Check Out
+                </button>
+              </div>
 
-        <div className="rule-card">
-          <small>
-            <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i> 
-            <strong>Attendance Rules:</strong> Quarter Day (10:15-11:00 AM OR 5:00-7:00 PM) | Half Day (11:00 AM - 4:30 PM) | Full Day (10:15 AM - 19:00 PM).
-          </small>
-        </div>
+              <div className="rule-card">
+                <small>
+                  <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i> 
+                  <strong>Shift Rules ({userShift.name}):</strong> Shift hours {userShift.startTime} to {userShift.endTime} ({userShift.duration}). Full Day requires completing your shift hours. Check-in/out must be verified within {GEOFENCE.allowedRadiusMeters}m of {GEOFENCE.name}.
+                </small>
+              </div>
+            </>
+          )
+        })()}
       </div>
 
       {/* History & Stats Card */}
@@ -260,10 +293,12 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
             <thead>
               <tr>
                 <th>DATE</th>
+                <th>SHIFT</th>
                 <th>CHECK-IN</th>
                 <th>CHECK-OUT</th>
                 <th>HOURS</th>
                 <th>STATUS</th>
+                <th>LOCATION</th>
                 <th>SOURCE</th>
                 <th>REASON</th>
               </tr>
@@ -294,9 +329,25 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
                     badgeStyle = { background: '#f3e8ff', color: '#7e22ce', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
                   }
                   
+                  const sKey = rec.shift || (currentUser?.department === 'Development' ? 'shift_1' : 'shift_2')
+                  const sInfo = SHIFTS[sKey] || SHIFTS.shift_1
+
                   return (
                     <tr key={rec._id}>
                       <td>{rec.date}</td>
+                      <td>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '2px 7px',
+                          borderRadius: '6px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          color: '#fff',
+                          background: sInfo.color
+                        }}>
+                          {sInfo.name.split(':')[0]}
+                        </span>
+                      </td>
                       <td>{rec.checkIn}</td>
                       <td>
                         {rec.checkOut || '—'}
@@ -308,6 +359,22 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
                       </td>
                       <td>{rec.workingHours || '—'}</td>
                       <td><span className={`status-badge ${cls}`} style={badgeStyle}>{txt}</span></td>
+                      <td>
+                        {rec.locationDistanceMeters !== undefined && rec.locationDistanceMeters !== null ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: rec.locationVerified ? '#166534' : '#dc2626'
+                          }}>
+                            {rec.locationVerified ? '📍 Office' : '⚠️ Remote'} ({rec.locationDistanceMeters}m)
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>—</span>
+                        )}
+                      </td>
                       <td>
                         {rec.markedBy === 'Admin' ? (
                           <span style={{ background: '#fef3c7', color: '#d97706', padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
@@ -325,7 +392,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
                 })
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', color: '#64748b' }}>No personal history records found</td>
+                  <td colSpan="9" style={{ textAlign: 'center', color: '#64748b' }}>No personal history records found</td>
                 </tr>
               )}
             </tbody>

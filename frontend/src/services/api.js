@@ -116,12 +116,18 @@ export const attendanceAPI = {
     const response = await api.get('/api/attendance', { params: filters })
     return response.data
   },
-  checkIn: async (email, checkInTime) => {
-    const response = await api.post('/api/attendance/check-in', { email, checkInTime })
+  checkIn: async (email, checkInTime, coords = {}) => {
+    const payload = { email, checkInTime }
+    if (coords && coords.latitude !== undefined) payload.latitude = coords.latitude
+    if (coords && coords.longitude !== undefined) payload.longitude = coords.longitude
+    const response = await api.post('/api/attendance/check-in', payload)
     return response.data
   },
-  checkOut: async (email, checkOutTime) => {
-    const response = await api.post('/api/attendance/check-out', { email, checkOutTime })
+  checkOut: async (email, checkOutTime, coords = {}) => {
+    const payload = { email, checkOutTime }
+    if (coords && coords.latitude !== undefined) payload.latitude = coords.latitude
+    if (coords && coords.longitude !== undefined) payload.longitude = coords.longitude
+    const response = await api.post('/api/attendance/check-out', payload)
     return response.data
   },
   manualMark: async (attendanceData) => {
