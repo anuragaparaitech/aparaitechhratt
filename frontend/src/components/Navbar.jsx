@@ -3,6 +3,34 @@ import React from 'react'
 function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
   const isAdmin = currentUser.role === 'admin'
   const isManager = currentUser.role === 'manager' || currentUser.role === 'hr'
+  const [deferredPrompt, setDeferredPrompt] = React.useState(null)
+
+  React.useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+  }, [])
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null)
+      }
+    } else {
+      alert(
+        '💻 To Install Aparaitech Desktop App:\n\n' +
+        '1. Look at your Chrome address bar (top right) and click the "Install" icon (laptop with arrow icon).\n' +
+        'OR\n' +
+        '2. Click Chrome menu (⋮) -> "Save and share" -> "Install Aparaitech Work Portal".\n\n' +
+        'This opens the portal in a dedicated standalone window with desktop shortcut!'
+      )
+    }
+  }
   
   const getRoleLabel = () => {
     if (isAdmin) return 'Super Admin'
@@ -82,6 +110,28 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
             </div>
           </div>
         </div>
+        <button
+          className="install-app-btn"
+          onClick={handleInstallApp}
+          title="Install Aparaitech Work Portal on your desktop"
+          style={{
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(29, 78, 216, 0.25))',
+            color: '#60a5fa',
+            border: '1px solid rgba(96, 165, 250, 0.4)',
+            padding: '7px 12px',
+            borderRadius: '8px',
+            fontWeight: '700',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <i className="fas fa-download"></i>
+          <span>Install App</span>
+        </button>
         <button
           className="logout-btn"
           onClick={onLogout}
