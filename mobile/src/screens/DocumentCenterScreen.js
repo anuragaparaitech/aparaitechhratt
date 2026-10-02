@@ -135,7 +135,7 @@ export default function DocumentCenterScreen({ navigation }) {
                 <Text style={styles.idCompanyTag}>APARAITECH SOFTWARE</Text>
                 <Text style={styles.idEmpName}>{user?.name || 'Aparaitech Member'}</Text>
                 <Text style={styles.idEmpRole}>
-                  {user?.role === 'admin' ? 'Administrator' : user?.role === 'manager' ? 'Team Lead' : 'Associate Intern'} • {user?.department || 'Operations'}
+                  {user?.role === 'admin' ? 'Administrator' : user?.role === 'manager' ? 'Team Lead' : 'Associate'} • {user?.department || 'Operations'}
                 </Text>
               </View>
               <View style={styles.idBadgeWrap}>

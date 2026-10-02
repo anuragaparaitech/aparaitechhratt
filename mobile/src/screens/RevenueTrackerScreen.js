@@ -56,13 +56,13 @@ export default function RevenueTrackerScreen() {
       <View style={styles.headerBanner}>
         <Text style={styles.bannerTag}>💰 FINANCIAL YIELD DASHBOARD</Text>
         <Text style={styles.bannerTitle}>Commercial Revenue Tracker</Text>
-        <Text style={styles.bannerSub}>Real-time yield at ₹6,000 per confirmed student internship admission</Text>
+        <Text style={styles.bannerSub}>Real-time yield at ₹6,000 per confirmed product conversion</Text>
 
         <View style={styles.kpiTotalCard}>
           <Text style={styles.kpiTotalLabel}>TOTAL COMPANY RECORDED REVENUE</Text>
           <Text style={styles.kpiTotalVal}>₹{(summary.totalRevenue || 0).toLocaleString('en-IN')}</Text>
           <Text style={styles.kpiTotalSub}>
-            {summary.totalConversions || 0} total admissions • {summary.totalReports || 0} verified reports
+            {summary.totalConversions || 0} total product conversions • {summary.totalReports || 0} verified reports
           </Text>
         </View>
       </View>

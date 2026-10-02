@@ -254,7 +254,7 @@ function PerformanceDashboard({ currentUser, showToast }) {
           }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: '#93c5fd', textTransform: 'uppercase', fontWeight: '700' }}>
-                Monthly Internship Conversions
+                Monthly Product Conversions
               </div>
               <div style={{ fontSize: '2.4rem', fontWeight: '900', color: '#ffffff', margin: '6px 0' }}>
                 {monthlyConvs} <span style={{ fontSize: '1rem', color: '#93c5fd', fontWeight: '500' }}>/ 10 Target</span>
@@ -280,7 +280,7 @@ function PerformanceDashboard({ currentUser, showToast }) {
                 ₹{monthlyRev.toLocaleString('en-IN')}
               </div>
               <div style={{ fontSize: '0.82rem', color: '#cbd5e1' }}>
-                Accrued @ ₹6,000 per verified student internship admission
+                Accrued @ ₹6,000 per verified product conversion
               </div>
               <div style={{
                 background: 'rgba(255,255,255,0.08)',

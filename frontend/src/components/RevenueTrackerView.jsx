@@ -68,7 +68,7 @@ function RevenueTrackerView({ currentUser, showToast }) {
             Aparaitech Software Revenue Tracker
           </h1>
           <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: '#d1fae5' }}>
-            Commercial yield tracking at ₹6,000 per confirmed student internship admission
+            Commercial yield tracking at ₹6,000 per confirmed product conversion
           </p>
         </div>
 
@@ -81,13 +81,13 @@ function RevenueTrackerView({ currentUser, showToast }) {
           textAlign: 'right'
         }}>
           <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#a7f3d0', fontWeight: '700' }}>
-            Unit Rate per Candidate
+            Unit Rate per Product
           </div>
           <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#ffffff', margin: '2px 0' }}>
             ₹6,000 INR
           </div>
           <div style={{ fontSize: '0.72rem', color: '#d1fae5' }}>
-            Standard Corporate Internship Model
+            Standard Product Revenue Model
           </div>
         </div>
       </div>

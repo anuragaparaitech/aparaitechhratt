@@ -113,8 +113,8 @@ export default function ProfileScreen({ navigation }) {
   const getRoleBadgeTitle = (role) => {
     if (role === 'admin') return 'System Administrator';
     if (role === 'manager') return 'Operations Manager';
-    if (user?.department?.toLowerCase().includes('software')) return 'Software Developer Intern';
-    return 'Business Development Intern';
+    if (user?.department?.toLowerCase().includes('software')) return 'Software Developer';
+    return 'Business Development Associate';
   };
 
   return (

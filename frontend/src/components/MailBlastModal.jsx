@@ -20,8 +20,8 @@ const POPULAR_COLLEGES = [
 
 // Common templates
 const POPULAR_TEMPLATES = [
-  'Summer 2026 Tech & BDA Internship Drive',
-  'Web & Cloud Engineering Internship Invite',
+  'Tech & BDA Product Outreach Drive',
+  'Web & Cloud Engineering Product Outreach',
   'Corporate Training & Placement Offer',
   'College TPO Campus Connect Proposal',
   'Custom / Direct Outreach Template'

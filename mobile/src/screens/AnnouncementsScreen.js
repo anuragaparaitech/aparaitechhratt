@@ -299,7 +299,7 @@ export default function AnnouncementsScreen({ navigation }) {
                 styles.textInput,
                 { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }
               ]}
-              placeholder="e.g. Revised Shift Schedules for BDA Interns"
+              placeholder="e.g. Revised Shift Schedules for BDA Team"
               placeholderTextColor={colors.textSecondary}
               value={newTitle}
               onChangeText={setNewTitle}

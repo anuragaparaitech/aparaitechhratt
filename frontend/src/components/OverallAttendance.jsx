@@ -185,7 +185,7 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
         name: emp.name,
         email: emp.email,
         department: emp.department || '—',
-        designation: emp.designation || 'Intern',
+        designation: emp.designation || 'Associate',
         checkIn,
         checkOut,
         workingHours,

@@ -30,7 +30,7 @@ export default function MailBlastScreen({ navigation }) {
   const [targetType, setTargetType] = useState('Random'); // 'Random' | 'College-wise'
   const [selectedCollege, setSelectedCollege] = useState('');
   const [customCollege, setCustomCollege] = useState('');
-  const [templateUsed, setTemplateUsed] = useState('Summer Internship Outreach v2.1');
+  const [templateUsed, setTemplateUsed] = useState('Product Outreach Campaign v2.1');
   const [emailsSent, setEmailsSent] = useState('');
   const [responsesReceived, setResponsesReceived] = useState('');
   const [bounceCount, setBounceCount] = useState('');

@@ -149,7 +149,7 @@ export default function PerformanceScreen({ navigation }) {
               </View>
             </View>
 
-            {/* Software Developer Intern Section */}
+            {/* Software Developer Section */}
             {isSoftwareDev && (
               <View style={[styles.card, { backgroundColor: theme.cardBackground }]}>
                 <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 12 }]}>

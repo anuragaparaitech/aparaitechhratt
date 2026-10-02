@@ -1215,7 +1215,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               <div style={{ fontSize: '2rem', fontWeight: '900', color: '#0a192f', margin: '6px 0 2px' }}>
                 {revenueData?.summary?.totalConversions || 0}
               </div>
-              <div style={{ fontSize: '0.76rem', color: '#64748b' }}>Confirmed student internships</div>
+              <div style={{ fontSize: '0.76rem', color: '#64748b' }}>Confirmed product conversions (₹6,000 product)</div>
             </div>
 
             <div style={{ background: '#ffffff', borderRadius: '18px', padding: '1.5rem', border: '1px solid #e2e8f0' }}>

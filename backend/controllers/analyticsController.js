@@ -16,7 +16,7 @@ const getKolkataDateStr = () => {
 }
 
 /**
- * 1. MY PERFORMANCE (For BDA Interns / Individual Employees)
+ * 1. MY PERFORMANCE (For BDA Team / Individual Employees)
  */
 export const getMyPerformance = async (req, res) => {
   try {

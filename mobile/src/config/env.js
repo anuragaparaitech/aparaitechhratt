@@ -20,7 +20,7 @@ export const SHIFTS = {
     startTime: '07:00',
     endTime: '11:00',
     display: '7:00 AM – 11:00 AM',
-    roles: ['Software Developer Intern', 'Development', 'Engineering']
+    roles: ['Software Developer', 'Development', 'Engineering']
   },
   shift_2: {
     id: 'shift_2',
@@ -28,7 +28,7 @@ export const SHIFTS = {
     startTime: '11:00',
     endTime: '17:00',
     display: '11:00 AM – 5:00 PM',
-    roles: ['BDA Intern', 'Sales', 'Business Development']
+    roles: ['BDA Associate', 'Sales', 'Business Development']
   },
   shift_3: {
     id: 'shift_3',
@@ -36,9 +36,9 @@ export const SHIFTS = {
     startTime: '17:00',
     endTime: '23:00',
     display: '5:00 PM – 11:00 PM',
-    roles: ['BDA Intern Evening', 'Outreach']
+    roles: ['BDA Associate Evening', 'Outreach']
   }
 };
 
-// Commercial Revenue Rate per verified candidate
+// Commercial Revenue Rate per verified product conversion
 export const REVENUE_PER_CONVERSION = 6000;

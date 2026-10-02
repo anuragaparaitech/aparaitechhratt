@@ -11,7 +11,7 @@ export const getMyDocuments = async (req, res) => {
     const docs = [
       {
         id: 'offer-letter',
-        title: 'Official Internship Offer Letter',
+        title: 'Official Offer Letter',
         category: 'Employment',
         type: 'Offer Letter',
         issuedDate: emp.joiningDate || '2026-01-15',
@@ -88,7 +88,7 @@ export const generateDocument = async (req, res) => {
       empId: emp.empId || 'AP-EMP',
       email: emp.email,
       department: emp.department || 'Business Development',
-      role: emp.role === 'admin' ? 'Administrator' : (emp.role === 'manager' ? 'Team Lead' : 'Associate Intern'),
+      role: emp.role === 'admin' ? 'Administrator' : (emp.role === 'manager' ? 'Team Lead' : 'Associate'),
       joiningDate: emp.joiningDate || 'January 15, 2026',
       currentDate: dateStr,
       company: 'Aparaitech Software & Tech Solutions Pvt. Ltd.',

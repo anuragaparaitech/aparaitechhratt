@@ -113,7 +113,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
               letterSpacing: '0.08em',
               color: '#93c5fd'
             }}>
-              {currentUser.role === 'admin' ? 'Super Admin' : (currentUser.role === 'manager' ? 'Team Manager' : 'BDA Intern / Associate')}
+              {currentUser.role === 'admin' ? 'Super Admin' : (currentUser.role === 'manager' ? 'Team Manager' : 'Business Development Associate')}
             </span>
             <span style={{
               background: '#22c55e',
@@ -722,10 +722,10 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
             }}>
               <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Conversion Multiplier Formula</div>
               <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0a192f', margin: '4px 0' }}>
-                1 Confirmed Internship = ₹6,000 Revenue
+                1 Confirmed Product = ₹6,000 Revenue
               </div>
               <div style={{ fontSize: '0.78rem', color: '#475569' }}>
-                Every student admission recorded in your daily report automatically accrues ₹6,000 towards your and the company's verified portfolio.
+                Every product conversion recorded in your daily report automatically accrues ₹6,000 towards your and the company's verified portfolio.
               </div>
             </div>
 
