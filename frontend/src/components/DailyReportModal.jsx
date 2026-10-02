@@ -7,6 +7,9 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
     callsAbove3Min: 0,
     groupsCreated: 0,
     membersInGroups: 0,
+    onboardingConversions: 0,
+    finalizeConversions: 0,
+    fullConversions: 0,
     todayConversions: 0,
     remarks: ''
   })
@@ -45,6 +48,9 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
             callsAbove3Min: res.report.callsAbove3Min || 0,
             groupsCreated: res.report.groupsCreated || 0,
             membersInGroups: res.report.membersInGroups || 0,
+            onboardingConversions: res.report.onboardingConversions ?? 0,
+            finalizeConversions: res.report.finalizeConversions ?? 0,
+            fullConversions: res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0),
             todayConversions: res.report.todayConversions || 0,
             remarks: res.report.remarks || ''
           })
@@ -65,13 +71,21 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
     }))
   }
 
-  const revenueEst = (formData.todayConversions || 0) * 6000
+  const onbCount = Math.max(0, parseInt(formData.onboardingConversions, 10) || 0)
+  const finCount = Math.max(0, parseInt(formData.finalizeConversions, 10) || 0)
+  const fullCount = Math.max(0, parseInt(formData.fullConversions, 10) || 0)
+  const totalConversions = onbCount + finCount + fullCount
+  const revenueEst = (onbCount * 1500) + (finCount * 4500) + (fullCount * 6000)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await reportsAPI.submitDaily(formData)
+      const payload = {
+        ...formData,
+        todayConversions: totalConversions
+      }
+      const res = await reportsAPI.submitDaily(payload)
       if (res.success) {
         showToast(`✅ ${res.message || 'Daily report submitted successfully!'}`, '#16a34a')
         if (onSuccess) onSuccess(res.data)
@@ -280,45 +294,143 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
             </div>
           </div>
 
-          {/* Today's Conversion with Live Revenue Box */}
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: '#1e293b', marginBottom: '6px' }}>
-              Today's Conversions <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <input
-                type="number"
-                name="todayConversions"
-                min="0"
-                value={formData.todayConversions}
-                onChange={handleChange}
-                required
-                style={{
-                  flex: 1,
-                  minWidth: '140px',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '1rem',
-                  fontWeight: '700',
-                  color: '#0a192f',
-                  boxSizing: 'border-box'
-                }}
-              />
+          {/* Product Conversions & Split Revenue Model */}
+          <div style={{
+            marginBottom: '1.25rem',
+            background: '#f8fafc',
+            border: '1.5px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '14px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
+              <label style={{ fontSize: '0.84rem', fontWeight: '700', color: '#0f172a', margin: 0 }}>
+                🎯 Product Conversions Split (₹6,000 Model) <span style={{ color: '#ef4444' }}>*</span>
+              </label>
               <div style={{
                 background: '#eff6ff',
                 border: '1px solid #bfdbfe',
-                borderRadius: '10px',
-                padding: '8px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexShrink: 0
+                borderRadius: '8px',
+                padding: '3px 10px',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                color: '#1d4ed8'
               }}>
-                <span style={{ fontSize: '0.8rem', color: '#1e40af', fontWeight: '500' }}>Revenue (₹6,000/conv):</span>
-                <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#2563eb' }}>
-                  ₹{revenueEst.toLocaleString('en-IN')}
-                </span>
+                Total: {totalConversions} conversions
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '12px' }}>
+              {/* 1st Part Onboarding */}
+              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '9px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0369a1' }}>1st Part Onboarding</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#e0f2fe', color: '#0284c7', padding: '1px 5px', borderRadius: '4px' }}>₹1,500</span>
+                </div>
+                <input
+                  type="number"
+                  name="onboardingConversions"
+                  min="0"
+                  value={formData.onboardingConversions}
+                  onChange={handleChange}
+                  placeholder="0"
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px', textAlign: 'right', fontWeight: '600' }}>
+                  = ₹{(onbCount * 1500).toLocaleString('en-IN')}
+                </div>
+              </div>
+
+              {/* 2nd Part Finalize */}
+              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '9px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#7c3aed' }}>2nd Part Finalize</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#ede9fe', color: '#7c3aed', padding: '1px 5px', borderRadius: '4px' }}>₹4,500</span>
+                </div>
+                <input
+                  type="number"
+                  name="finalizeConversions"
+                  min="0"
+                  value={formData.finalizeConversions}
+                  onChange={handleChange}
+                  placeholder="0"
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px', textAlign: 'right', fontWeight: '600' }}>
+                  = ₹{(finCount * 4500).toLocaleString('en-IN')}
+                </div>
+              </div>
+
+              {/* 3rd Option Full Payment */}
+              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '9px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#15803d' }}>3rd Full Payment</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#dcfce7', color: '#16a34a', padding: '1px 5px', borderRadius: '4px' }}>₹6,000</span>
+                </div>
+                <input
+                  type="number"
+                  name="fullConversions"
+                  min="0"
+                  value={formData.fullConversions}
+                  onChange={handleChange}
+                  placeholder="0"
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px', textAlign: 'right', fontWeight: '600' }}>
+                  = ₹{(fullCount * 6000).toLocaleString('en-IN')}
+                </div>
+              </div>
+            </div>
+
+            {/* Live Calculated Revenue Banner */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+              borderRadius: '10px',
+              padding: '10px 14px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              color: '#ffffff',
+              flexWrap: 'wrap',
+              gap: '8px',
+              boxShadow: '0 4px 10px rgba(37, 99, 235, 0.2)'
+            }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '600', opacity: 0.9 }}>
+                  Total Today's Revenue Recorded:
+                </div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                  ({onbCount} × ₹1.5k) + ({finCount} × ₹4.5k) + ({fullCount} × ₹6k)
+                </div>
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '900', letterSpacing: '-0.3px' }}>
+                ₹{revenueEst.toLocaleString('en-IN')}
               </div>
             </div>
           </div>

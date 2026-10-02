@@ -99,6 +99,9 @@ export const getMyPerformance = async (req, res) => {
           groupsCreated: todayReport?.groupsCreated || 0,
           membersInGroups: todayReport?.membersInGroups || 0,
           todayConversions: todayReport?.todayConversions || 0,
+          onboardingConversions: todayReport?.onboardingConversions || 0,
+          finalizeConversions: todayReport?.finalizeConversions || 0,
+          fullConversions: todayReport?.fullConversions || 0,
           revenue: todayReport?.revenue || 0
         },
         monthly: {

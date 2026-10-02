@@ -56,6 +56,21 @@ const DailyReportSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  onboardingConversions: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  finalizeConversions: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  fullConversions: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   todayConversions: {
     type: Number,
     required: true,
@@ -65,7 +80,7 @@ const DailyReportSchema = new mongoose.Schema({
   revenue: {
     type: Number,
     required: true,
-    default: 0 // Computed as todayConversions * 6000
+    default: 0 // Computed based on onboarding (1500) + finalize (4500) + full (6000)
   },
   remarks: {
     type: String,

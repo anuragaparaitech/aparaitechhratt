@@ -32,7 +32,9 @@ export default function DailyReportScreen({ navigation }) {
   const [callsAbove3Min, setCallsAbove3Min] = useState('');
   const [groupsCreated, setGroupsCreated] = useState('');
   const [membersInGroups, setMembersInGroups] = useState('');
-  const [todayConversions, setTodayConversions] = useState('');
+  const [onboardingConversions, setOnboardingConversions] = useState('0');
+  const [finalizeConversions, setFinalizeConversions] = useState('0');
+  const [fullConversions, setFullConversions] = useState('0');
   const [remarks, setRemarks] = useState('');
   const [existingReport, setExistingReport] = useState(null);
 
@@ -51,7 +53,9 @@ export default function DailyReportScreen({ navigation }) {
         setCallsAbove3Min(String(res.report.callsAbove3Min || ''));
         setGroupsCreated(String(res.report.groupsCreated || ''));
         setMembersInGroups(String(res.report.membersInGroups || ''));
-        setTodayConversions(String(res.report.todayConversions || ''));
+        setOnboardingConversions(String(res.report.onboardingConversions ?? 0));
+        setFinalizeConversions(String(res.report.finalizeConversions ?? 0));
+        setFullConversions(String(res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0)));
         setRemarks(res.report.remarks || '');
       }
     } catch (err) {
@@ -70,12 +74,15 @@ export default function DailyReportScreen({ navigation }) {
     }
   };
 
-  const convNum = Math.max(0, parseInt(todayConversions, 10) || 0);
-  const calculatedRevenue = convNum * REVENUE_PER_CONVERSION;
+  const onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0);
+  const finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0);
+  const fullNum = Math.max(0, parseInt(fullConversions, 10) || 0);
+  const totalConversions = onbNum + finNum + fullNum;
+  const calculatedRevenue = (onbNum * 1500) + (finNum * 4500) + (fullNum * 6000);
 
   const handleSubmit = async () => {
-    if (connectedCalls === '' || callsAbove3Min === '' || groupsCreated === '' || membersInGroups === '' || todayConversions === '') {
-      Alert.alert('Required Fields', 'Please complete all metric fields before submitting.');
+    if (connectedCalls === '' || callsAbove3Min === '' || groupsCreated === '' || membersInGroups === '') {
+      Alert.alert('Required Fields', 'Please complete call and group metric fields before submitting.');
       return;
     }
 
@@ -86,7 +93,10 @@ export default function DailyReportScreen({ navigation }) {
         callsAbove3Min: Number(callsAbove3Min) || 0,
         groupsCreated: Number(groupsCreated) || 0,
         membersInGroups: Number(membersInGroups) || 0,
-        todayConversions: Number(todayConversions) || 0,
+        onboardingConversions: onbNum,
+        finalizeConversions: finNum,
+        fullConversions: fullNum,
+        todayConversions: totalConversions,
         remarks: remarks.trim()
       };
 
@@ -217,23 +227,73 @@ export default function DailyReportScreen({ navigation }) {
                 />
               </View>
 
-              {/* Conversions with Live Revenue Calculation */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Today's Conversions *</Text>
-                <TextInput
-                  style={[styles.input, { color: theme.text, borderColor: theme.border, fontSize: 18, fontWeight: '800' }]}
-                  placeholder="0"
-                  placeholderTextColor="#94a3b8"
-                  value={todayConversions}
-                  onChangeText={setTodayConversions}
-                  keyboardType="number-pad"
-                />
-              </View>
+              {/* Product Conversions Split (₹6,000 Model) */}
+              <View style={[styles.splitBox, { borderColor: theme.border }]}>
+                <View style={styles.splitBoxHeader}>
+                  <Text style={[styles.splitBoxTitle, { color: theme.text }]}>
+                    🎯 Conversions Split (₹6k Model)
+                  </Text>
+                  <View style={styles.totalBadge}>
+                    <Text style={styles.totalBadgeText}>Total: {totalConversions}</Text>
+                  </View>
+                </View>
 
-              {/* Revenue Estimation Box */}
-              <View style={styles.revenueBox}>
-                <Text style={styles.revenueLabel}>Calculated Revenue (@ ₹6,000/conversion):</Text>
-                <Text style={styles.revenueAmount}>₹{calculatedRevenue.toLocaleString('en-IN')}</Text>
+                {/* 1st Part Onboarding */}
+                <View style={styles.splitRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.splitRowTitle, { color: '#0284c7' }]}>1st Part Onboarding</Text>
+                    <Text style={styles.splitRowSub}>+₹1,500 each</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.splitInput, { color: theme.text, borderColor: theme.border }]}
+                    placeholder="0"
+                    placeholderTextColor="#94a3b8"
+                    value={onboardingConversions}
+                    onChangeText={setOnboardingConversions}
+                    keyboardType="number-pad"
+                  />
+                  <Text style={styles.splitRowSubtotal}>= ₹{(onbNum * 1500).toLocaleString('en-IN')}</Text>
+                </View>
+
+                {/* 2nd Part Finalize */}
+                <View style={styles.splitRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.splitRowTitle, { color: '#7c3aed' }]}>2nd Part Finalize</Text>
+                    <Text style={styles.splitRowSub}>+₹4,500 each</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.splitInput, { color: theme.text, borderColor: theme.border }]}
+                    placeholder="0"
+                    placeholderTextColor="#94a3b8"
+                    value={finalizeConversions}
+                    onChangeText={setFinalizeConversions}
+                    keyboardType="number-pad"
+                  />
+                  <Text style={styles.splitRowSubtotal}>= ₹{(finNum * 4500).toLocaleString('en-IN')}</Text>
+                </View>
+
+                {/* 3rd Option Full Payment */}
+                <View style={styles.splitRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.splitRowTitle, { color: '#16a34a' }]}>3rd Full Payment</Text>
+                    <Text style={styles.splitRowSub}>+₹6,000 each</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.splitInput, { color: theme.text, borderColor: theme.border }]}
+                    placeholder="0"
+                    placeholderTextColor="#94a3b8"
+                    value={fullConversions}
+                    onChangeText={setFullConversions}
+                    keyboardType="number-pad"
+                  />
+                  <Text style={styles.splitRowSubtotal}>= ₹{(fullNum * 6000).toLocaleString('en-IN')}</Text>
+                </View>
+
+                {/* Revenue Estimation Box */}
+                <View style={styles.revenueBox}>
+                  <Text style={styles.revenueLabel}>Total Today's Revenue:</Text>
+                  <Text style={styles.revenueAmount}>₹{calculatedRevenue.toLocaleString('en-IN')}</Text>
+                </View>
               </View>
 
               {/* Remarks */}
@@ -384,13 +444,80 @@ const styles = StyleSheet.create({
     height: 70,
     textAlignVertical: 'top'
   },
+  splitBox: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 14,
+    backgroundColor: '#f8fafc'
+  },
+  splitBoxHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10
+  },
+  splitBoxTitle: {
+    fontSize: 13,
+    fontWeight: '800'
+  },
+  totalBadge: {
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2
+  },
+  totalBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1d4ed8'
+  },
+  splitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    padding: 8,
+    marginBottom: 8
+  },
+  splitRowTitle: {
+    fontSize: 12,
+    fontWeight: '800'
+  },
+  splitRowSub: {
+    fontSize: 10,
+    color: '#64748b'
+  },
+  splitInput: {
+    width: 55,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    textAlign: 'center',
+    fontWeight: '800',
+    fontSize: 14,
+    marginHorizontal: 8
+  },
+  splitRowSubtotal: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+    minWidth: 70,
+    textAlign: 'right'
+  },
   revenueBox: {
     backgroundColor: '#eff6ff',
     borderWidth: 1,
     borderColor: '#bfdbfe',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 14,
+    marginBottom: 6,
+    marginTop: 4,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'

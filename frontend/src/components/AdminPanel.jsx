@@ -446,10 +446,10 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       alert('No daily reports to export for current filter')
       return
     }
-    const data = [['Date', 'Time', 'Employee Name', 'Emp ID', 'Team', 'Connected Calls', 'Calls >3m', 'Groups Created', 'Members', 'Conversions', 'Revenue (INR)', 'Remarks']]
+    const data = [['Date', 'Time', 'Employee Name', 'Emp ID', 'Team', 'Connected Calls', 'Calls >3m', 'Groups Created', 'Members', 'Total Conversions', 'Onboarding (1.5k)', 'Finalize (4.5k)', 'Full (6k)', 'Revenue (INR)', 'Remarks']]
     filteredDaily.forEach(r => {
       data.push([
-        r.reportDate, r.reportTime, r.employeeName, r.employeeId, r.teamName, r.connectedCalls, r.callsAbove3Min, r.groupsCreated, r.membersInGroups, r.todayConversions, r.revenue, r.remarks || ''
+        r.reportDate, r.reportTime, r.employeeName, r.employeeId, r.teamName, r.connectedCalls, r.callsAbove3Min, r.groupsCreated, r.membersInGroups, r.todayConversions, r.onboardingConversions || 0, r.finalizeConversions || 0, r.fullConversions || 0, r.revenue, r.remarks || ''
       ])
     })
     const ws = XLSX.utils.aoa_to_sheet(data)
@@ -988,6 +988,13 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                         }}>
                           {r.todayConversions}
                         </span>
+                        {(r.onboardingConversions > 0 || r.finalizeConversions > 0 || r.fullConversions > 0) && (
+                          <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '3px', whiteSpace: 'nowrap' }}>
+                            {r.onboardingConversions > 0 && <span style={{ color: '#0369a1', marginRight: '4px' }}>Onb:{r.onboardingConversions}</span>}
+                            {r.finalizeConversions > 0 && <span style={{ color: '#7c3aed', marginRight: '4px' }}>Fin:{r.finalizeConversions}</span>}
+                            {r.fullConversions > 0 && <span style={{ color: '#16a34a' }}>Full:{r.fullConversions}</span>}
+                          </div>
+                        )}
                       </td>
                       <td style={{ color: '#2563eb', fontWeight: '800' }}>
                         ₹{(r.revenue || 0).toLocaleString('en-IN')}

@@ -32,13 +32,27 @@ export const submitDailyReport = async (req, res) => {
       callsAbove3Min = 0,
       groupsCreated = 0,
       membersInGroups = 0,
+      onboardingConversions = 0,
+      finalizeConversions = 0,
+      fullConversions = 0,
       todayConversions = 0,
       remarks = ''
     } = req.body
 
     const { dateStr, timeStr } = getKolkataDateTime()
-    const conversionsNum = Math.max(0, parseInt(todayConversions, 10) || 0)
-    const revenueCalculated = conversionsNum * 6000 // ₹6,000 per conversion
+
+    let onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0)
+    let finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0)
+    let fullNum = Math.max(0, parseInt(fullConversions, 10) || 0)
+    let conversionsNum = onbNum + finNum + fullNum
+    let revenueCalculated = (onbNum * 1500) + (finNum * 4500) + (fullNum * 6000)
+
+    // Fallback if split counts were 0 but legacy todayConversions was passed
+    if (conversionsNum === 0 && todayConversions > 0) {
+      conversionsNum = Math.max(0, parseInt(todayConversions, 10) || 0)
+      revenueCalculated = conversionsNum * 6000
+      fullNum = conversionsNum
+    }
 
     // Check if report already exists for today by this employee -> upsert
     let report = await DailyReport.findOne({
@@ -51,6 +65,9 @@ export const submitDailyReport = async (req, res) => {
       report.callsAbove3Min = Math.max(0, parseInt(callsAbove3Min, 10) || 0)
       report.groupsCreated = Math.max(0, parseInt(groupsCreated, 10) || 0)
       report.membersInGroups = Math.max(0, parseInt(membersInGroups, 10) || 0)
+      report.onboardingConversions = onbNum
+      report.finalizeConversions = finNum
+      report.fullConversions = fullNum
       report.todayConversions = conversionsNum
       report.revenue = revenueCalculated
       report.reportTime = timeStr
@@ -75,6 +92,9 @@ export const submitDailyReport = async (req, res) => {
       callsAbove3Min: Math.max(0, parseInt(callsAbove3Min, 10) || 0),
       groupsCreated: Math.max(0, parseInt(groupsCreated, 10) || 0),
       membersInGroups: Math.max(0, parseInt(membersInGroups, 10) || 0),
+      onboardingConversions: onbNum,
+      finalizeConversions: finNum,
+      fullConversions: fullNum,
       todayConversions: conversionsNum,
       revenue: revenueCalculated,
       remarks: remarks || ''
