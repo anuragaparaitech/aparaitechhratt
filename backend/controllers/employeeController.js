@@ -40,45 +40,6 @@ const activeEmployeesList = [
   { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active' }
 ]
 
-// All other previous employees to be set / seeded as inactive
-const inactiveEmployeesRaw = [
-  { name: "Pratik Pawar", email: "pratikumeshpawar@gmail.com" },
-  { name: "Akansha Atole", email: "akanshaatole0202@gmail.com" },
-  { name: "Aishwarya Shinde", email: "aishwaryashinde7101@gmail.com" },
-  { name: "Samiksha More", email: "msamiksha522@gmail.com" },
-  { name: "Alam Shaikh", email: "as8150508@gmail.com" },
-  { name: "Akshay Jadhav", email: "akshayb.jadhav00@gmail.com" },
-  { name: "Sunny Lonkar", email: "sunnylonkar6292@gmail.com" },
-  { name: "Siddhi Tambe", email: "siddhitambe0080@gmail.com" },
-  { name: "Shweta Shinde", email: "shwetashinde1391@gmail.com" },
-  { name: "Akshata Jagadale", email: "jagadaleakshata2004@gmail.com" },
-  { name: "Supriya Dhaygude", email: "supriyadhaygude0201@gmail.com" },
-  { name: "Riya Raut", email: "riyaraut1685@gmail.com" },
-  { name: "Rutuja Karnwar", email: "rutujakarnwar2003@gmail.com" },
-  { name: "Ritesh Sonporate", email: "riteshsonparote3@gmail.com" },
-  { name: "Ritul Chanchunkal", email: "ritulchinchulkar5@gmail.com" },
-  { name: "Liza Nagrale", email: "lizanagrale@gmail.com" },
-  { name: "Kiran Talekar", email: "kirantalekar999@gmail.com" },
-  { name: "Sumit Dhoke", email: "sdhoke984@gmail.com" },
-  { name: "Sujal Nimsarkar", email: "nimsujal.250104@gmail.com" },
-  { name: "Tanishq Junghare", email: "tanishqjunghare72@gmail.com" },
-  { name: "Prachi Kawade", email: "prachikawade09@gmail.com" },
-  { name: "Kurshna Dasarwad", email: "krishnadasarwad2@gmail.com" },
-  { name: "khushboo chouhan", email: "khushboochouhan9823@gmail.com" },
-  { name: "Poonam Suryawanshi", email: "poonamsuryawanshi154@gmail.com" },
-  { name: "Sujata Karche", email: "karchesujata57@gmail.com" },
-  { name: "Shweta Jagtap", email: "shwetaraut0103@gmail.com" },
-  { name: "Atharv Atole", email: "atharvatole4@gmail.com" },
-  { name: "Mangesh Jagtap", email: "mangeshjagtap2314@gmail.com" },
-  { name: "Kartik mane", email: "kartikmane55@gmail.com" },
-  { name: "viraj kale", email: "virajkale8407@gmail.com" },
-  { name: "sakshi shinde", email: "shindesakshi2411@gmail.com" },
-  { name: "apeksha yadav", email: "apekshayadav2300@gmail.com" },
-  { name: "snehal manure", email: "snehalmanure9@gmail.com" },
-  { name: "Rutuja ware", email: "rutujaware557@gmail.com" },
-  { name: "Kshitij Kamble", email: "kshitijkamble966@gmail.com" },
-  { name: "vaishnavi kadam", email: "kadamvs2005@gmail.com" }
-]
 
 export const seedDatabase = async () => {
   try {
@@ -176,40 +137,19 @@ export const seedDatabase = async () => {
       }
     }
 
-    // 3. Mark all other non-admin employees in DB as inactive
-    await Employee.updateMany(
-      {
-        role: { $ne: 'admin' },
-        email: { $nin: activeEmails }
-      },
-      {
-        $set: { status: 'inactive' }
-      }
-    )
-
-    // 4. Seed inactive legacy employees if not present
-    let legacyCounter = 1001
-    for (const emp of inactiveEmployeesRaw) {
-      const exists = await Employee.findOne({ email: emp.email.toLowerCase() })
-      if (!exists) {
-        const empIdCandidate = `AP${legacyCounter}`
-        const idExists = await Employee.findOne({ empId: empIdCandidate })
-        if (!idExists) {
-          await Employee.create({
-            empId: empIdCandidate,
-            name: emp.name,
-            email: emp.email.toLowerCase(),
-            password: hashedDefaultPassword,
-            department: 'Development',
-            role: 'employee',
-            status: 'inactive'
-          })
-        }
-      }
-      legacyCounter++
+    // 3. Permanently remove all past/inactive employees from database
+    const deleteResult = await Employee.deleteMany({
+      role: { $ne: 'admin' },
+      $or: [
+        { status: 'inactive' },
+        { email: { $nin: activeEmails } }
+      ]
+    })
+    if (deleteResult.deletedCount > 0) {
+      console.log(`🗑️ Removed ${deleteResult.deletedCount} inactive/past employee records from database.`)
     }
 
-    console.log('✅ Employee sync completed: Active employees updated, all others set to inactive.')
+    console.log('✅ Employee sync completed: Active employees updated, inactive employees removed.')
   } catch (error) {
     console.error('❌ Seeding error:', error.message)
   }
