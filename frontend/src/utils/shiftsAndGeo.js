@@ -42,10 +42,10 @@ export const SHIFTS = {
 // Optenix Tech Solution: https://www.google.com/maps/place/Optenix+Tech+Solution/@18.5966851,73.7186756,18.38z/data=!4m6!3m5!1s0x3bc2bb006c6157fb:0x5482f6d4f4b3809b!8m2!3d18.5962139!4d73.7185487
 export const GEOFENCE = {
   name: 'Optenix Tech Solution',
-  latitude: 18.5962139,
-  longitude: 73.7185487,
+  latitude: 18.596077,
+  longitude: 73.718054,
   allowedRadiusMeters: 200, // 200m office perimeter
-  mapsUrl: 'https://www.google.com/maps/place/Optenix+Tech+Solution/@18.5966851,73.7186756,18.38z/data=!4m6!3m5!1s0x3bc2bb006c6157fb:0x5482f6d4f4b3809b!8m2!3d18.5962139!4d73.7185487!16s%2Fg%2F11m5ctdbqv'
+  mapsUrl: 'https://www.google.com/maps/place/Optenix+Tech+Solution/@18.596077,73.718054,18.38z'
 }
 
 /**

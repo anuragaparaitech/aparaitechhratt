@@ -4,11 +4,13 @@ export const API_BASE_URL = 'https://aparaitech-software-attendance-protal-9l04.
 // Corporate Geofence Reference - Optenix Tech Solution, Hinjawadi Phase 1, Pune
 export const OFFICE_GEOFENCE = {
   name: 'Optenix Tech Solution (Hinjawadi)',
-  latitude: 18.5962139,
-  longitude: 73.7185487,
+  latitude: 18.596077,
+  longitude: 73.718054,
   radiusMeters: 200,
   address: 'Optenix Tech Solution, Hinjawadi Phase 1, Pune, Maharashtra 411057'
 };
+
+export const GEOFENCE_CONFIG = OFFICE_GEOFENCE;
 
 // Work Shift Schedules
 export const SHIFTS = {
