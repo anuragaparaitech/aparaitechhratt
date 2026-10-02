@@ -4,12 +4,18 @@ import { fileURLToPath } from 'url'
 import Employee from '../models/Employee.js'
 import Attendance from '../models/Attendance.js'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const FACE_UPLOADS_DIR = path.join(__dirname, '..', 'face-uploads')
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+const FACE_UPLOADS_DIR = isServerless
+  ? path.join('/tmp', 'face-uploads')
+  : path.join(__dirname, '..', 'face-uploads')
 
 // Ensure directory exists
-if (!fs.existsSync(FACE_UPLOADS_DIR)) {
-  fs.mkdirSync(FACE_UPLOADS_DIR, { recursive: true })
+try {
+  if (!fs.existsSync(FACE_UPLOADS_DIR)) {
+    fs.mkdirSync(FACE_UPLOADS_DIR, { recursive: true })
+  }
+} catch (e) {
+  console.warn('Filesystem notice (face-uploads):', e.message)
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -216,10 +222,14 @@ export const saveAttendancePhoto = async (req, res) => {
 
   try {
     // Save image to attendance-photos folder
-    const attendancePhotosDir = path.join(FACE_UPLOADS_DIR, '..', 'attendance-photos')
-    if (!fs.existsSync(attendancePhotosDir)) {
-      fs.mkdirSync(attendancePhotosDir, { recursive: true })
-    }
+    const attendancePhotosDir = isServerless
+      ? path.join('/tmp', 'attendance-photos')
+      : path.join(FACE_UPLOADS_DIR, '..', 'attendance-photos')
+    try {
+      if (!fs.existsSync(attendancePhotosDir)) {
+        fs.mkdirSync(attendancePhotosDir, { recursive: true })
+      }
+    } catch (e) {}
 
     const employee = await Employee.findOne({ email: email.toLowerCase() })
     const safeEmail = email.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_')
