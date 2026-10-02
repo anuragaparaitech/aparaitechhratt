@@ -278,7 +278,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
       {/* ── 3. ATTENDANCE & QUICK ACTION TOOLBAR ─────────────────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))',
         gap: '1.25rem'
       }}>
         {/* Attendance Status Card */}
@@ -593,7 +593,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
       {/* ── 5. MINI LEADERBOARD & REVENUE PREVIEW ROW ────────────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))',
         gap: '1.25rem'
       }}>
         {/* Leaderboard Card */}

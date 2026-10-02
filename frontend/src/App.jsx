@@ -56,6 +56,7 @@ function App() {
   // Admin sub-section (which section of AdminPanel to show)
   const [adminSection, setAdminSection] = useState('overview')
   const [unreadCount, setUnreadCount] = useState(0)
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
 
   const showToast = (message, bg = '#1e293b') => {
     setToast({ message, bg })
@@ -164,12 +165,16 @@ function App() {
         <LoginScreen onLogin={handleLogin} showToast={showToast} />
       ) : (
         <div className="app-container" style={{ display: 'block' }}>
-          <Navbar currentUser={currentUser} onLogout={handleLogout} />
+          <Navbar
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onToggleMobileMenu={() => setMobileDrawerOpen(prev => !prev)}
+          />
 
           <div className="main-layout" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', padding: '1.5rem' }}>
 
-            {/* ── Sidebar Navigation Card ──────────────────────────────── */}
-            <div className="sidebar-card" style={{
+            {/* ── Desktop Sidebar Navigation Card (Hidden on mobile <1024px) ─────────────────── */}
+            <div className="sidebar-card desktop-sidebar" style={{
               background: '#ffffff',
               borderRadius: '24px',
               padding: '1.5rem 1.2rem',
@@ -442,6 +447,380 @@ function App() {
               )}
             </div>
           </div>
+
+          {/* ── Mobile Slide-Out Drawer Navigation ────────────────────────── */}
+          {mobileDrawerOpen && (
+            <div className="mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}>
+              <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+                <div style={{
+                  padding: '1.25rem 1.4rem',
+                  background: '#0a192f',
+                  color: '#ffffff',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: '9px',
+                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#ffffff'
+                    }}>
+                      <i className="fas fa-building"></i>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>Aparaitech Software</div>
+                      <div style={{ fontSize: '0.72rem', color: '#93c5fd' }}>
+                        {currentUser.name} ({currentUser.role})
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setMobileDrawerOpen(false)}
+                    aria-label="Close navigation"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: 'none',
+                      color: '#ffffff',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto' }}>
+                  {currentUser.role === 'admin' ? (
+                    <>
+                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                        👑 Command Center
+                      </div>
+                      {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
+                        <button
+                          key={item.id}
+                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          onClick={() => {
+                            handleAdminNav(item)
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                          {item.label}
+                        </button>
+                      ))}
+
+                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                        👥 Workforce & Logs
+                      </div>
+                      {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
+                        <button
+                          key={item.id}
+                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          onClick={() => {
+                            handleAdminNav(item)
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                          {item.label}
+                        </button>
+                      ))}
+
+                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                        🏢 Working Portal
+                      </div>
+                      {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
+                        <button
+                          key={item.id}
+                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          onClick={() => {
+                            handleAdminNav(item)
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                          {item.label}
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
+                        📌 Portal Navigation
+                      </div>
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'dashboard')}
+                        onClick={() => {
+                          setActiveTab('dashboard')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-th-large" style={{ width: '18px', textAlign: 'center' }}></i>
+                        Working Dashboard
+                      </button>
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'attendance')}
+                        onClick={() => {
+                          setActiveTab('attendance')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-fingerprint" style={{ width: '18px', textAlign: 'center' }}></i>
+                        Attendance & Punch
+                      </button>
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'performance')}
+                        onClick={() => {
+                          setActiveTab('performance')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-chart-line" style={{ width: '18px', textAlign: 'center' }}></i>
+                        My Performance
+                      </button>
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'leaderboard')}
+                        onClick={() => {
+                          setActiveTab('leaderboard')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-trophy" style={{ width: '18px', textAlign: 'center' }}></i>
+                        Leaderboard
+                      </button>
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'revenue')}
+                        onClick={() => {
+                          setActiveTab('revenue')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-rupee-sign" style={{ width: '18px', textAlign: 'center' }}></i>
+                        Revenue Tracker
+                      </button>
+
+                      {isManagerOrAdmin && (
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'managerReports')}
+                          onClick={() => {
+                            setActiveTab('managerReports')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-file-invoice" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Team Reports Hub
+                        </button>
+                      )}
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'inbox' ? 'active' : ''}`}
+                        style={{ ...sidebarBtnStyle(activeTab === 'inbox'), position: 'relative' }}
+                        onClick={() => {
+                          setActiveTab('inbox')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-inbox" style={{ width: '18px', textAlign: 'center' }}></i>
+                        Message Centre
+                        {unreadCount > 0 && (
+                          <span style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            borderRadius: '9999px',
+                            padding: '2px 8px',
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold',
+                            marginLeft: 'auto'
+                          }}>
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    </>
+                  )}
+
+                  <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
+                    <button
+                      onClick={() => {
+                        setMobileDrawerOpen(false)
+                        handleLogout()
+                      }}
+                      style={{
+                        width: '100%',
+                        background: '#fef2f2',
+                        color: '#ef4444',
+                        border: '1px solid #fecaca',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <i className="fas fa-sign-out-alt"></i> Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Mobile Sticky Bottom Navigation Bar (<1024px) ─────────────────── */}
+          <nav className="bottom-nav-bar mobile-bottom-nav">
+            {currentUser.role === 'admin' ? (
+              <>
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'overview' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('overview')
+                  }}
+                >
+                  <i className="fas fa-tachometer-alt"></i>
+                  <span>Overview</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'live' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('live')
+                  }}
+                >
+                  <i className="fas fa-eye"></i>
+                  <span>Live</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'dailyReports' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('dailyReports')
+                  }}
+                >
+                  <i className="fas fa-clipboard-check"></i>
+                  <span>Reports</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'revenue' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('revenue')
+                  }}
+                >
+                  <i className="fas fa-rupee-sign"></i>
+                  <span>Revenue</span>
+                </button>
+
+                <button
+                  className="bottom-nav-item"
+                  onClick={() => setMobileDrawerOpen(true)}
+                >
+                  <i className="fas fa-bars"></i>
+                  <span>Menu</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('dashboard')}
+                >
+                  <i className="fas fa-th-large"></i>
+                  <span>Home</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('attendance')}
+                >
+                  <i className="fas fa-fingerprint"></i>
+                  <span>Punch</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'performance' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('performance')}
+                >
+                  <i className="fas fa-chart-line"></i>
+                  <span>Metrics</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('leaderboard')}
+                >
+                  <i className="fas fa-trophy"></i>
+                  <span>Ranks</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'inbox' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('inbox')}
+                  style={{ position: 'relative' }}
+                >
+                  <i className="fas fa-inbox"></i>
+                  <span>Inbox</span>
+                  {unreadCount > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: 'calc(50% - 16px)',
+                      background: '#ef4444',
+                      color: '#ffffff',
+                      borderRadius: '9999px',
+                      padding: '1px 5px',
+                      fontSize: '0.62rem',
+                      fontWeight: 'bold',
+                      lineHeight: 1
+                    }}>
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  className="bottom-nav-item"
+                  onClick={() => setMobileDrawerOpen(true)}
+                >
+                  <i className="fas fa-ellipsis-h"></i>
+                  <span>More</span>
+                </button>
+              </>
+            )}
+          </nav>
         </div>
       )}
 

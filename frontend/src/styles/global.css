@@ -726,28 +726,270 @@ select.auth-input {
   }
 }
 
-/* Mobile & Tablet Responsiveness */
-@media (max-width: 768px) {
+/* Mobile, Tablet & Laptop Responsiveness System */
+.desktop-sidebar {
+  display: flex;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+.mobile-hamburger-btn {
+  display: none;
+}
+
+/* Touch-friendly Table Container */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+}
+
+/* Mobile Slide-Out Drawer Navigation */
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 25, 47, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2500;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(84vw, 320px);
+  background: #ffffff;
+  z-index: 2600;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 10px 0 25px rgba(0, 0, 0, 0.2);
+  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile Bottom Navigation Bar */
+.bottom-nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 2000;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 2px;
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.bottom-nav-item.active {
+  color: #2563eb;
+}
+
+.bottom-nav-item i {
+  font-size: 1.15rem;
+}
+
+/* Screen size adjustments */
+@media (max-width: 1024px) {
+  .desktop-sidebar {
+    display: none !important;
+  }
+
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+
+  .mobile-hamburger-btn {
+    display: flex !important;
+  }
+
+  .main-layout {
+    display: block !important;
+    padding: 0.85rem !important;
+  }
+
+  .content-pane {
+    width: 100% !important;
+    padding-bottom: 74px !important; /* Space for bottom nav */
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  .stat-card {
+    padding: 1rem 0.8rem !important;
+  }
+
+  .stat-card .value {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 640px) {
   .app-container {
-    padding: 0.8rem;
+    padding: 0;
   }
+
   .navbar {
-    padding: 1rem 1.2rem;
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 0.75rem 1rem !important;
   }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+    border-radius: 14px;
+  }
+
+  .company-name {
+    font-size: 1.3rem;
+  }
+
+  .today-card {
+    padding: 1.4rem;
+    border-radius: 16px;
+  }
+
+  .today-info {
+    gap: 0.8rem !important;
+    font-size: 0.84rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-buttons button {
+    width: 100% !important;
+    margin-right: 0 !important;
+  }
+
   .data-table {
     font-size: 0.78rem;
   }
+
   .data-table th,
   .data-table td {
-    padding: 10px 8px;
+    padding: 8px 6px;
+    white-space: nowrap;
   }
+
+  .modal-content {
+    padding: 1.25rem;
+    width: 95%;
+    max-height: 92vh;
+    border-radius: 16px;
+  }
+
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
+
   .filter-input {
     width: 100% !important;
   }
+
+  .toast {
+    width: 90%;
+    text-align: center;
+    font-size: 0.82rem;
+    padding: 10px 16px;
+    bottom: 80px;
+  }
 }
+
+/* Small Smartphone Screen Polish (<= 480px) */
+@media (max-width: 480px) {
+  .navbar-user-text div:last-child {
+    display: none;
+  }
+  .logout-text {
+    display: none;
+  }
+  .logout-btn {
+    padding: 7px 10px !important;
+  }
+  .section-card {
+    padding: 1.1rem !important;
+    border-radius: 14px !important;
+  }
+  .company-dashboard {
+    gap: 1rem !important;
+  }
+  .bottom-nav-bar {
+    height: 60px;
+  }
+  .bottom-nav-item {
+    font-size: 0.64rem;
+  }
+  .bottom-nav-item i {
+    font-size: 1.05rem;
+  }
+}
+
+/* Touch Device Target Optimization */
+@media (hover: none) and (pointer: coarse) {
+  button, .sidebar-nav-btn, .role-btn, .auth-btn, .g-button {
+    min-height: 42px;
+  }
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+  }
+}
+
+

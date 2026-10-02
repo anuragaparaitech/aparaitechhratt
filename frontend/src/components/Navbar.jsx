@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Navbar({ currentUser, onLogout }) {
+function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
   const isAdmin = currentUser.role === 'admin'
   const isManager = currentUser.role === 'manager' || currentUser.role === 'hr'
   
@@ -14,54 +14,95 @@ function Navbar({ currentUser, onLogout }) {
     <div className="navbar" style={{
       background: '#0a192f',
       borderBottom: '1px solid rgba(255,255,255,0.08)',
-      padding: '0.85rem 1.75rem',
+      padding: '0.85rem 1.5rem',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      color: '#ffffff'
+      color: '#ffffff',
+      gap: '0.75rem',
+      width: '100%',
+      boxSizing: 'border-box'
     }}>
-      <div className="logo-area" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '800', fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
+      <div className="logo-area" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '800', fontSize: '1.05rem', letterSpacing: '-0.02em', minWidth: 0 }}>
+        {/* Mobile Hamburger Toggle */}
+        <button
+          className="mobile-hamburger-btn"
+          onClick={onToggleMobileMenu}
+          aria-label="Toggle navigation menu"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#ffffff',
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.1rem',
+            cursor: 'pointer',
+            padding: 0,
+            flexShrink: 0
+          }}
+        >
+          <i className="fas fa-bars"></i>
+        </button>
+
         <div style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '8px',
+          width: '34px',
+          height: '34px',
+          borderRadius: '9px',
           background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ffffff'
+          color: '#ffffff',
+          flexShrink: 0
         }}>
           <i className="fas fa-building"></i>
         </div>
-        <div>
-          <span>Aparaitech Software</span>
-          <span style={{ fontSize: '0.72rem', color: '#93c5fd', display: 'block', fontWeight: '500', letterSpacing: '0.04em' }}>
+        <div style={{ minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '800' }}>
+            Aparaitech Software
+          </div>
+          <span style={{ fontSize: '0.7rem', color: '#93c5fd', display: 'block', fontWeight: '500', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
             Company Working Portal
           </span>
         </div>
       </div>
-      <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+
+      <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}>
-          <i className="fas fa-user-circle" style={{ fontSize: '1.25rem', color: '#38bdf8' }}></i>
-          <div>
-            <div style={{ fontWeight: '700', color: '#ffffff' }}>{currentUser.name}</div>
-            <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+          <i className="fas fa-user-circle" style={{ fontSize: '1.35rem', color: '#38bdf8', flexShrink: 0 }}></i>
+          <div className="navbar-user-text">
+            <div style={{ fontWeight: '700', color: '#ffffff', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+              {currentUser.name}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
               {getRoleLabel()} {currentUser.empId ? `• ${currentUser.empId}` : ''}
             </div>
           </div>
         </div>
-        <button className="logout-btn" onClick={onLogout} style={{
-          background: 'rgba(239, 68, 68, 0.15)',
-          color: '#f87171',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          padding: '6px 14px',
-          borderRadius: '8px',
-          fontWeight: '600',
-          fontSize: '0.8rem',
-          cursor: 'pointer'
-        }}>
-          <i className="fas fa-sign-out-alt" style={{ marginRight: '6px' }}></i>
-          Logout
+        <button
+          className="logout-btn"
+          onClick={onLogout}
+          title="Sign out of portal"
+          style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            color: '#f87171',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            padding: '7px 12px',
+            borderRadius: '8px',
+            fontWeight: '600',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <i className="fas fa-sign-out-alt"></i>
+          <span className="logout-text">Logout</span>
         </button>
       </div>
     </div>

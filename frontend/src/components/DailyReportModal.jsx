@@ -188,7 +188,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
           </div>
 
           {/* Section: Performance Metrics */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: '#1e293b', marginBottom: '6px' }}>
                 Total Connected Calls <span style={{ color: '#ef4444' }}>*</span>
@@ -205,7 +205,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -226,13 +227,14 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: '#1e293b', marginBottom: '6px' }}>
                 Today Groups Created <span style={{ color: '#ef4444' }}>*</span>
@@ -249,7 +251,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -270,7 +273,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -281,7 +285,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: '#1e293b', marginBottom: '6px' }}>
               Today's Conversions <span style={{ color: '#ef4444' }}>*</span>
             </label>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 type="number"
                 name="todayConversions"
@@ -291,12 +295,14 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 required
                 style={{
                   flex: 1,
+                  minWidth: '140px',
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
                   fontSize: '1rem',
                   fontWeight: '700',
-                  color: '#0a192f'
+                  color: '#0a192f',
+                  boxSizing: 'border-box'
                 }}
               />
               <div style={{
@@ -306,7 +312,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 padding: '8px 14px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                flexShrink: 0
               }}>
                 <span style={{ fontSize: '0.8rem', color: '#1e40af', fontWeight: '500' }}>Revenue (₹6,000/conv):</span>
                 <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#2563eb' }}>

@@ -213,7 +213,7 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
           </div>
 
           {/* Section: Target Configuration */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: '#1e293b', marginBottom: '6px' }}>
                 Target Type <span style={{ color: '#ef4444' }}>*</span>
@@ -228,7 +228,8 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
                   fontSize: '0.92rem',
-                  background: '#ffffff'
+                  background: '#ffffff',
+                  boxSizing: 'border-box'
                 }}
               >
                 <option value="Random">Random / Open Audience</option>
@@ -250,7 +251,8 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
                   fontSize: '0.92rem',
-                  background: '#ffffff'
+                  background: '#ffffff',
+                  boxSizing: 'border-box'
                 }}
               >
                 <option value="Completed">Completed</option>
@@ -331,7 +333,7 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
           </div>
 
           {/* Metrics: Sent, Responses, Bounces */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#1e293b', marginBottom: '6px' }}>
                 Total Emails Sent <span style={{ color: '#ef4444' }}>*</span>
@@ -348,7 +350,8 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
                   padding: '9px 10px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -368,7 +371,8 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
                   padding: '9px 10px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -388,7 +392,8 @@ function MailBlastModal({ isOpen, onClose, currentUser, onSuccess, showToast }) 
                   padding: '9px 10px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
