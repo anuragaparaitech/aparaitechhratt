@@ -15,6 +15,7 @@ import leaveRoutes from './routes/leaveRoutes.js'
 import taskRoutes from './routes/taskRoutes.js'
 import announcementRoutes from './routes/announcementRoutes.js'
 import documentRoutes from './routes/documentRoutes.js'
+import productConversionRoutes from './routes/productConversionRoutes.js'
 import { initScheduler } from './services/schedulerService.js'
 
 // Load environment variables
@@ -78,6 +79,7 @@ app.use('/api/leaves', leaveRoutes)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/documents', documentRoutes)
+app.use('/api/conversions', productConversionRoutes)
 
 // Default Health Route
 app.get('/', (req, res) => {

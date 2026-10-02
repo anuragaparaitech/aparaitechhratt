@@ -3,6 +3,7 @@ import { reportsAPI, analyticsAPI, attendanceAPI } from '../services/api'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 import DailyReportModal from './DailyReportModal'
 import MailBlastModal from './MailBlastModal'
+import ConversionDataFillModal from './ConversionDataFillModal'
 
 function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCount = 0 }) {
   const [loading, setLoading] = useState(true)
@@ -16,6 +17,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
   // Modals
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
   const [mailBlastModalOpen, setMailBlastModalOpen] = useState(false)
+  const [conversionModalOpen, setConversionModalOpen] = useState(false)
 
   const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr'
 
@@ -488,6 +490,39 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                 <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#713f12' }}>My Performance</div>
                 <div style={{ fontSize: '0.72rem', color: '#854d0e' }}>Detailed call & lead graphs</div>
               </button>
+
+              {/* Log Product Conversion Button */}
+              <button
+                onClick={() => setConversionModalOpen(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                  border: '1.5px solid #86efac',
+                  borderRadius: '12px',
+                  padding: '12px 14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  gridColumn: '1 / -1'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ color: '#16a34a', fontSize: '1.25rem' }}>
+                    <i className="fas fa-hand-holding-usd"></i>
+                  </div>
+                  <span style={{ background: '#dcfce7', color: '#15803d', fontSize: '0.72rem', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>
+                    ₹1.5k Onboarding • ₹4.5k Final • ₹6k Full
+                  </span>
+                </div>
+                <div style={{ fontWeight: '800', fontSize: '0.92rem', color: '#14532d' }}>
+                  + Fill Candidate Onboarding / Product Sale Data
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#166534' }}>
+                  Log candidate contact, college, payment UTR, and immediately add revenue.
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -795,6 +830,16 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
         onSuccess={() => fetchData()}
         showToast={showToast}
       />
+
+      {conversionModalOpen && (
+        <ConversionDataFillModal
+          isOpen={conversionModalOpen}
+          onClose={() => setConversionModalOpen(false)}
+          currentUser={currentUser}
+          onSuccess={() => fetchData()}
+          showToast={showToast}
+        />
+      )}
     </div>
   )
 }

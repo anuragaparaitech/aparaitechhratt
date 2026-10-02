@@ -9,6 +9,8 @@ import HolidayTable from './HolidayTable'
 import HolidayFormModal from './HolidayFormModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
 import OverallAttendance from './OverallAttendance'
+import ConversionPipelineView from './ConversionPipelineView'
+import ConversionDataFillModal from './ConversionDataFillModal'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange }) {
@@ -94,6 +96,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // Employee Profile States
   const [profileEmp, setProfileEmp] = useState(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+
+  // Product Conversion Modal State
+  const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
 
   // Chart Ref
   const chartRef = useRef(null)
@@ -1296,8 +1301,26 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               </div>
             </div>
           </div>
+
+          {/* Dedicated Product Conversions & 7-Day Follow-Up Pipeline */}
+          <div style={{ marginTop: '0.75rem' }}>
+            <ConversionPipelineView
+              currentUser={currentUser}
+              showToast={showToast}
+              onOpenAddModal={() => setIsConversionModalOpen(true)}
+            />
+          </div>
         </div>
       </>)}
+
+      {/* ── 4B. DEDICATED PRODUCT PIPELINE SECTION (activeSection === 'pipeline') ────────── */}
+      {show('pipeline') && (
+        <ConversionPipelineView
+          currentUser={currentUser}
+          showToast={showToast}
+          onOpenAddModal={() => setIsConversionModalOpen(true)}
+        />
+      )}
 
       {/* ── 5. OVERALL ATTENDANCE ANALYTICS (show('overall')) ────────────────── */}
       {show('overall') && (
@@ -2184,6 +2207,18 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         showToast={showToast}
         onUpdated={fetchData}
       />
+
+      {isConversionModalOpen && (
+        <ConversionDataFillModal
+          isOpen={isConversionModalOpen}
+          onClose={() => setIsConversionModalOpen(false)}
+          currentUser={currentUser}
+          showToast={showToast}
+          onSuccess={() => {
+            fetchData()
+          }}
+        />
+      )}
     </div>
   )
 }

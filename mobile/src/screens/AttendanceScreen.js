@@ -38,8 +38,20 @@ export default function AttendanceScreen({ navigation }) {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
 
-  const userShiftKey = currentUser?.shift || (currentUser?.department === 'Development' ? 'shift_1' : 'shift_2');
-  const userShift = SHIFTS[userShiftKey] || SHIFTS.shift_1;
+  const isBda = currentUser?.department === 'BDA' || currentUser?.shift === 'shift_2' || currentUser?.shift === 'shift_3';
+  const isDev = currentUser?.department === 'Development' || currentUser?.department === 'Software Development' || currentUser?.shift === 'shift_1';
+
+  const [selectedShiftKey, setSelectedShiftKey] = useState(() => {
+    if (isBda) {
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      return currentMin >= (16 * 60 + 30) ? 'shift_3' : (currentUser?.shift === 'shift_3' ? 'shift_3' : 'shift_2');
+    }
+    return currentUser?.shift || (isDev ? 'shift_1' : 'shift_2');
+  });
+
+  const activeShiftKey = activeSession?.shift || selectedShiftKey;
+  const userShift = SHIFTS[activeShiftKey] || SHIFTS.shift_2;
 
   useEffect(() => {
     fetchAttendanceData();
@@ -131,7 +143,8 @@ export default function AttendanceScreen({ navigation }) {
         latitude: userCoords?.latitude || OFFICE_GEOFENCE.latitude,
         longitude: userCoords?.longitude || OFFICE_GEOFENCE.longitude,
         locationDistanceMeters: geofenceResult?.distance || 15,
-        locationVerified: geofenceResult?.inside ?? true
+        locationVerified: geofenceResult?.inside ?? true,
+        shift: selectedShiftKey
       };
 
       if (punchMode === 'check-in') {
@@ -192,9 +205,55 @@ export default function AttendanceScreen({ navigation }) {
           </Text>
 
           <View style={styles.shiftDetailsRow}>
-            <Text style={styles.shiftDetailsLabel}>Assigned Timing:</Text>
+            <Text style={styles.shiftDetailsLabel}>Selected Timing:</Text>
             <Text style={styles.shiftDetailsVal}>{userShift.display}</Text>
           </View>
+
+          {isBda && !activeSession && !todayRecord?.checkOut && (
+            <View style={{ marginBottom: 14, padding: 10, backgroundColor: theme.surface || '#f1f5f9', borderRadius: 10 }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: theme.text, marginBottom: 8 }}>
+                Select Today's Attendance Shift:
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  onPress={() => setSelectedShiftKey('shift_2')}
+                  style={{
+                    flex: 1,
+                    padding: 8,
+                    borderRadius: 8,
+                    borderWidth: 1.5,
+                    borderColor: selectedShiftKey === 'shift_2' ? '#16a34a' : '#cbd5e1',
+                    backgroundColor: selectedShiftKey === 'shift_2' ? '#dcfce7' : '#ffffff'
+                  }}
+                >
+                  <Text style={{ fontWeight: '800', fontSize: 12, color: selectedShiftKey === 'shift_2' ? '#15803d' : '#475569' }}>
+                    Shift 2 (Phase 1)
+                  </Text>
+                  <Text style={{ fontSize: 10, color: '#64748b' }}>11:00 AM – 5:00 PM</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setSelectedShiftKey('shift_3')}
+                  style={{
+                    flex: 1,
+                    padding: 8,
+                    borderRadius: 8,
+                    borderWidth: 1.5,
+                    borderColor: selectedShiftKey === 'shift_3' ? '#d97706' : '#cbd5e1',
+                    backgroundColor: selectedShiftKey === 'shift_3' ? '#fef3c7' : '#ffffff'
+                  }}
+                >
+                  <Text style={{ fontWeight: '800', fontSize: 12, color: selectedShiftKey === 'shift_3' ? '#b45309' : '#475569' }}>
+                    Shift 3 (Phase 2)
+                  </Text>
+                  <Text style={{ fontSize: 10, color: '#64748b' }}>5:00 PM – 11:00 PM</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>
+                ℹ️ BDA can attend Shift 2 or Shift 3, but must complete that particular shift.
+              </Text>
+            </View>
+          )}
 
           {activeSession ? (
             <View style={styles.activeSessionBox}>

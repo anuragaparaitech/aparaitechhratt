@@ -21,6 +21,18 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   const [profileTab, setProfileTab] = useState('details')
   const [enrolledFaceUrl, setEnrolledFaceUrl] = useState(null)
 
+  const isBda = currentUser?.department === 'BDA' || currentUser?.shift === 'shift_2' || currentUser?.shift === 'shift_3'
+  const isDev = currentUser?.department === 'Development' || currentUser?.department === 'Software Development' || currentUser?.shift === 'shift_1'
+
+  const [selectedShift, setSelectedShift] = useState(() => {
+    if (isBda) {
+      const now = new Date()
+      const currentMin = now.getHours() * 60 + now.getMinutes()
+      return currentMin >= (16 * 60 + 30) ? 'shift_3' : (currentUser?.shift === 'shift_3' ? 'shift_3' : 'shift_2')
+    }
+    return currentUser?.shift || (isDev ? 'shift_1' : 'shift_2')
+  })
+
   const getTodayStr = () => new Date().toISOString().split('T')[0]
   
   const getCurrentTimeStr = () => {
@@ -75,7 +87,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
     try {
       const time = getCurrentTimeStr()
       const today = new Date().toISOString().split('T')[0]
-      await attendanceAPI.checkIn(currentUser.email, time, coords)
+      await attendanceAPI.checkIn(currentUser.email, time, coords, selectedShift)
       showToast(`✅ Checked in at ${time}`, '#22c55e')
       // Save photo + verification result asynchronously (non-blocking)
       if (capturedImageDataUrl) {
@@ -147,10 +159,71 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
         <h3><i className="fas fa-calendar-day" style={{ marginRight: '8px' }}></i> Today's Attendance Summary</h3>
         
         {(() => {
-          const userShiftKey = currentUser?.shift || (currentUser?.department === 'Development' ? 'shift_1' : 'shift_2')
-          const userShift = SHIFTS[userShiftKey] || SHIFTS.shift_1
+          const activeShiftKey = activeSession?.shift || selectedShift || (isDev ? 'shift_1' : 'shift_2')
+          const userShift = SHIFTS[activeShiftKey] || SHIFTS.shift_2
           return (
             <>
+              {isBda && !activeSession && (!todayRecord || !todayRecord.checkOut) && (
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: '14px',
+                  padding: '12px 16px',
+                  marginBottom: '1rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#0f172a' }}>
+                      ⚡ Select Today's Shift (Shift 2 or Shift 3)
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                      Shift 1 is strictly for Software Developers
+                    </span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedShift('shift_2')}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: selectedShift === 'shift_2' ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                        background: selectedShift === 'shift_2' ? '#dcfce7' : '#ffffff',
+                        color: selectedShift === 'shift_2' ? '#14532d' : '#475569',
+                        fontWeight: '700',
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <div style={{ fontWeight: '800' }}>Shift 2: BDA Phase 1</div>
+                      <div style={{ fontSize: '0.74rem' }}>11:00 AM – 05:00 PM (6 Hours)</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedShift('shift_3')}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: selectedShift === 'shift_3' ? '2px solid #d97706' : '1px solid #cbd5e1',
+                        background: selectedShift === 'shift_3' ? '#fef3c7' : '#ffffff',
+                        color: selectedShift === 'shift_3' ? '#78350f' : '#475569',
+                        fontWeight: '700',
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <div style={{ fontWeight: '800' }}>Shift 3: BDA Phase 2</div>
+                      <div style={{ fontSize: '0.74rem' }}>05:00 PM – 11:00 PM (6 Hours)</div>
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '6px' }}>
+                    ℹ️ BDA team can attend Shift 2 or Shift 3, but you must complete the full 6 hours of the selected shift.
+                  </div>
+                </div>
+              )}
+
               <div className="today-info" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', margin: '1rem 0' }}>
                 <div>
                   <span>📅 Date: </span>

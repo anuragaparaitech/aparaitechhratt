@@ -22,6 +22,7 @@ const ADMIN_NAV = [
   { id: 'live',           icon: 'fa-eye',                 label: 'Live Check-Ins',          section: true,  group: 'Command Center' },
   { id: 'dailyReports',   icon: 'fa-clipboard-check',     label: 'Daily Working Reports',   section: true,  group: 'Command Center' },
   { id: 'mailBlast',      icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
+  { id: 'pipeline',       icon: 'fa-funnel-dollar',       label: 'Onboarding & Pipeline (7-Day)', section: true,  group: 'Command Center' },
   { id: 'revenue',        icon: 'fa-rupee-sign',          label: 'Revenue & Conversions',   section: true,  group: 'Command Center' },
   { id: 'messaging',      icon: 'fa-envelope',            label: 'Messaging Center',        section: false, tab: 'messaging', group: 'Command Center' },
   // 2. Workforce & Attendance Logs

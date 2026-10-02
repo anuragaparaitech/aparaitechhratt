@@ -64,6 +64,11 @@ export default function RevenueTrackerScreen() {
           <Text style={styles.kpiTotalSub}>
             {summary.totalConversions || 0} total product conversions • {summary.totalReports || 0} verified reports
           </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.15)' }}>
+            <Text style={{ color: '#93c5fd', fontSize: 11, fontWeight: '700' }}>Part 1: ₹1,500</Text>
+            <Text style={{ color: '#86efac', fontSize: 11, fontWeight: '700' }}>Part 2: ₹4,500</Text>
+            <Text style={{ color: '#fbcfe8', fontSize: 11, fontWeight: '700' }}>Full: ₹6,000</Text>
+          </View>
         </View>
       </View>
 

@@ -227,4 +227,24 @@ export const documentAPI = {
   }
 };
 
+// ── 10. PRODUCT CONVERSIONS & ONBOARDING API ───────────────────────────────
+export const conversionAPI = {
+  create: async (data) => {
+    const res = await api.post('/api/conversions', data);
+    return res.data;
+  },
+  getAll: async (params = {}) => {
+    const res = await api.get('/api/conversions', { params });
+    return res.data;
+  },
+  finalize: async (id, data) => {
+    const res = await api.patch(`/api/conversions/${id}/finalize`, data);
+    return res.data;
+  },
+  getAlerts: async () => {
+    const res = await api.get('/api/conversions/admin-alerts');
+    return res.data;
+  }
+};
+
 export default api;

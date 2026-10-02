@@ -3,6 +3,7 @@ import MailBlastReport from '../models/MailBlastReport.js'
 import Attendance from '../models/Attendance.js'
 import ActiveSession from '../models/ActiveSession.js'
 import Employee from '../models/Employee.js'
+import ProductConversion from '../models/ProductConversion.js'
 
 // Helper for IST Date
 const getKolkataDateStr = () => {
@@ -269,8 +270,21 @@ export const getRevenueTracker = async (req, res) => {
       }
     ])
 
-    const grandTotalConversions = overallStats[0]?.totalConversions || 0
-    const grandTotalRevenue = overallStats[0]?.totalRevenue || 0
+    // Conversions pipeline stats
+    const conversionStats = await ProductConversion.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: { $add: ['$amount', { $ifNull: ['$finalizeAmount', 0] }] } },
+          totalCount: { $sum: 1 }
+        }
+      }
+    ])
+    const pcRevenue = conversionStats[0]?.totalRevenue || 0
+    const pcCount = conversionStats[0]?.totalCount || 0
+
+    const grandTotalConversions = (overallStats[0]?.totalConversions || 0) + pcCount
+    const grandTotalRevenue = (overallStats[0]?.totalRevenue || 0) + pcRevenue
 
     // Employee-wise revenue breakdown
     const employeeRevenue = await DailyReport.aggregate([
@@ -328,7 +342,12 @@ export const getRevenueTracker = async (req, res) => {
           totalRevenue: grandTotalRevenue,
           revenuePerConversion: 6000,
           currentMonthRevenue: monthlyTrends.find(m => m._id === currentMonthPrefix)?.revenue || 0,
-          currentMonthConversions: monthlyTrends.find(m => m._id === currentMonthPrefix)?.conversions || 0
+          currentMonthConversions: monthlyTrends.find(m => m._id === currentMonthPrefix)?.conversions || 0,
+          splitModel: {
+            onboardingRate: 1500,
+            finalizeRate: 4500,
+            fullRate: 6000
+          }
         },
         employeeBreakdown: employeeRevenue,
         teamBreakdown: teamRevenue,

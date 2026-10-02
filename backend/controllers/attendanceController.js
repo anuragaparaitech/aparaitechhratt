@@ -133,7 +133,36 @@ export const checkIn = async (req, res) => {
       return res.status(400).json({ message: 'Attendance already completed for today' })
     }
 
-    const assignedShift = employee.shift || (employee.department === 'Development' ? 'shift_1' : 'shift_2')
+    const isBda = employee.department === 'BDA' || employee.shift === 'shift_2' || employee.shift === 'shift_3'
+    const isDev = employee.department === 'Development' || employee.department === 'Software Development' || employee.shift === 'shift_1'
+
+    let chosenShift = req.body.shift
+
+    if (isBda) {
+      // BDA can attend either Shift 2 or Shift 3, but NEVER Shift 1
+      if (chosenShift === 'shift_1') {
+        return res.status(400).json({
+          message: 'BDA team members are not permitted to attend Shift 1 (07:00 AM - 11:00 AM). You may attend Shift 2 (11:00 AM - 05:00 PM) or Shift 3 (05:00 PM - 11:00 PM).'
+        })
+      }
+      if (!chosenShift || (chosenShift !== 'shift_2' && chosenShift !== 'shift_3')) {
+        // Auto-assign based on check-in time: if 16:30 or later, default to Shift 3, otherwise Shift 2
+        const [h, m] = (checkInTime || '11:00').split(':').map(Number)
+        const currentMin = (h || 0) * 60 + (m || 0)
+        chosenShift = currentMin >= (16 * 60 + 30) ? 'shift_3' : (employee.shift === 'shift_3' ? 'shift_3' : 'shift_2')
+      }
+    } else if (isDev) {
+      if (chosenShift && chosenShift !== 'shift_1') {
+        return res.status(400).json({
+          message: 'Software Developers must attend Shift 1 (07:00 AM - 11:00 AM).'
+        })
+      }
+      chosenShift = 'shift_1'
+    } else {
+      chosenShift = chosenShift || employee.shift || 'shift_1'
+    }
+
+    const assignedShift = chosenShift
     const shiftInfo = SHIFTS[assignedShift] || SHIFTS.shift_1
     
     const session = new ActiveSession({
