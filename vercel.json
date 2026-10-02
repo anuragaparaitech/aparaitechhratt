@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://aparaitech-software-attendance-protal-9l04.onrender.com/api/:path*"
+    }
+  ]
+}

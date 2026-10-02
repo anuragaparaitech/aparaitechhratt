@@ -333,6 +333,26 @@ export const documentAPI = {
   }
 }
 
+// ── Product Conversions & 7-Day Pipeline API ─────────────────────────────────
+export const conversionsAPI = {
+  create: async (data) => {
+    const response = await api.post('/api/conversions', data)
+    return response.data
+  },
+  getAll: async (params = {}) => {
+    const response = await api.get('/api/conversions', { params })
+    return response.data
+  },
+  finalize: async (id, data) => {
+    const response = await api.patch(`/api/conversions/${id}/finalize`, data)
+    return response.data
+  },
+  getAdminAlerts: async () => {
+    const response = await api.get('/api/conversions/admin-alerts')
+    return response.data
+  }
+}
+
 export default api
 
 

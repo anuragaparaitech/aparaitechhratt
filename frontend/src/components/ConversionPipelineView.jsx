@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { conversionsAPI } from '../services/api'
 
 export default function ConversionPipelineView({ currentUser, showToast, onOpenAddModal }) {
   const [conversions, setConversions] = useState([])
@@ -25,13 +26,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
   const fetchConversions = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
-      const res = await fetch(`/api/conversions?search=${encodeURIComponent(search)}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const result = await res.json()
+      const result = await conversionsAPI.getAll({ search })
       if (result.success) {
         setConversions(result.data || [])
         setSummary(result.summary || null)
@@ -86,28 +81,15 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
 
     try {
       setFinalizing(true)
-      const token = localStorage.getItem('token')
-      const res = await fetch(`/api/conversions/${activeCandidate._id}/finalize`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          finalizeUtr: finalizeUtr.trim(),
-          remarks: finalizeRemarks.trim(),
-          finalizeReceiptUrl,
-          finalizeReceiptName
-        })
+      const data = await conversionsAPI.finalize(activeCandidate._id, {
+        finalizeUtr: finalizeUtr.trim(),
+        remarks: finalizeRemarks.trim(),
+        finalizeReceiptUrl,
+        finalizeReceiptName
       })
 
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to finalize payment')
-      }
-
       if (showToast) {
-        showToast(data.message || 'Finalize payment of ₹4,500 recorded!', 'success')
+        showToast(data.message || 'Finalize payment of ₹4,500 recorded!', '#22c55e')
       } else {
         alert(data.message || 'Finalize payment recorded!')
       }
@@ -116,7 +98,8 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
       setActiveCandidate(null)
       fetchConversions()
     } catch (err) {
-      setFinalizeError(err.message || 'Error recording finalize payment')
+      const msg = err.response?.data?.message || err.message || 'Error recording finalize payment'
+      setFinalizeError(msg)
     } finally {
       setFinalizing(false)
     }

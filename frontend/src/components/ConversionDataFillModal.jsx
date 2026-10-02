@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { conversionsAPI } from '../services/api'
 
 const PAYMENT_OPTIONS = [
   {
@@ -129,23 +130,10 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
 
     try {
       setSubmitting(true)
-      const token = localStorage.getItem('token')
-      const res = await fetch('/api/conversions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      })
-
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to submit conversion data')
-      }
+      const data = await conversionsAPI.create(formData)
 
       if (showToast) {
-        showToast(data.message || 'Product conversion logged successfully!', 'success')
+        showToast(data.message || 'Product conversion logged successfully!', '#22c55e')
       } else {
         alert(data.message || 'Product conversion logged successfully!')
       }
@@ -167,7 +155,8 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
       if (onSuccess) onSuccess(data.conversion)
       onClose()
     } catch (err) {
-      setErrorMsg(err.message || 'Network error submitting conversion')
+      const msg = err.response?.data?.message || err.message || 'Network error submitting conversion'
+      setErrorMsg(msg)
     } finally {
       setSubmitting(false)
     }
