@@ -515,6 +515,127 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   return (
     <div id="adminPanel" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
 
+      {/* ── Executive Corporate Header Banner ─────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #07101e 0%, #0b192c 50%, #0d9488 100%)',
+        borderRadius: '20px',
+        padding: '1.25rem 1.75rem',
+        color: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        boxShadow: '0 12px 28px -6px rgba(7, 16, 30, 0.45)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Subtle Background Art */}
+        <div style={{
+          position: 'absolute',
+          right: '0',
+          top: '0',
+          bottom: '0',
+          width: '45%',
+          opacity: 0.15,
+          pointerEvents: 'none',
+          backgroundImage: 'radial-gradient(circle at right, #2dd4bf 0%, transparent 70%)'
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', zIndex: 1 }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '16px',
+            background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)',
+            border: '2px solid rgba(255, 255, 255, 0.5)',
+            flexShrink: 0,
+            padding: '4px'
+          }}>
+            <img
+              src="/aparaitech-logo.png"
+              alt="Aparaitech Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '1.35rem',
+                fontWeight: '900',
+                letterSpacing: '0.04em',
+                background: 'linear-gradient(135deg, #ffffff 40%, #5eead4 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                APARAITECH SOFTWARE
+              </span>
+              <span style={{
+                background: 'rgba(45, 212, 191, 0.2)',
+                border: '1px solid rgba(45, 212, 191, 0.4)',
+                borderRadius: '6px',
+                padding: '2px 8px',
+                fontSize: '0.68rem',
+                fontWeight: '800',
+                color: '#5eead4',
+                letterSpacing: '0.04em'
+              }}>
+                SUPER ADMIN
+              </span>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500', marginTop: '3px' }}>
+              INNOVATING SOFTWARE DEVELOPMENT FOR THE FUTURE • PUNE GEOFENCE ACTIVE
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', zIndex: 1 }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.14)',
+            borderRadius: '12px',
+            padding: '8px 14px',
+            textAlign: 'right'
+          }}>
+            <div style={{ fontSize: '0.68rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>
+              Cloud Database
+            </div>
+            <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span>
+              MongoDB Atlas Online
+            </div>
+          </div>
+          <button
+            onClick={fetchData}
+            title="Refresh All Records"
+            style={{
+              background: 'linear-gradient(135deg, #0d9488, #0284c7)',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '10px 16px',
+              fontSize: '0.82rem',
+              fontWeight: '800',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 14px rgba(13, 148, 136, 0.35)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <i className={`fas fa-sync-alt ${loadingLogs ? 'fa-spin' : ''}`}></i>
+            Sync Live
+          </button>
+        </div>
+      </div>
+
       {/* ── Section Breadcrumb with Live IST Clock ───────────────────────────── */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',

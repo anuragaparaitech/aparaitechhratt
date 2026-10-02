@@ -1,6 +1,85 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-export default function AparaitechLogo({ size = 80, className = '', animate = false, showBadge = true }) {
+export default function AparaitechLogo({
+  size = 80,
+  className = '',
+  animate = false,
+  showBadge = true,
+  showText = false,
+  variant = 'icon' // 'icon' | 'badge' | 'full'
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  // If using image variant and no error, render the official 3D glossy logo
+  if (!imgError) {
+    return (
+      <div
+        className={`aparaitech-logo-wrapper ${animate ? 'cube-pulse' : ''} ${className}`}
+        style={{
+          display: 'inline-flex',
+          flexDirection: showText ? 'column' : 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          gap: showText ? '6px' : '0'
+        }}
+      >
+        <div style={{
+          width: size,
+          height: size,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: variant === 'badge' ? '50%' : '18px',
+          background: variant === 'badge' ? 'radial-gradient(circle at 30% 30%, #ffffff, #e2e8f0 70%, #cbd5e1 100%)' : 'transparent',
+          boxShadow: variant === 'badge' ? '0 10px 25px -5px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.8)' : 'none',
+          padding: variant === 'badge' ? `${Math.round(size * 0.08)}px` : '0'
+        }}>
+          <img
+            src="/aparaitech-logo.png"
+            alt="Aparaitech Software Company Logo"
+            onError={() => setImgError(true)}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              filter: animate
+                ? 'drop-shadow(0 10px 20px rgba(13, 148, 136, 0.45))'
+                : 'drop-shadow(0 6px 12px rgba(13, 148, 136, 0.3))',
+              transition: 'transform 0.3s ease'
+            }}
+          />
+        </div>
+
+        {showText && (
+          <div style={{ textAlign: 'center', userSelect: 'none' }}>
+            <div style={{
+              fontWeight: '900',
+              letterSpacing: '0.14em',
+              color: '#0f172a',
+              fontSize: `${Math.max(13, Math.round(size * 0.18))}px`,
+              lineHeight: 1.2
+            }}>
+              APARAITECH
+            </div>
+            <div style={{
+              fontWeight: '700',
+              letterSpacing: '0.18em',
+              color: '#0d9488',
+              fontSize: `${Math.max(8, Math.round(size * 0.1))}px`,
+              textTransform: 'uppercase',
+              lineHeight: 1.2,
+              marginTop: '2px'
+            }}>
+              Software Company
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={`aparaitech-cube-wrapper ${animate ? 'cube-pulse' : ''} ${className}`}

@@ -76,25 +76,59 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
         </button>
 
         <div style={{
-          width: '34px',
-          height: '34px',
-          borderRadius: '9px',
-          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+          width: '40px',
+          height: '40px',
+          borderRadius: '12px',
+          background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ffffff',
-          flexShrink: 0
+          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.8)',
+          border: '1.5px solid rgba(255, 255, 255, 0.4)',
+          flexShrink: 0,
+          padding: '3px'
         }}>
-          <i className="fas fa-building"></i>
+          <img
+            src="/aparaitech-logo.png"
+            alt="Aparaitech Logo"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
         </div>
         <div style={{ minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '800' }}>
-            Aparaitech Software
+          <div style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            fontWeight: '900',
+            letterSpacing: '0.04em',
+            fontSize: '1.05rem',
+            background: 'linear-gradient(135deg, #ffffff 40%, #5eead4 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            APARAITECH
           </div>
-          <span style={{ fontSize: '0.7rem', color: '#93c5fd', display: 'block', fontWeight: '500', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
-            Company Working Portal
-          </span>
+          <div style={{
+            fontSize: '0.66rem',
+            color: '#2dd4bf',
+            fontWeight: '700',
+            letterSpacing: '0.06em',
+            whiteSpace: 'nowrap',
+            textTransform: 'uppercase',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}>
+            <span>SOFTWARE COMPANY</span>
+            <span style={{
+              display: 'inline-block',
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: '#22c55e',
+              boxShadow: '0 0 8px #22c55e'
+            }}></span>
+          </div>
         </div>
       </div>
 

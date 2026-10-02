@@ -165,7 +165,134 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
     : 0
 
   return (
-    <div id="employeePanel">
+    <div id="employeePanel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+      {/* ── Executive Employee Header Banner ─────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #07101e 0%, #0b192c 50%, #0d9488 100%)',
+        borderRadius: '20px',
+        padding: '1.25rem 1.75rem',
+        color: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        boxShadow: '0 12px 28px -6px rgba(7, 16, 30, 0.45)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Subtle Background Glow */}
+        <div style={{
+          position: 'absolute',
+          right: '0',
+          top: '0',
+          bottom: '0',
+          width: '40%',
+          opacity: 0.15,
+          pointerEvents: 'none',
+          backgroundImage: 'radial-gradient(circle at right, #38bdf8 0%, transparent 70%)'
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', zIndex: 1 }}>
+          <div style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '16px',
+            background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)',
+            border: '2px solid rgba(255, 255, 255, 0.5)',
+            flexShrink: 0,
+            padding: '4px'
+          }}>
+            <img
+              src="/aparaitech-logo.png"
+              alt="Aparaitech Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '1.3rem',
+                fontWeight: '900',
+                letterSpacing: '0.03em',
+                background: 'linear-gradient(135deg, #ffffff 40%, #5eead4 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Welcome, {currentUser.name || 'Associate'}
+              </span>
+              <span style={{
+                background: 'rgba(56, 189, 248, 0.2)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                borderRadius: '6px',
+                padding: '2px 8px',
+                fontSize: '0.68rem',
+                fontWeight: '800',
+                color: '#7dd3fc',
+                letterSpacing: '0.04em'
+              }}>
+                {currentUser.department || 'BDA'} • {currentUser.empId || 'EMP'}
+              </span>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: '500', marginTop: '3px' }}>
+              APARAITECH SOFTWARE COMPANY • GEOFENCE: 18.596077, 73.718054 (200m)
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setDailyReportOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, #0d9488, #059669)',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '9px 14px',
+              fontSize: '0.8rem',
+              fontWeight: '800',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(13, 148, 136, 0.35)'
+            }}
+          >
+            <i className="fas fa-clipboard-list"></i>
+            Daily Report
+          </button>
+          {isBda && (
+            <button
+              onClick={() => setAddConversionOpen(true)}
+              style={{
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '9px 14px',
+                fontSize: '0.8rem',
+                fontWeight: '800',
+                color: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+              }}
+            >
+              <i className="fas fa-user-plus"></i>
+              Log Conversion
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Today's Attendance Card */}
       <div className="today-card">
         <h3><i className="fas fa-calendar-day" style={{ marginRight: '8px' }}></i> Today's Attendance Summary</h3>
