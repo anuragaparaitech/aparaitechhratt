@@ -24,7 +24,11 @@ const app = express()
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost',
+  'https://localhost',
+  'capacitor://localhost',
+  'ionic://localhost'
 ]
 
 app.use(cors({
@@ -32,7 +36,10 @@ app.use(cors({
     if (!origin) return callback(null, true)
     const isAllowed = allowedOrigins.indexOf(origin) !== -1 || 
                       origin.endsWith('.vercel.app') || 
-                      origin.startsWith('https://aparaitech-')
+                      origin.startsWith('https://aparaitech-') ||
+                      origin.startsWith('https://localhost') ||
+                      origin.startsWith('http://localhost') ||
+                      origin.startsWith('capacitor://')
     if (isAllowed) {
       callback(null, true)
     } else {
