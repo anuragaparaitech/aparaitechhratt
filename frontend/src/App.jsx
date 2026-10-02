@@ -10,6 +10,7 @@ import PerformanceDashboard from './components/PerformanceDashboard'
 import LeaderboardView from './components/LeaderboardView'
 import RevenueTrackerView from './components/RevenueTrackerView'
 import ManagerReportsView from './components/ManagerReportsView'
+import SplashScreen from './components/SplashScreen'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://aparaitech-software-attendance-protal-9l04.onrender.com'
@@ -57,6 +58,7 @@ function App() {
   const [adminSection, setAdminSection] = useState('overview')
   const [unreadCount, setUnreadCount] = useState(0)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
 
   const showToast = (message, bg = '#1e293b') => {
     setToast({ message, bg })
@@ -161,6 +163,7 @@ function App() {
 
   return (
     <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       {!currentUser ? (
         <LoginScreen onLogin={handleLogin} showToast={showToast} />
       ) : (
