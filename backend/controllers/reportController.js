@@ -254,3 +254,45 @@ export const getMailBlastReports = async (req, res) => {
     })
   }
 }
+
+export const getCollegesList = async (req, res) => {
+  try {
+    const defaultColleges = [
+      'COEP Tech University, Pune',
+      'MIT World Peace University (MIT-WPU), Pune',
+      'PICT (Pune Institute of Computer Technology)',
+      'Sinhgad Institute of Technology (SKNCOE)',
+      'Cummins College of Engineering, Pune',
+      'DY Patil College of Engineering, Akurdi / Pimpri',
+      'Bharati Vidyapeeth College of Engineering, Pune',
+      'VIT / VIIT Pune',
+      'Indira Institute of Management (ICCS), Pune',
+      'PCCOE (Pimpri Chinchwad College of Engineering)',
+      'JSPM Rajarshi Shahu College of Engineering, Tathawade',
+      'Symbiosis Institute of Technology (SIT), Pune',
+      'Modern College of Engineering, Pune',
+      'GH Raisoni College of Engineering, Pune',
+      'Trinity College of Engineering & Research, Pune'
+    ]
+
+    const dbColleges = await MailBlastReport.distinct('collegeName', {
+      collegeName: { $nin: ['', null, 'Other / Custom College'] }
+    })
+
+    const allColleges = Array.from(new Set([...defaultColleges, ...dbColleges])).sort()
+
+    return res.status(200).json({
+      success: true,
+      count: allColleges.length,
+      data: allColleges
+    })
+  } catch (error) {
+    console.error('[Report API Error] getCollegesList:', error)
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch colleges list',
+      error: error.message
+    })
+  }
+}
+

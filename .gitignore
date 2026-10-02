@@ -23,7 +23,10 @@ Thumbs.db
 # VS Code
 .vscode/
 
-# Archives
+# Archives & binaries
 *.zip
 *.apk
 *.exe
+*.dll
+assets/
+mobile/node_modules/

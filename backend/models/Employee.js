@@ -57,6 +57,21 @@ const EmployeeSchema = new mongoose.Schema({
   profileImageUrl: {
     type: String
   },
+  // Authentication & Passcode
+  passcode: {
+    type: String,
+    default: '1234'
+  },
+  resetOtp: {
+    code: String,
+    expiresAt: Date
+  },
+  address: {
+    type: String
+  },
+  emergencyContact: {
+    type: String
+  },
   // Face Enrollment Fields (optional — added by webcam feature)
   faceImageUrl: {
     type: String // Relative URL path: /face-uploads/emp-xxx.jpg

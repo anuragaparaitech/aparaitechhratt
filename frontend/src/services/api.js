@@ -204,6 +204,10 @@ export const reportsAPI = {
   getMailBlast: async (filters = {}) => {
     const response = await api.get('/api/reports/mail-blast', { params: filters })
     return response.data
+  },
+  getColleges: async () => {
+    const response = await api.get('/api/reports/colleges')
+    return response.data
   }
 }
 
@@ -255,5 +259,78 @@ export const messageAPI = {
   }
 }
 
+// ── Leave Management API ───────────────────────────────────────────────────────
+export const leaveAPI = {
+  apply: async (data) => {
+    const response = await api.post('/api/leaves/apply', data)
+    return response.data
+  },
+  getMyLeaves: async () => {
+    const response = await api.get('/api/leaves/my-leaves')
+    return response.data
+  },
+  getAllLeaves: async (params = {}) => {
+    const response = await api.get('/api/leaves', { params })
+    return response.data
+  },
+  updateStatus: async (id, data) => {
+    const response = await api.put(`/api/leaves/${id}/status`, data)
+    return response.data
+  }
+}
+
+// ── Task Management API ────────────────────────────────────────────────────────
+export const taskAPI = {
+  create: async (data) => {
+    const response = await api.post('/api/tasks', data)
+    return response.data
+  },
+  getMyTasks: async () => {
+    const response = await api.get('/api/tasks/my-tasks')
+    return response.data
+  },
+  getAllTasks: async (params = {}) => {
+    const response = await api.get('/api/tasks', { params })
+    return response.data
+  },
+  updateStatus: async (id, data) => {
+    const response = await api.put(`/api/tasks/${id}/status`, data)
+    return response.data
+  },
+  addComment: async (id, data) => {
+    const response = await api.post(`/api/tasks/${id}/comments`, data)
+    return response.data
+  }
+}
+
+// ── Company Announcements API ──────────────────────────────────────────────────
+export const announcementAPI = {
+  getAll: async () => {
+    const response = await api.get('/api/announcements')
+    return response.data
+  },
+  create: async (data) => {
+    const response = await api.post('/api/announcements', data)
+    return response.data
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/api/announcements/${id}`)
+    return response.data
+  }
+}
+
+// ── Official Document Centre API ───────────────────────────────────────────────
+export const documentAPI = {
+  getMyDocuments: async () => {
+    const response = await api.get('/api/documents/my-documents')
+    return response.data
+  },
+  generate: async (docType) => {
+    const response = await api.get(`/api/documents/generate/${docType}`)
+    return response.data
+  }
+}
+
 export default api
+
 

@@ -5,7 +5,8 @@ import {
   getDailyReports,
   getTodayDailyStatus,
   submitMailBlastReport,
-  getMailBlastReports
+  getMailBlastReports,
+  getCollegesList
 } from '../controllers/reportController.js'
 
 const router = express.Router()
@@ -18,8 +19,9 @@ router.post('/daily', submitDailyReport)
 router.get('/daily', getDailyReports)
 router.get('/daily/today-status', getTodayDailyStatus)
 
-// Mail Blast Reports
+// Mail Blast Reports & College Dropdown
 router.post('/mail-blast', submitMailBlastReport)
 router.get('/mail-blast', getMailBlastReports)
+router.get('/colleges', getCollegesList)
 
 export default router

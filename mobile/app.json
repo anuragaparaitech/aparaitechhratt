@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Aparaitech Work Portal",
+    "slug": "aparaitech-work-portal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a192f"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aparaitech.workportal",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Aparaitech Work Portal requires camera access for secure Face Recognition attendance check-in.",
+        "NSLocationWhenInUseUsageDescription": "Aparaitech Work Portal requires location access to verify geofence presence at Optenix Tech Solution office."
+      }
+    },
+    "android": {
+      "package": "com.aparaitech.workportal",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a192f"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    }
+  }
+}

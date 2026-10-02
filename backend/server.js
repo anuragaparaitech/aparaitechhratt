@@ -11,6 +11,10 @@ import messageRoutes from './routes/messageRoutes.js'
 import faceRoutes from './routes/faceRoutes.js'
 import reportRoutes from './routes/reportRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
+import leaveRoutes from './routes/leaveRoutes.js'
+import taskRoutes from './routes/taskRoutes.js'
+import announcementRoutes from './routes/announcementRoutes.js'
+import documentRoutes from './routes/documentRoutes.js'
 import { initScheduler } from './services/schedulerService.js'
 
 // Load environment variables
@@ -27,6 +31,8 @@ const app = express()
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://localhost:8081',
+  'http://localhost:19006',
   'http://localhost',
   'https://localhost',
   'capacitor://localhost',
@@ -66,6 +72,12 @@ app.use('/api/attendance', attendanceRoutes)
 app.use('/api/holidays', holidayRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/face', faceRoutes)
+app.use('/api/reports', reportRoutes)
+app.use('/api/analytics', analyticsRoutes)
+app.use('/api/leaves', leaveRoutes)
+app.use('/api/tasks', taskRoutes)
+app.use('/api/announcements', announcementRoutes)
+app.use('/api/documents', documentRoutes)
 
 // Default Health Route
 app.get('/', (req, res) => {
