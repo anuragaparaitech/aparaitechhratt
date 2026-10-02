@@ -44,14 +44,6 @@ function LoginScreen({ onLogin, showToast }) {
     }
   }
 
-  const handleQuickFill = (demoEmail, demoPwd) => {
-    setEmail(demoEmail)
-    setPassword(demoPwd)
-    if (showToast) {
-      showToast(`Credentials filled for demo! Click "Secure Sign In"`, '#0d9488')
-    }
-  }
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -170,56 +162,13 @@ function LoginScreen({ onLogin, showToast }) {
             </h1>
 
             <p style={{
-              fontSize: '0.88rem',
+              fontSize: '0.92rem',
               color: '#94a3b8',
-              lineHeight: 1.6,
-              marginBottom: '1.5rem'
+              lineHeight: 1.65,
+              marginBottom: '1.75rem'
             }}>
-              Secure biometric face recognition, geofenced physical office check-in, 7-day follow-up conversion pipeline, and automated company operations.
+              Official enterprise portal for attendance tracking, workforce performance analytics, and company operations management.
             </p>
-
-            {/* Feature Highlights Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '10px 12px',
-                borderRadius: '12px'
-              }}>
-                <div style={{ fontSize: '0.95rem', color: '#2dd4bf', marginBottom: '2px' }}>📍 200m Geofence</div>
-                <div style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>Aparaitech Software Office</div>
-              </div>
-
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '10px 12px',
-                borderRadius: '12px'
-              }}>
-                <div style={{ fontSize: '0.95rem', color: '#38bdf8', marginBottom: '2px' }}>👤 Face ID System</div>
-                <div style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>128-d Neural Vector Match</div>
-              </div>
-
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '10px 12px',
-                borderRadius: '12px'
-              }}>
-                <div style={{ fontSize: '0.95rem', color: '#f59e0b', marginBottom: '2px' }}>📈 7-Day Pipeline</div>
-                <div style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>₹1.5k Onb / ₹4.5k Finalize</div>
-              </div>
-
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '10px 12px',
-                borderRadius: '12px'
-              }}>
-                <div style={{ fontSize: '0.95rem', color: '#a855f7', marginBottom: '2px' }}>⚡ MongoDB Atlas</div>
-                <div style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>Dedicated Cloud Cluster</div>
-              </div>
-            </div>
           </div>
 
           {/* Official Contact Footer */}
@@ -281,73 +230,6 @@ function LoginScreen({ onLogin, showToast }) {
               marginTop: '2px'
             }}>
               Official Work Portal
-            </div>
-          </div>
-
-          {/* Quick Demo Credentials Autofill Chips */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <div style={{
-              fontSize: '0.72rem',
-              color: '#64748b',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: '6px'
-            }}>
-              ⚡ Quick Fill Access:
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin@aparaitech.com', 'admin123')}
-                style={{
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  padding: '5px 10px',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  color: '#1e293b',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                🛡️ Super Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('kaledisha868@gmail.com', 'Aparaitech123@')}
-                style={{
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '8px',
-                  padding: '5px 10px',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  color: '#166534',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                💼 BDA Team (Disha)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('rutikyadav2004@gmail.com', 'Aparaitech123@')}
-                style={{
-                  background: '#eff6ff',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '8px',
-                  padding: '5px 10px',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  color: '#1e40af',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                💻 Software Dev (Rutik)
-              </button>
             </div>
           </div>
 
@@ -485,7 +367,7 @@ function LoginScreen({ onLogin, showToast }) {
               {loading ? (
                 <>
                   <i className="fas fa-circle-notch fa-spin" />
-                  Authenticating with MongoDB Atlas...
+                  Signing In to Work Portal...
                 </>
               ) : (
                 <>
@@ -567,7 +449,7 @@ function LoginScreen({ onLogin, showToast }) {
             paddingTop: '1rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#16a34a', fontWeight: '700', marginBottom: '4px' }}>
-              <i className="fas fa-lock" /> 256-bit SSL Encrypted • MongoDB Atlas Cloud Verified
+              <i className="fas fa-lock" /> 256-bit SSL Encrypted • Enterprise Verified Portal
             </div>
             <div>Aparaitech Software Company (OPC) Private Limited</div>
           </div>

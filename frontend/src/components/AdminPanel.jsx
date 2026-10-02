@@ -11,6 +11,7 @@ import EmployeeProfileModal from './EmployeeProfileModal'
 import OverallAttendance from './OverallAttendance'
 import ConversionPipelineView from './ConversionPipelineView'
 import ConversionDataFillModal from './ConversionDataFillModal'
+import DailyReportModal from './DailyReportModal'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange }) {
@@ -51,6 +52,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   const [mailDateFilter, setMailDateFilter] = useState('')
   const [mailSearch, setMailSearch] = useState('')
   const [mailStatusFilter, setMailStatusFilter] = useState('')
+  const [adminEditingReport, setAdminEditingReport] = useState(null)
 
   // View More / View Less Pagination Limits
   const [empLimit, setEmpLimit] = useState(5)
@@ -608,7 +610,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             </div>
             <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span>
-              MongoDB Atlas Online
+              Cloud Database Connected
             </div>
           </div>
           <button
@@ -1082,6 +1084,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                   <th>CONVERSIONS</th>
                   <th>REVENUE (₹6K)</th>
                   <th>REMARKS</th>
+                  <th>ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -1123,11 +1126,33 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                       <td style={{ maxWidth: '220px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {r.remarks || '—'}
                       </td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => setAdminEditingReport(r)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #bfdbfe',
+                            fontSize: '0.78rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                          title="Admin: Edit Daily Report"
+                        >
+                          <i className="fas fa-edit"></i> Edit
+                        </button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="10" style={{ textAlign: 'center', padding: '28px', color: '#64748b' }}>
+                    <td colSpan="11" style={{ textAlign: 'center', padding: '28px', color: '#64748b' }}>
                       No daily reports match the selected filters.
                     </td>
                   </tr>
@@ -2344,6 +2369,20 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           showToast={showToast}
           onSuccess={() => {
             fetchData()
+          }}
+        />
+      )}
+
+      {adminEditingReport && (
+        <DailyReportModal
+          isOpen={Boolean(adminEditingReport)}
+          onClose={() => setAdminEditingReport(null)}
+          currentUser={currentUser}
+          initialReport={adminEditingReport}
+          showToast={showToast}
+          onSuccess={() => {
+            fetchData()
+            if (showToast) showToast('✅ Daily report updated by admin successfully!', '#16a34a')
           }}
         />
       )}

@@ -56,13 +56,24 @@ export const submitDailyReport = async (req, res) => {
       fullNum = conversionsNum
     }
 
-    // Check if report already exists for targetDate by this employee -> upsert
+    const isAdmin = user.role === 'admin'
+    const targetEmail = (isAdmin && req.body.employeeEmail) ? req.body.employeeEmail.toLowerCase() : user.email.toLowerCase()
+
+    // Check if report already exists for targetDate by this employee
     let report = await DailyReport.findOne({
-      employeeEmail: user.email.toLowerCase(),
+      employeeEmail: targetEmail,
       reportDate: targetDate
     })
 
     if (report) {
+      if (!isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Daily report has already been submitted for this date and cannot be modified. Only administrators can edit submitted reports.'
+        })
+      }
+
+      // Allow Admin to edit/update report
       report.connectedCalls = Math.max(0, parseInt(connectedCalls, 10) || 0)
       report.callsAbove3Min = Math.max(0, parseInt(callsAbove3Min, 10) || 0)
       report.groupsCreated = Math.max(0, parseInt(groupsCreated, 10) || 0)
@@ -74,11 +85,12 @@ export const submitDailyReport = async (req, res) => {
       report.revenue = revenueCalculated
       report.reportTime = timeStr
       report.remarks = remarks || ''
+      report.updatedByAdmin = user.name || user.email
       await report.save()
 
       return res.status(200).json({
         success: true,
-        message: `Daily report updated successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}`,
+        message: `Daily report updated by Admin successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}`,
         data: report
       })
     }
@@ -162,12 +174,13 @@ export const getDailyReports = async (req, res) => {
 export const getTodayDailyStatus = async (req, res) => {
   try {
     const user = req.user
-    const { date } = req.query
+    const { date, email } = req.query
     const { dateStr } = getKolkataDateTime()
     const targetDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : dateStr
+    const targetEmail = (user.role === 'admin' && email) ? email.toLowerCase() : user.email.toLowerCase()
 
     const report = await DailyReport.findOne({
-      employeeEmail: user.email.toLowerCase(),
+      employeeEmail: targetEmail,
       reportDate: targetDate
     })
 
@@ -187,7 +200,65 @@ export const getTodayDailyStatus = async (req, res) => {
   }
 }
 
-// ── MAIL BLAST REPORT CONTROLLERS ─────────────────────────────────────────────
+// @desc    Admin updates an employee's daily report
+// @route   PUT /api/reports/daily/:id
+// @access  Private (Admin only)
+export const updateDailyReportByAdmin = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only administrators can edit submitted daily reports.'
+      })
+    }
+
+    const { id } = req.params
+    const {
+      connectedCalls,
+      callsAbove3Min,
+      groupsCreated,
+      membersInGroups,
+      onboardingConversions,
+      finalizeConversions,
+      fullConversions,
+      remarks,
+      reportDate
+    } = req.body
+
+    const report = await DailyReport.findById(id)
+    if (!report) {
+      return res.status(404).json({ success: false, message: 'Daily report not found' })
+    }
+
+    if (connectedCalls !== undefined) report.connectedCalls = Math.max(0, parseInt(connectedCalls, 10) || 0)
+    if (callsAbove3Min !== undefined) report.callsAbove3Min = Math.max(0, parseInt(callsAbove3Min, 10) || 0)
+    if (groupsCreated !== undefined) report.groupsCreated = Math.max(0, parseInt(groupsCreated, 10) || 0)
+    if (membersInGroups !== undefined) report.membersInGroups = Math.max(0, parseInt(membersInGroups, 10) || 0)
+
+    let onb = onboardingConversions !== undefined ? Math.max(0, parseInt(onboardingConversions, 10) || 0) : (report.onboardingConversions || 0)
+    let fin = finalizeConversions !== undefined ? Math.max(0, parseInt(finalizeConversions, 10) || 0) : (report.finalizeConversions || 0)
+    let full = fullConversions !== undefined ? Math.max(0, parseInt(fullConversions, 10) || 0) : (report.fullConversions || 0)
+
+    report.onboardingConversions = onb
+    report.finalizeConversions = fin
+    report.fullConversions = full
+    report.todayConversions = onb + fin + full
+    report.revenue = (onb * 1500) + (fin * 4500) + (full * 6000)
+    if (remarks !== undefined) report.remarks = remarks
+    if (reportDate) report.reportDate = reportDate
+    report.updatedByAdmin = req.user.name || req.user.email
+
+    await report.save()
+
+    return res.json({
+      success: true,
+      message: 'Daily report updated by Admin successfully!',
+      data: report
+    })
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Server error updating daily report', error: err.message })
+  }
+}
 
 export const submitMailBlastReport = async (req, res) => {
   try {

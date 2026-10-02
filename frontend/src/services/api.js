@@ -220,12 +220,18 @@ export const reportsAPI = {
     const response = await api.post('/api/reports/daily', data)
     return response.data
   },
+  updateByAdmin: async (id, data) => {
+    const response = await api.put(`/api/reports/daily/${id}`, data)
+    return response.data
+  },
   getDaily: async (filters = {}) => {
     const response = await api.get('/api/reports/daily', { params: filters })
     return response.data
   },
-  getTodayStatus: async (date) => {
-    const params = date ? { date } : {}
+  getTodayStatus: async (date, email) => {
+    const params = {}
+    if (date) params.date = date
+    if (email) params.email = email
     const response = await api.get('/api/reports/daily/today-status', { params })
     return response.data
   },

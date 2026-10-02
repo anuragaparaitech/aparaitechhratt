@@ -2,6 +2,7 @@ import express from 'express'
 import { protect } from '../middleware/auth.js'
 import {
   submitDailyReport,
+  updateDailyReportByAdmin,
   getDailyReports,
   getTodayDailyStatus,
   submitMailBlastReport,
@@ -16,6 +17,8 @@ router.use(protect)
 
 // Daily Reports
 router.post('/daily', submitDailyReport)
+router.put('/daily/:id', updateDailyReportByAdmin)
+router.patch('/daily/:id', updateDailyReportByAdmin)
 router.get('/daily', getDailyReports)
 router.get('/daily/today-status', getTodayDailyStatus)
 router.get('/today-status', getTodayDailyStatus)

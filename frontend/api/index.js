@@ -78,9 +78,9 @@ apiRouter.get('/health', (req, res) => {
   res.json({
     status: 'success',
     server: 'Vercel Serverless Function',
-    database: 'MongoDB Atlas',
+    database: 'Enterprise Cloud Database',
     databaseState: stateNames[dbState] || dbState,
-    host: mongoose.connection?.host || 'atlas',
+    host: 'cloud',
     uptime: process.uptime()
   })
 })
@@ -89,7 +89,7 @@ apiRouter.get('/', (req, res) => {
   res.json({
     status: 'success',
     message: 'Aparaitech HRMS API is online on Vercel Serverless!',
-    database: 'MongoDB Atlas'
+    database: 'Enterprise Cloud Database'
   })
 })
 
@@ -101,7 +101,7 @@ const requireDatabase = async (req, res, next) => {
   } catch (dbErr) {
     res.status(500).json({
       success: false,
-      message: 'Failed to connect to MongoDB Atlas database. Please verify Atlas Network Access / IP Whitelist.',
+      message: 'Failed to connect to cloud database. Please verify network access.',
       error: dbErr.message
     })
   }

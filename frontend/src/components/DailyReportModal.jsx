@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { reportsAPI } from '../services/api'
 
-function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }) {
+function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, targetEmployee, initialReport }) {
+  const isAdmin = currentUser?.role === 'admin'
+
   const [formData, setFormData] = useState({
     connectedCalls: 0,
     callsAbove3Min: 0,
@@ -21,9 +23,16 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
   })
   const [reportDate, setReportDate] = useState('')
 
+  const isLocked = Boolean(existingReport && !isAdmin)
+
+  const activeEmployeeEmail = initialReport?.employeeEmail || targetEmployee?.email || currentUser?.email
+  const activeEmployeeName = initialReport?.employeeName || targetEmployee?.name || currentUser?.name
+  const activeEmployeeId = initialReport?.employeeId || targetEmployee?.empId || currentUser?.empId
+  const activeEmployeeTeam = initialReport?.teamName || targetEmployee?.department || currentUser?.department
+
   const loadReportForDate = async (targetDate) => {
     try {
-      const res = await reportsAPI.getTodayStatus(targetDate)
+      const res = await reportsAPI.getTodayStatus(targetDate, activeEmployeeEmail)
       if (res.success && res.report) {
         setExistingReport(res.report)
         setFormData({
@@ -59,6 +68,27 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
   // Format today's date and time in IST (Asia/Kolkata)
   useEffect(() => {
     if (isOpen && currentUser) {
+      if (initialReport) {
+        setExistingReport(initialReport)
+        setReportDate(initialReport.reportDate || '')
+        setFormData({
+          connectedCalls: initialReport.connectedCalls || 0,
+          callsAbove3Min: initialReport.callsAbove3Min || 0,
+          groupsCreated: initialReport.groupsCreated || 0,
+          membersInGroups: initialReport.membersInGroups || 0,
+          onboardingConversions: initialReport.onboardingConversions ?? 0,
+          finalizeConversions: initialReport.finalizeConversions ?? 0,
+          fullConversions: initialReport.fullConversions ?? (initialReport.todayConversions && !initialReport.onboardingConversions && !initialReport.finalizeConversions ? initialReport.todayConversions : 0),
+          todayConversions: initialReport.todayConversions || 0,
+          remarks: initialReport.remarks || ''
+        })
+        setAutoInfo({
+          date: initialReport.reportDate || '',
+          time: initialReport.reportTime || ''
+        })
+        return
+      }
+
       const now = new Date()
       const kolkataStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
       const kDate = new Date(kolkataStr)
@@ -77,7 +107,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
       setReportDate(dateStr)
       loadReportForDate(dateStr)
     }
-  }, [isOpen, currentUser])
+  }, [isOpen, currentUser, initialReport])
 
   const handleDateChange = (e) => {
     const newDate = e.target.value
@@ -90,6 +120,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
   if (!isOpen || !currentUser) return null
 
   const handleChange = (e) => {
+    if (isLocked) return
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -105,6 +136,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (isLocked) {
+      if (showToast) {
+        showToast('🔒 Daily report has already been submitted for this date and cannot be modified. Only administrators can edit submitted reports.', '#dc2626')
+      } else {
+        alert('🔒 Daily report has already been submitted for this date and cannot be modified. Only administrators can edit submitted reports.')
+      }
+      return
+    }
+
     setLoading(true)
     try {
       const payload = {
@@ -112,12 +152,22 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
         reportDate,
         todayConversions: totalConversions
       }
-      const res = await reportsAPI.submitDaily(payload)
+      if (isAdmin && (initialReport?.employeeEmail || targetEmployee?.email)) {
+        payload.employeeEmail = initialReport?.employeeEmail || targetEmployee?.email
+      }
+
+      let res
+      if (isAdmin && existingReport?._id) {
+        res = await reportsAPI.updateByAdmin(existingReport._id, payload)
+      } else {
+        res = await reportsAPI.submitDaily(payload)
+      }
+
       if (res.success) {
         if (showToast) {
-          showToast(`✅ ${res.message || 'Daily report submitted successfully!'}`, '#16a34a')
+          showToast(`✅ ${res.message || 'Daily report saved successfully!'}`, '#16a34a')
         } else {
-          alert(`✅ ${res.message || 'Daily report submitted successfully!'}`)
+          alert(`✅ ${res.message || 'Daily report saved successfully!'}`)
         }
         if (onSuccess) onSuccess(res.data)
         onClose()
@@ -197,19 +247,50 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
           </button>
         </div>
 
-        {/* Existing Report Alert */}
-        {existingReport && (
+        {/* Status Alert Banners */}
+        {isLocked && (
           <div style={{
-            background: '#ecfdf5',
-            borderLeft: '4px solid #10b981',
-            padding: '10px 16px',
+            background: '#fef2f2',
+            borderLeft: '4px solid #ef4444',
+            padding: '12px 16px',
             margin: '1rem 1.5rem 0',
-            borderRadius: '6px',
+            borderRadius: '8px',
             fontSize: '0.82rem',
-            color: '#065f46'
+            color: '#991b1b',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
           }}>
-            <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
-            Report for <strong>{reportDate}</strong> found (logged at {existingReport.reportTime}). Submitting again will update the record.
+            <i className="fas fa-lock" style={{ fontSize: '1.2rem', color: '#dc2626' }}></i>
+            <div>
+              <div style={{ fontWeight: '800' }}>🔒 Daily Report Submitted & Locked</div>
+              <div style={{ marginTop: '2px', color: '#b91c1c' }}>
+                Your daily report for <strong>{reportDate}</strong> was already submitted (filed at {existingReport.reportTime}). Employees cannot modify a submitted report. Please contact an Administrator if any corrections are needed.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isAdmin && existingReport && (
+          <div style={{
+            background: '#eff6ff',
+            borderLeft: '4px solid #3b82f6',
+            padding: '12px 16px',
+            margin: '1rem 1.5rem 0',
+            borderRadius: '8px',
+            fontSize: '0.82rem',
+            color: '#1e40af',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <i className="fas fa-user-shield" style={{ fontSize: '1.2rem', color: '#2563eb' }}></i>
+            <div>
+              <div style={{ fontWeight: '800' }}>👑 Administrator Edit Mode</div>
+              <div style={{ marginTop: '2px', color: '#1d4ed8' }}>
+                Editing daily report for <strong>{activeEmployeeName}</strong> on <strong>{reportDate}</strong>. As an admin, you have permission to modify and save corrections.
+              </div>
+            </div>
           </div>
         )}
 
@@ -225,17 +306,17 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
           }}>
             <div style={{ fontWeight: '700', color: '#0a192f', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <i className="fas fa-id-badge" style={{ color: '#2563eb' }}></i> Employee Auto-Filled Information
+                <i className="fas fa-id-badge" style={{ color: '#2563eb' }}></i> Employee Information
               </div>
               <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '600' }}>
-                📅 You can change the date below to submit/edit past reports anytime
+                📅 You can change the date below to view other dates
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', color: '#475569', alignItems: 'center' }}>
-              <div><strong>Name:</strong> {currentUser.name}</div>
-              <div><strong>Emp ID:</strong> {currentUser.empId || 'AP-EMP'}</div>
-              <div><strong>Email:</strong> {currentUser.email}</div>
-              <div><strong>Team:</strong> {currentUser.department || 'BDA'}</div>
+              <div><strong>Name:</strong> {activeEmployeeName}</div>
+              <div><strong>Emp ID:</strong> {activeEmployeeId}</div>
+              <div><strong>Email:</strong> {activeEmployeeEmail}</div>
+              <div><strong>Team:</strong> {activeEmployeeTeam}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <strong>Date:</strong>
                 <input
@@ -252,7 +333,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                     color: '#1e40af',
                     cursor: 'pointer'
                   }}
-                  title="Select any particular date to submit or edit your daily report"
+                  title="Select any particular date to view or submit daily report"
                 />
               </div>
               <div><strong>Time:</strong> {autoInfo.time}</div>
@@ -271,12 +352,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 min="0"
                 value={formData.connectedCalls}
                 onChange={handleChange}
+                disabled={isLocked}
                 required
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
+                  background: isLocked ? '#f1f5f9' : '#ffffff',
+                  cursor: isLocked ? 'not-allowed' : 'text',
                   fontSize: '0.95rem',
                   boxSizing: 'border-box'
                 }}
@@ -293,12 +377,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 min="0"
                 value={formData.callsAbove3Min}
                 onChange={handleChange}
+                disabled={isLocked}
                 required
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
+                  background: isLocked ? '#f1f5f9' : '#ffffff',
+                  cursor: isLocked ? 'not-allowed' : 'text',
                   fontSize: '0.95rem',
                   boxSizing: 'border-box'
                 }}
@@ -317,12 +404,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 min="0"
                 value={formData.groupsCreated}
                 onChange={handleChange}
+                disabled={isLocked}
                 required
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
+                  background: isLocked ? '#f1f5f9' : '#ffffff',
+                  cursor: isLocked ? 'not-allowed' : 'text',
                   fontSize: '0.95rem',
                   boxSizing: 'border-box'
                 }}
@@ -339,12 +429,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 min="0"
                 value={formData.membersInGroups}
                 onChange={handleChange}
+                disabled={isLocked}
                 required
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
+                  background: isLocked ? '#f1f5f9' : '#ffffff',
+                  cursor: isLocked ? 'not-allowed' : 'text',
                   fontSize: '0.95rem',
                   boxSizing: 'border-box'
                 }}
@@ -390,12 +483,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   min="0"
                   value={formData.onboardingConversions}
                   onChange={handleChange}
+                  disabled={isLocked}
                   placeholder="0"
                   style={{
                     width: '100%',
                     padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
+                    background: isLocked ? '#f1f5f9' : '#ffffff',
+                    cursor: isLocked ? 'not-allowed' : 'text',
                     fontSize: '1rem',
                     fontWeight: '700',
                     color: '#0f172a',
@@ -419,12 +515,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   min="0"
                   value={formData.finalizeConversions}
                   onChange={handleChange}
+                  disabled={isLocked}
                   placeholder="0"
                   style={{
                     width: '100%',
                     padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
+                    background: isLocked ? '#f1f5f9' : '#ffffff',
+                    cursor: isLocked ? 'not-allowed' : 'text',
                     fontSize: '1rem',
                     fontWeight: '700',
                     color: '#0f172a',
@@ -448,12 +547,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                   min="0"
                   value={formData.fullConversions}
                   onChange={handleChange}
+                  disabled={isLocked}
                   placeholder="0"
                   style={{
                     width: '100%',
                     padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
+                    background: isLocked ? '#f1f5f9' : '#ffffff',
+                    cursor: isLocked ? 'not-allowed' : 'text',
                     fontSize: '1rem',
                     fontWeight: '700',
                     color: '#0f172a',
@@ -503,12 +605,15 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
               rows="3"
               value={formData.remarks}
               onChange={handleChange}
+              disabled={isLocked}
               placeholder="e.g. Conducted webinar, 3 high-intent student leads follow up scheduled tomorrow..."
               style={{
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: '10px',
                 border: '1px solid #cbd5e1',
+                background: isLocked ? '#f1f5f9' : '#ffffff',
+                cursor: isLocked ? 'not-allowed' : 'text',
                 fontSize: '0.88rem',
                 resize: 'vertical'
               }}
@@ -530,35 +635,63 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
                 cursor: 'pointer'
               }}
             >
-              Cancel
+              {isLocked ? 'Close' : 'Cancel'}
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: '10px 24px',
-                borderRadius: '10px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                color: '#ffffff',
-                fontWeight: '700',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
-              }}
-            >
-              {loading ? (
-                <>
-                  <i className="fas fa-spinner fa-spin"></i> Submitting...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-paper-plane"></i> {existingReport ? 'Update Report' : 'Submit Report'}
-                </>
-              )}
-            </button>
+            {isLocked ? (
+              <button
+                type="button"
+                disabled
+                title="Only administrators can edit submitted reports"
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  background: '#94a3b8',
+                  color: '#ffffff',
+                  fontWeight: '700',
+                  cursor: 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <i className="fas fa-lock"></i> Report Locked (Submitted)
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isAdmin && existingReport
+                    ? 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)'
+                    : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: '#ffffff',
+                  fontWeight: '700',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                }}
+              >
+                {loading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Saving...
+                  </>
+                ) : isAdmin && existingReport ? (
+                  <>
+                    <i className="fas fa-save"></i> Save Changes (Admin Update)
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-paper-plane"></i> Submit Daily Report
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </form>
       </div>
