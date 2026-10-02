@@ -120,6 +120,8 @@ apiRouter.use('/tasks', requireDatabase, taskRoutes)
 apiRouter.use('/announcements', requireDatabase, announcementRoutes)
 apiRouter.use('/documents', requireDatabase, documentRoutes)
 apiRouter.use('/conversions', requireDatabase, productConversionRoutes)
+apiRouter.use('/product-conversions', requireDatabase, productConversionRoutes)
+apiRouter.use('/product_conversions', requireDatabase, productConversionRoutes)
 
 // Mount on /api for regular client calls and / for direct serverless rewrites
 app.use('/api', apiRouter)

@@ -80,6 +80,8 @@ app.use('/api/tasks', taskRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/documents', documentRoutes)
 app.use('/api/conversions', productConversionRoutes)
+app.use('/api/product-conversions', productConversionRoutes)
+app.use('/api/product_conversions', productConversionRoutes)
 
 // Default Health Route
 app.get('/', (req, res) => {

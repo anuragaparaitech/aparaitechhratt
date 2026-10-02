@@ -11,9 +11,7 @@ import LeaderboardView from './components/LeaderboardView'
 import RevenueTrackerView from './components/RevenueTrackerView'
 import ManagerReportsView from './components/ManagerReportsView'
 import SplashScreen from './components/SplashScreen'
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://aparaitech-software-attendance-protal-9l04.onrender.com'
+import { messageAPI } from './services/api'
 
 // ── Admin sidebar nav definition ────────────────────────────────────────────
 const ADMIN_NAV = [
@@ -89,12 +87,9 @@ function App() {
   const fetchUnreadCount = async () => {
     if (currentUser && currentUser.role !== 'admin') {
       try {
-        const token = localStorage.getItem('aparaitech_token')
-        const response = await axios.get(`${API_URL}/api/messages/employee`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (response.data.success) {
-          setUnreadCount(response.data.unreadCount || 0)
+        const response = await messageAPI.getEmployeeMessages()
+        if (response.success) {
+          setUnreadCount(response.unreadCount || 0)
         }
       } catch (err) {
         console.error('Error fetching unread count:', err)

@@ -114,14 +114,22 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast }
       }
       const res = await reportsAPI.submitDaily(payload)
       if (res.success) {
-        showToast(`✅ ${res.message || 'Daily report submitted successfully!'}`, '#16a34a')
+        if (showToast) {
+          showToast(`✅ ${res.message || 'Daily report submitted successfully!'}`, '#16a34a')
+        } else {
+          alert(`✅ ${res.message || 'Daily report submitted successfully!'}`)
+        }
         if (onSuccess) onSuccess(res.data)
         onClose()
       }
     } catch (err) {
       console.error(err)
       const errTxt = err.response?.data?.message || err.message || 'Submission failed'
-      showToast(`❌ ${errTxt}`, '#dc2626')
+      if (showToast) {
+        showToast(`❌ ${errTxt}`, '#dc2626')
+      } else {
+        alert(`❌ ${errTxt}`)
+      }
     } finally {
       setLoading(false)
     }

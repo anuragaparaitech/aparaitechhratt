@@ -4,13 +4,34 @@ const getApiUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL
   }
-  // If running in Capacitor mobile container, target the live Vercel domain
-  if (typeof window !== 'undefined' && window.location.protocol === 'capacitor:') {
+  
+  if (typeof window !== 'undefined') {
+    // Check if running inside Capacitor Android APK, iOS App, Chrome Extension, or file://
+    const isNativeOrContainer = Boolean(
+      window.Capacitor !== undefined ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'chrome-extension:' ||
+      window.location.protocol === 'file:' ||
+      // In Capacitor Android with androidScheme "https", hostname is localhost with no port
+      (window.location.hostname === 'localhost' && (!window.location.port || window.location.port === '80' || window.location.port === '443')) ||
+      (window.location.hostname === '127.0.0.1' && (!window.location.port || window.location.port === '80' || window.location.port === '443'))
+    )
+
+    if (isNativeOrContainer) {
+      return 'https://aparaitechhratt.vercel.app'
+    }
+
+    // If on Vite dev server (e.g. localhost:3000 or localhost:5173), use relative path to allow Vite proxy
+    if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
+        (window.location.port === '3000' || window.location.port === '5173')) {
+      return ''
+    }
+
+    // Default for web deployment (Vercel or custom domain)
     return 'https://aparaitechhratt.vercel.app'
   }
-  // On web (Vercel production and local Vite dev proxy), use same-origin relative URLs
-  // This completely removes third-party Render dependency and eliminates all CORS!
-  return ''
+
+  return 'https://aparaitechhratt.vercel.app'
 }
 
 export const API_URL = getApiUrl()

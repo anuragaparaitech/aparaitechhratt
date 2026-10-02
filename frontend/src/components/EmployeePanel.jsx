@@ -5,6 +5,7 @@ import ChangePwdModal from './ChangePwdModal'
 import FaceVerificationModal from './FaceVerificationModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
 import DailyReportModal from './DailyReportModal'
+import ConversionDataFillModal from './ConversionDataFillModal'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
@@ -15,6 +16,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   const [loading, setLoading] = useState(false)
   const [holidays, setHolidays] = useState([])
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
+  const [addConversionOpen, setAddConversionOpen] = useState(false)
   const [checkoutReportPrompt, setCheckoutReportPrompt] = useState(false)
 
   // ── Face Verification States ─────────────────────────────────────────────────
@@ -865,6 +867,18 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
         showToast={showToast}
         onSuccess={() => {
           showToast('✅ Daily report submitted successfully!', '#22c55e')
+        }}
+      />
+
+      {/* Product Conversion Modal */}
+      <ConversionDataFillModal
+        isOpen={addConversionOpen}
+        onClose={() => setAddConversionOpen(false)}
+        currentUser={currentUser}
+        showToast={showToast}
+        onSuccess={() => {
+          if (showToast) showToast('✅ Product conversion recorded successfully!', '#16a34a')
+          fetchEmployeeData()
         }}
       />
     </div>

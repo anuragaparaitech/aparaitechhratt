@@ -7,7 +7,8 @@
     "androidScheme": "https",
     "cleartext": true,
     "allowNavigation": [
-      "*.onrender.com",
+      "aparaitechhratt.vercel.app",
+      "*.vercel.app",
       "*"
     ]
   },

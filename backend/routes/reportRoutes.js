@@ -18,6 +18,13 @@ router.use(protect)
 router.post('/daily', submitDailyReport)
 router.get('/daily', getDailyReports)
 router.get('/daily/today-status', getTodayDailyStatus)
+router.get('/today-status', getTodayDailyStatus)
+
+// Robust aliases for direct /reports and /reports/submit calls
+router.post('/', submitDailyReport)
+router.get('/', getDailyReports)
+router.post('/submit', submitDailyReport)
+router.post('/submit-daily', submitDailyReport)
 
 // Mail Blast Reports & College Dropdown
 router.post('/mail-blast', submitMailBlastReport)
