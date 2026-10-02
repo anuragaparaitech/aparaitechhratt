@@ -29,7 +29,7 @@ const MONGODB_ATLAS_URI = process.env.MONGODB_URI || 'mongodb+srv://portalaparai
 // Global Mongoose Connection Cache for Serverless Execution
 let cached = global.mongooseInstance
 if (!cached) {
-  cached = global.mongooseInstance = { conn: null, promise: null, seeded: false }
+  cached = global.mongooseInstance = { conn: null, promise: null }
 }
 
 async function connectToDatabase() {
@@ -39,20 +39,15 @@ async function connectToDatabase() {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_ATLAS_URI, {
-      bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 8000
-    }).then(async (m) => {
+      serverSelectionTimeoutMS: 10000
+    }).then((m) => {
       console.log(`📡 MongoDB Atlas Connected to: ${m.connection.host}/${m.connection.name}`)
-      if (!cached.seeded) {
-        cached.seeded = true
-        try {
-          await seedDatabase()
-        } catch (sErr) {
-          console.warn('Seeding note:', sErr.message)
-        }
-      }
       return m
+    }).catch(err => {
+      cached.promise = null
+      console.error('❌ MongoDB Atlas Connection Error:', err.message)
+      throw err
     })
   }
 
@@ -60,7 +55,6 @@ async function connectToDatabase() {
     cached.conn = await cached.promise
   } catch (err) {
     cached.promise = null
-    console.error('❌ MongoDB Atlas Connection Error:', err.message)
     throw err
   }
 
@@ -75,43 +69,18 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
-// Ensure Database is connected before executing any route handler
-app.use(async (req, res, next) => {
-  try {
-    await connectToDatabase()
-    next()
-  } catch (dbErr) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to connect to MongoDB Atlas database',
-      error: dbErr.message
-    })
-  }
-})
-
-// ── Unified Route Registration (Supports both /api/* and root /*) ─────────────
+// ── Diagnostic / Health Routes (Instant response without DB block) ────────────
 const apiRouter = express.Router()
 
-apiRouter.use('/auth', authRoutes)
-apiRouter.use('/employees', employeeRoutes)
-apiRouter.use('/attendance', attendanceRoutes)
-apiRouter.use('/holidays', holidayRoutes)
-apiRouter.use('/messages', messageRoutes)
-apiRouter.use('/face', faceRoutes)
-apiRouter.use('/reports', reportRoutes)
-apiRouter.use('/analytics', analyticsRoutes)
-apiRouter.use('/leaves', leaveRoutes)
-apiRouter.use('/tasks', taskRoutes)
-apiRouter.use('/announcements', announcementRoutes)
-apiRouter.use('/documents', documentRoutes)
-apiRouter.use('/conversions', productConversionRoutes)
-
 apiRouter.get('/health', (req, res) => {
+  const dbState = mongoose.connection.readyState
+  const stateNames = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' }
   res.json({
     status: 'success',
     server: 'Vercel Serverless Function',
     database: 'MongoDB Atlas',
-    host: mongoose.connection?.host || 'Connected',
+    databaseState: stateNames[dbState] || dbState,
+    host: mongoose.connection?.host || 'atlas',
     uptime: process.uptime()
   })
 })
@@ -123,6 +92,34 @@ apiRouter.get('/', (req, res) => {
     database: 'MongoDB Atlas'
   })
 })
+
+// Database Connection Middleware for all operational routes
+const requireDatabase = async (req, res, next) => {
+  try {
+    await connectToDatabase()
+    next()
+  } catch (dbErr) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to connect to MongoDB Atlas database. Please verify Atlas Network Access / IP Whitelist.',
+      error: dbErr.message
+    })
+  }
+}
+
+apiRouter.use('/auth', requireDatabase, authRoutes)
+apiRouter.use('/employees', requireDatabase, employeeRoutes)
+apiRouter.use('/attendance', requireDatabase, attendanceRoutes)
+apiRouter.use('/holidays', requireDatabase, holidayRoutes)
+apiRouter.use('/messages', requireDatabase, messageRoutes)
+apiRouter.use('/face', requireDatabase, faceRoutes)
+apiRouter.use('/reports', requireDatabase, reportRoutes)
+apiRouter.use('/analytics', requireDatabase, analyticsRoutes)
+apiRouter.use('/leaves', requireDatabase, leaveRoutes)
+apiRouter.use('/tasks', requireDatabase, taskRoutes)
+apiRouter.use('/announcements', requireDatabase, announcementRoutes)
+apiRouter.use('/documents', requireDatabase, documentRoutes)
+apiRouter.use('/conversions', requireDatabase, productConversionRoutes)
 
 // Mount on /api for regular client calls and / for direct serverless rewrites
 app.use('/api', apiRouter)
