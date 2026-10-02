@@ -1,7 +1,16 @@
 import axios from 'axios'
 
 const getApiUrl = () => {
-  return import.meta.env.VITE_API_URL || 'https://aparaitech-software-attendance-protal-9l04.onrender.com'
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  // If running in Capacitor mobile container, target the live Vercel domain
+  if (typeof window !== 'undefined' && window.location.protocol === 'capacitor:') {
+    return 'https://aparaitechhratt.vercel.app'
+  }
+  // On web (Vercel production and local Vite dev proxy), use same-origin relative URLs
+  // This completely removes third-party Render dependency and eliminates all CORS!
+  return ''
 }
 
 export const API_URL = getApiUrl()
