@@ -26,14 +26,18 @@ export const saveBase64File = (base64String, destDir = 'uploads') => {
   // Create unique filename
   const filename = `attachment_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`
   
-  // Create destination directory if not exists
-  if (!fs.existsSync(destDir)) {
-    fs.mkdirSync(destDir, { recursive: true })
+  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || Boolean(process.env.NOW_REGION)
+  const targetDir = isServerless ? path.join('/tmp', 'uploads') : destDir
+
+  try {
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true })
+    }
+    const destPath = path.join(targetDir, filename)
+    fs.writeFileSync(destPath, buffer)
+  } catch (err) {
+    console.warn('File save warning:', err.message)
   }
   
-  const destPath = path.join(destDir, filename)
-  fs.writeFileSync(destPath, buffer)
-  
-  // Return the relative URL path
   return `/uploads/${filename}`
 }

@@ -46,7 +46,6 @@ export const assignLeadsToEmployee = async (req, res) => {
       return res.status(400).json({ success: false, message: 'At least one lead is required to assign.' })
     }
 
-    // Lookup employee if name/id not provided
     let emp = null
     try {
       emp = await Employee.findOne({ email: employeeEmail.toLowerCase() })
@@ -138,7 +137,6 @@ export const getAdminStatsAndLeads = async (req, res) => {
       ]
     }
 
-    // 1. Overall Metrics
     const totalLeads = await Lead.countDocuments()
     const notCalledCount = await Lead.countDocuments({ status: 'Not Called' })
     const calledCount = await Lead.countDocuments({ status: 'Called' })
@@ -147,7 +145,6 @@ export const getAdminStatsAndLeads = async (req, res) => {
     const completedCalls = calledCount + interestedCount + notInterestedCount
     const overallConversionRate = completedCalls > 0 ? Math.round((interestedCount / completedCalls) * 100) : 0
 
-    // 2. Employee-wise breakdown
     const employeeAggregation = await Lead.aggregate([
       {
         $group: {
@@ -191,7 +188,6 @@ export const getAdminStatsAndLeads = async (req, res) => {
       }
     })
 
-    // 3. Paginated Leads list
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10)
     const [leads, filteredCount] = await Promise.all([
       Lead.find(filter)
@@ -266,7 +262,6 @@ export const getMyCallingList = async (req, res) => {
       ]
     }
 
-    // 1. Personal Progress Metrics
     const [totalAssigned, pendingCount, calledCount, interestedCount, notInterestedCount] = await Promise.all([
       Lead.countDocuments({ 'assignedTo.email': userEmail }),
       Lead.countDocuments({ 'assignedTo.email': userEmail, status: 'Not Called' }),
@@ -278,10 +273,8 @@ export const getMyCallingList = async (req, res) => {
     const totalContacted = calledCount + interestedCount + notInterestedCount
     const conversionRate = totalContacted > 0 ? Math.round((interestedCount / totalContacted) * 100) : 0
 
-    // 2. Fetch Leads
     const leads = await Lead.find(filter).sort({ priorityScore: -1, createdAt: -1 })
 
-    // Unique colleges & domains in user's list for filter dropdowns
     const uniqueColleges = await Lead.distinct('college', { 'assignedTo.email': userEmail })
     const uniqueDomains = await Lead.distinct('domain', { 'assignedTo.email': userEmail })
 

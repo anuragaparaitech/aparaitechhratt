@@ -7,10 +7,17 @@ import { fileURLToPath } from 'url'
 import bcrypt from 'bcryptjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const PROFILE_UPLOADS_DIR = path.join(__dirname, '..', 'profile-uploads')
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || Boolean(process.env.NOW_REGION)
+const PROFILE_UPLOADS_DIR = isServerless 
+  ? path.join('/tmp', 'profile-uploads') 
+  : path.join(__dirname, '..', 'profile-uploads')
 
-if (!fs.existsSync(PROFILE_UPLOADS_DIR)) {
-  fs.mkdirSync(PROFILE_UPLOADS_DIR, { recursive: true })
+try {
+  if (!fs.existsSync(PROFILE_UPLOADS_DIR)) {
+    fs.mkdirSync(PROFILE_UPLOADS_DIR, { recursive: true })
+  }
+} catch (e) {
+  console.warn('Filesystem notice (profile-uploads):', e.message)
 }
 
 const DEFAULT_PWD = 'Aparaitech123@'

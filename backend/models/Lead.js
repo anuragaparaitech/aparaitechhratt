@@ -89,7 +89,6 @@ const leadSchema = new mongoose.Schema({
   timestamps: true
 })
 
-// Compound index for fast queries by assigned employee and status
 leadSchema.index({ 'assignedTo.email': 1, status: 1, priority: 1 })
 leadSchema.index({ college: 1, domain: 1 })
 

@@ -131,5 +131,5 @@ DailyReportSchema.index({ reportDate: -1, employeeEmail: 1 })
 DailyReportSchema.index({ reportDate: -1, teamName: 1 })
 DailyReportSchema.index({ reportDate: -1, reportType: 1 })
 
-const DailyReport = mongoose.model('DailyReport', DailyReportSchema)
+const DailyReport = mongoose.models.DailyReport || mongoose.model('DailyReport', DailyReportSchema)
 export default DailyReport

@@ -103,25 +103,20 @@ export const toTitleCase = (str) => {
  */
 export const formatIndianMobile = (raw) => {
   if (!raw) return { formatted: '', clean: '' }
-  // Strip all non-digit characters
   let digits = String(raw).replace(/\D/g, '')
 
-  // Remove leading 0 if 11 digits
   if (digits.length === 11 && digits.startsWith('0')) {
     digits = digits.slice(1)
   }
-  // Remove country code 91 if 12 digits
   if (digits.length === 12 && digits.startsWith('91')) {
     digits = digits.slice(2)
   }
 
-  // Check if valid 10-digit Indian number (starting 6, 7, 8, 9)
   if (digits.length === 10 && /^[6-9]/.test(digits)) {
     const formatted = `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`
     return { formatted, clean: digits }
   }
 
-  // Fallback if 10 digits without leading 6-9
   if (digits.length === 10) {
     return { formatted: `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`, clean: digits }
   }
@@ -147,7 +142,6 @@ export const standardizeCollege = (raw) => {
     }
   }
 
-  // Remove common noisy prefixes/suffixes and title case
   let cleaned = cleanRaw
     .replace(/\b(clg|colg)\b/gi, 'College')
     .replace(/\b(engg|engnr)\b/gi, 'Engineering')
@@ -180,7 +174,6 @@ export const parseRawEntity = (rawLine) => {
   const line = rawLine.trim()
   if (!line || line.length < 3) return null
 
-  // Skip header lines like "Name,Email,Mobile,College"
   if (/^(name|candidate|sr\s*no|id|first\s*name)[,\t|]/i.test(line)) {
     return null
   }
@@ -197,7 +190,6 @@ export const parseRawEntity = (rawLine) => {
   }
 
   // 2. Extract Mobile
-  // Match potential 10 to 12 digit numbers with optional +91, 0, hyphens
   const phoneRegex = /(?:\+?91[\s.-]?)?(?:0)?([6-9]\d{9}|[6-9]\d{4}[\s.-]?\d{5})\b/
   const phoneMatch = textWorking.match(phoneRegex)
   let rawPhone = ''
@@ -208,7 +200,7 @@ export const parseRawEntity = (rawLine) => {
 
   const { formatted: mobile, clean: cleanMobile } = formatIndianMobile(rawPhone)
 
-  // 3. Detect Domain from original line or working text
+  // 3. Detect Domain
   const domain = detectDomain(line)
 
   // 4. Detect College
@@ -221,7 +213,6 @@ export const parseRawEntity = (rawLine) => {
     }
   }
 
-  // If no predefined match, check for explicit indicators e.g. "College: XYZ" or words ending in College/University/Institute
   if (!college) {
     const colIndicator = line.match(/(?:college|institute|university|clg|campus|faculty)[:\s]+([^,;|]+)/i)
     if (colIndicator) {
@@ -240,27 +231,23 @@ export const parseRawEntity = (rawLine) => {
   }
 
   // 5. Clean Name from remaining tokens
-  // Strip common label markers like "Name:", "Ph:", "Phone:", "Email:", "Domain:", "College:"
   let nameTokens = textWorking
     .replace(/\b(name|email|mobile|phone|contact|college|clg|dept|domain|branch|course|status|remark|year|fees)[:=-]/gi, ' ')
     .replace(/[,;|/\\()\[\]{}]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
-  // Remove domain keywords from name tokens
   for (const rule of DOMAIN_RULES) {
     nameTokens = nameTokens.replace(rule.keywords, ' ')
   }
 
-  // Clean remaining digits, symbols, and extra words
   let nameCandidates = nameTokens
     .split(/\s+/)
     .filter(word => /^[a-zA-Z.]{2,}$/.test(word))
-    .slice(0, 4) // Names are typically 1 to 4 words
+    .slice(0, 4)
 
   let name = nameCandidates.join(' ').trim()
   if (!name || name.length < 2) {
-    // If no name extracted, fallback to email prefix if present or "Prospective Student"
     if (email) {
       const emailPrefix = email.split('@')[0].replace(/[._0-9]/g, ' ').trim()
       name = toTitleCase(emailPrefix) || 'Prospective Lead'
@@ -313,8 +300,6 @@ export const parseRawEntity = (rawLine) => {
 
 /**
  * Main AI Pipeline for Processing Bulk Input Data
- * @param {string|Array} inputData - Text block or array of objects
- * @param {Object} options - Options including checking against database
  */
 export const processWithAIDataEngine = async (inputData, options = {}) => {
   const { checkExistingDB = true } = options
@@ -326,11 +311,9 @@ export const processWithAIDataEngine = async (inputData, options = {}) => {
       .map(l => l.trim())
       .filter(Boolean)
   } else if (Array.isArray(inputData)) {
-    // If array of objects (from Excel/CSV import)
     lines = inputData.map(item => {
       if (typeof item === 'string') return item
       if (typeof item === 'object' && item !== null) {
-        // Concatenate keys and values
         return Object.entries(item)
           .map(([k, v]) => `${k}: ${v}`)
           .join(', ')
@@ -345,12 +328,10 @@ export const processWithAIDataEngine = async (inputData, options = {}) => {
   let duplicateCount = 0
   const duplicates = []
 
-  // Step 1 & 2 & 3: Parse and standardize
   for (const rawLine of lines) {
     const parsed = parseRawEntity(rawLine)
     if (!parsed) continue
 
-    // Step 4: In-Batch Duplicate Detection
     let isDup = false
     if (parsed.cleanMobile && seenMobiles.has(parsed.cleanMobile)) {
       isDup = true
@@ -362,7 +343,7 @@ export const processWithAIDataEngine = async (inputData, options = {}) => {
       duplicateCount++
       parsed.isDuplicate = true
       duplicates.push(parsed)
-      continue // remove from clean batch
+      continue
     }
 
     if (parsed.cleanMobile) seenMobiles.add(parsed.cleanMobile)
@@ -371,7 +352,6 @@ export const processWithAIDataEngine = async (inputData, options = {}) => {
     parsedRecords.push(parsed)
   }
 
-  // Step 2 enhancement: If mobile is missing but email or name exists, check DB for past record
   if (checkExistingDB && parsedRecords.length > 0) {
     try {
       const emailsToCheck = parsedRecords
@@ -401,7 +381,6 @@ export const processWithAIDataEngine = async (inputData, options = {}) => {
     }
   }
 
-  // Step 5: Categorization Summary
   const byCollege = {}
   const byDomain = {}
   const byPriority = { Hot: 0, Warm: 0, Cold: 0 }

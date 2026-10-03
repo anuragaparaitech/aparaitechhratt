@@ -45,17 +45,4 @@ const transporter = nodemailer.createTransport({
   dnsTimeout: 5000           // 5 seconds dns resolution timeout
 })
 
-// Verify transporter connection on startup in a non-blocking way
-transporter.verify((error, success) => {
-  if (error) {
-    console.warn(`⚠️ Mailer Transporter Verification Failed: ${error.message}.
-   - Host: ${host}
-   - Port: ${port}
-   - Sender: ${from}
-   - Note: If using Brevo, direct API REST fallback will be used when sending emails.`)
-  } else {
-    console.log(`📬 Mailer Transporter verified successfully and is ready to send messages (Host: ${host}, Port: ${port})`)
-  }
-})
-
 export default transporter
