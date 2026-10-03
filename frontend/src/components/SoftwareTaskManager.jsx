@@ -51,12 +51,25 @@ function SoftwareTaskManager({ currentUser, showToast }) {
   const [newHours, setNewHours] = useState('4')
   const [submitting, setSubmitting] = useState(false)
 
-  // Only Anurag and Admin can assign tasks to developers
-  const isAnuragOrAdmin = currentUser && (
-    currentUser.role === 'admin' ||
-    currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' ||
-    currentUser.empId === 'AP7056' ||
-    currentUser.empId === '7017'
+  // Only Anurag and Super Admin are authorized to assign tasks to developers.
+  // Vivek Jagtap and Mahesh Kadam are strictly developers and cannot assign tasks.
+  const userEmail = currentUser?.email?.toLowerCase().trim() || ''
+  const userEmpId = String(currentUser?.empId || '').trim()
+
+  const isBlocked = (
+    userEmail === 'letsmailvivek100@gmail.com' ||
+    userEmpId === '7044' ||
+    userEmail === 'kadammahesh803@gmail.com' ||
+    userEmpId === '7056' ||
+    userEmpId === 'AP7056'
+  )
+
+  const isAnuragOrAdmin = !isBlocked && Boolean(
+    currentUser && (
+      currentUser.role === 'admin' ||
+      userEmail === 'anunand2004@gmail.com' ||
+      userEmpId === '7017'
+    )
   )
 
   useEffect(() => {

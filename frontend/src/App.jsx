@@ -78,26 +78,34 @@ function App() {
     return saved ? JSON.parse(saved) : null
   })
 
-  // Permission helpers
-  const canSwitchPortal = (
-    currentUser?.role === 'admin' ||
-    currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' ||
-    currentUser?.empId === 'AP7056' ||
-    currentUser?.department === 'Management'
-  )
+  // Permission helpers: Anurag (Management/Lead) and Super Admin can switch portals.
+  // Vivek and Mahesh are strictly software developers and stay in the software portal.
+  const isAnuragOrSuperAdmin = (u) => {
+    if (!u) return false
+    const email = u.email?.toLowerCase().trim() || ''
+    const empId = String(u.empId || '').trim()
+    const isBlocked = (
+      email === 'letsmailvivek100@gmail.com' ||
+      empId === '7044' ||
+      email === 'kadammahesh803@gmail.com' ||
+      empId === '7056' ||
+      empId === 'AP7056'
+    )
+    return !isBlocked && (
+      u.role === 'admin' ||
+      email === 'anunand2004@gmail.com' ||
+      empId === '7017'
+    )
+  }
+
+  const canSwitchPortal = isAnuragOrSuperAdmin(currentUser)
 
   const getInitialPortalMode = (user) => {
     if (!user) return 'bda'
-    const switchable = (
-      user.role === 'admin' ||
-      user.email?.toLowerCase() === 'anunand2004@gmail.com' ||
-      user.empId === 'AP7056' ||
-      user.department === 'Management'
-    )
-    if (switchable) {
+    if (isAnuragOrSuperAdmin(user)) {
       const saved = localStorage.getItem('aparaitech_portal_mode')
       if (saved === 'software' || saved === 'bda') return saved
-      if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || user.empId === 'AP7056') return 'software'
+      if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017') return 'software'
       return user.role === 'admin' ? 'bda' : 'software'
     }
     const isDev = (
@@ -149,7 +157,7 @@ function App() {
     setToast({ message, bg })
   }
 
-  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email === 'anunand2004@gmail.com'
+  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser?.empId) === '7017'
 
   // Reset tab selection when current user changes
   useEffect(() => {

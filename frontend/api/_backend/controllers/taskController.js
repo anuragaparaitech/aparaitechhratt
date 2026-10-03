@@ -2,20 +2,40 @@ import Task from '../models/Task.js'
 import Employee from '../models/Employee.js'
 import Project from '../models/Project.js'
 
+// Helper to check if the user is authorized to assign / edit / delete tasks
+// Strictly blocks Vivek Jagtap (7044) and Mahesh Kadam (7056 / AP7056)
+// Only Anurag Nand (anunand2004@gmail.com / 7017) and Super Admin (role: 'admin') are permitted
+const canUserAssignTasks = (user) => {
+  if (!user) return false
+  const email = (user.email || '').toLowerCase().trim()
+  const empId = String(user.empId || '').trim()
+
+  // Explicitly block Vivek and Mahesh
+  if (
+    email === 'letsmailvivek100@gmail.com' ||
+    empId === '7044' ||
+    email === 'kadammahesh803@gmail.com' ||
+    empId === '7056' ||
+    empId === 'AP7056'
+  ) {
+    return false
+  }
+
+  // Only Anurag and Super Admin are permitted
+  return (
+    user.role === 'admin' ||
+    email === 'anunand2004@gmail.com' ||
+    empId === '7017'
+  )
+}
+
 // @desc    Create a new task (Manager/Admin/Lead/Dev)
 // @route   POST /api/tasks
 // @access  Private
 export const createTask = async (req, res) => {
   try {
     // Only Anurag and Super Admin are authorized to assign tasks to developers
-    const isAnuragOrAdmin = req.user && (
-      req.user.role === 'admin' ||
-      req.user.email?.toLowerCase() === 'anunand2004@gmail.com' ||
-      req.user.empId === 'AP7056' ||
-      req.user.empId === '7017'
-    )
-
-    if (!isAnuragOrAdmin) {
+    if (!canUserAssignTasks(req.user)) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: Only Anurag and Administrators are authorized to assign tasks to developers'
@@ -255,6 +275,13 @@ export const updateTaskStatus = async (req, res) => {
 // @access  Private
 export const updateTask = async (req, res) => {
   try {
+    if (!canUserAssignTasks(req.user)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Only Anurag and Administrators are authorized to edit or reassign tasks'
+      })
+    }
+
     const task = await Task.findById(req.params.id)
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' })
@@ -371,9 +398,11 @@ export const addTaskAttachment = async (req, res) => {
 // @access  Private
 export const deleteTask = async (req, res) => {
   try {
-    const isManager = req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'hr'
-    if (!isManager) {
-      return res.status(403).json({ success: false, message: 'Not authorized to delete tasks' })
+    if (!canUserAssignTasks(req.user)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Only Anurag and Administrators are authorized to delete tasks'
+      })
     }
 
     const task = await Task.findByIdAndDelete(req.params.id)

@@ -35,14 +35,26 @@ export default function TaskManagementScreen() {
 
   // Task Details Modal
   const [selectedTask, setSelectedTask] = useState(null);
-  const [commentText, setCommentText] = useState('');
-
-  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr';
+  // Only Anurag and Super Admin can assign tasks. Vivek and Mahesh are strictly blocked.
+  const userEmail = currentUser?.email?.toLowerCase().trim() || '';
+  const userEmpId = String(currentUser?.empId || '').trim();
+  const isBlocked = (
+    userEmail === 'letsmailvivek100@gmail.com' ||
+    userEmpId === '7044' ||
+    userEmail === 'kadammahesh803@gmail.com' ||
+    userEmpId === '7056' ||
+    userEmpId === 'AP7056'
+  );
+  const isAnuragOrAdmin = !isBlocked && (
+    currentUser?.role === 'admin' ||
+    userEmail === 'anunand2004@gmail.com' ||
+    userEmpId === '7017'
+  );
 
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const res = isManagerOrAdmin
+      const res = (isAnuragOrAdmin || currentUser?.role === 'admin')
         ? await taskAPI.getAllTasks()
         : await taskAPI.getMyTasks();
       if (res?.success) {
@@ -66,6 +78,10 @@ export default function TaskManagementScreen() {
   };
 
   const handleCreateTask = async () => {
+    if (!isAnuragOrAdmin) {
+      Alert.alert('Permission Denied', 'Only Anurag and Administrators are authorized to assign tasks.');
+      return;
+    }
     if (!newTitle.trim() || !newDesc.trim() || !assignEmail.trim()) {
       Alert.alert('Required Fields', 'Please complete title, description, and assignee email.');
       return;
@@ -128,11 +144,11 @@ export default function TaskManagementScreen() {
         <View>
           <Text style={[styles.headerTitle, { color: theme.text }]}>Corporate Task Board</Text>
           <Text style={styles.headerSubtitle}>
-            {isManagerOrAdmin ? 'Manage team tasks & deliverables' : 'Your assigned milestones & deadlines'}
+            {isAnuragOrAdmin ? 'Manage team tasks & deliverables' : 'Your assigned milestones & deadlines'}
           </Text>
         </View>
 
-        {isManagerOrAdmin && (
+        {isAnuragOrAdmin && (
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => setCreateModal(true)}
