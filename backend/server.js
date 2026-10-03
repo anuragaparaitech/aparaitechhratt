@@ -17,6 +17,8 @@ import announcementRoutes from './routes/announcementRoutes.js'
 import documentRoutes from './routes/documentRoutes.js'
 import productConversionRoutes from './routes/productConversionRoutes.js'
 import leadRoutes from './routes/leadRoutes.js'
+import projectRoutes from './routes/projectRoutes.js'
+import repoRoutes from './routes/repoRoutes.js'
 import { initScheduler } from './services/schedulerService.js'
 
 // Load environment variables
@@ -84,6 +86,8 @@ app.use('/api/conversions', productConversionRoutes)
 app.use('/api/product-conversions', productConversionRoutes)
 app.use('/api/product_conversions', productConversionRoutes)
 app.use('/api/leads', leadRoutes)
+app.use('/api/projects', projectRoutes)
+app.use('/api/repos', repoRoutes)
 
 // Default Health Route
 app.get('/', (req, res) => {

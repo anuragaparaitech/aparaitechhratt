@@ -22,6 +22,11 @@ const DailyReportSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  reportType: {
+    type: String,
+    enum: ['bda', 'software'],
+    default: 'bda'
+  },
   reportDate: {
     type: String,
     required: true, // Format: YYYY-MM-DD
@@ -32,27 +37,55 @@ const DailyReportSchema = new mongoose.Schema({
     required: true, // Format: HH:MM or HH:MM AM/PM
     trim: true
   },
+
+  // ── Software Engineering Specific Report Fields ─────────────────────────
+  tasksCompleted: {
+    type: String,
+    default: ''
+  },
+  tasksInProgress: {
+    type: String,
+    default: ''
+  },
+  tasksPending: {
+    type: String,
+    default: ''
+  },
+  hoursWorked: {
+    type: Number,
+    default: 0
+  },
+  blockers: {
+    type: String,
+    default: ''
+  },
+  planTomorrow: {
+    type: String,
+    default: ''
+  },
+  githubPrs: {
+    type: String,
+    default: ''
+  },
+
+  // ── BDA / Sales Report Fields (Maintained with 100% backward compatibility) ─
   connectedCalls: {
     type: Number,
-    required: true,
     default: 0,
     min: 0
   },
   callsAbove3Min: {
     type: Number,
-    required: true,
     default: 0,
     min: 0
   },
   groupsCreated: {
     type: Number,
-    required: true,
     default: 0,
     min: 0
   },
   membersInGroups: {
     type: Number,
-    required: true,
     default: 0,
     min: 0
   },
@@ -73,19 +106,21 @@ const DailyReportSchema = new mongoose.Schema({
   },
   todayConversions: {
     type: Number,
-    required: true,
     default: 0,
     min: 0
   },
   revenue: {
     type: Number,
-    required: true,
-    default: 0 // Computed based on onboarding (1500) + finalize (4500) + full (6000)
+    default: 0
   },
   remarks: {
     type: String,
     default: '',
     trim: true
+  },
+  updatedByAdmin: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
@@ -94,6 +129,7 @@ const DailyReportSchema = new mongoose.Schema({
 // Index for efficient search by date and email
 DailyReportSchema.index({ reportDate: -1, employeeEmail: 1 })
 DailyReportSchema.index({ reportDate: -1, teamName: 1 })
+DailyReportSchema.index({ reportDate: -1, reportType: 1 })
 
 const DailyReport = mongoose.model('DailyReport', DailyReportSchema)
 export default DailyReport

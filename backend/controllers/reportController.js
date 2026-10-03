@@ -28,6 +28,14 @@ export const submitDailyReport = async (req, res) => {
   try {
     const user = req.user
     const {
+      reportType,
+      tasksCompleted = '',
+      tasksInProgress = '',
+      tasksPending = '',
+      hoursWorked = 0,
+      blockers = '',
+      planTomorrow = '',
+      githubPrs = '',
       connectedCalls = 0,
       callsAbove3Min = 0,
       groupsCreated = 0,
@@ -40,21 +48,9 @@ export const submitDailyReport = async (req, res) => {
       remarks = ''
     } = req.body
 
+    const isSoftwareReport = reportType === 'software' || user.department === 'Development' || Boolean(tasksCompleted || tasksInProgress || planTomorrow)
     const { dateStr: todayKolkata, timeStr } = getKolkataDateTime()
     const targetDate = reportDate && /^\d{4}-\d{2}-\d{2}$/.test(reportDate) ? reportDate : todayKolkata
-
-    let onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0)
-    let finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0)
-    let fullNum = Math.max(0, parseInt(fullConversions, 10) || 0)
-    let conversionsNum = onbNum + finNum + fullNum
-    let revenueCalculated = (onbNum * 1500) + (finNum * 4500) + (fullNum * 6000)
-
-    // Fallback if split counts were 0 but legacy todayConversions was passed
-    if (conversionsNum === 0 && todayConversions > 0) {
-      conversionsNum = Math.max(0, parseInt(todayConversions, 10) || 0)
-      revenueCalculated = conversionsNum * 6000
-      fullNum = conversionsNum
-    }
 
     const isAdmin = user.role === 'admin'
     const targetEmail = (isAdmin && req.body.employeeEmail) ? req.body.employeeEmail.toLowerCase() : user.email.toLowerCase()
@@ -65,6 +61,66 @@ export const submitDailyReport = async (req, res) => {
       reportDate: targetDate
     })
 
+    if (isSoftwareReport) {
+      if (report) {
+        // Update software report
+        report.tasksCompleted = tasksCompleted || report.tasksCompleted || ''
+        report.tasksInProgress = tasksInProgress || report.tasksInProgress || ''
+        report.tasksPending = tasksPending || report.tasksPending || ''
+        report.hoursWorked = hoursWorked !== undefined ? Number(hoursWorked) : (report.hoursWorked || 0)
+        report.blockers = blockers || report.blockers || ''
+        report.planTomorrow = planTomorrow || report.planTomorrow || ''
+        report.githubPrs = githubPrs || report.githubPrs || ''
+        report.reportTime = timeStr
+        report.reportType = 'software'
+        if (isAdmin) report.updatedByAdmin = user.name || user.email
+        await report.save()
+
+        return res.status(200).json({
+          success: true,
+          message: 'Software Daily Report updated successfully!',
+          data: report
+        })
+      }
+
+      report = await DailyReport.create({
+        employeeId: user.empId || 'EMP',
+        employeeEmail: user.email.toLowerCase(),
+        employeeName: user.name,
+        teamName: user.department || 'Development',
+        reportType: 'software',
+        reportDate: targetDate,
+        reportTime: timeStr,
+        tasksCompleted: tasksCompleted || '',
+        tasksInProgress: tasksInProgress || '',
+        tasksPending: tasksPending || '',
+        hoursWorked: hoursWorked ? Number(hoursWorked) : 0,
+        blockers: blockers || '',
+        planTomorrow: planTomorrow || '',
+        githubPrs: githubPrs || '',
+        remarks: remarks || ''
+      })
+
+      return res.status(201).json({
+        success: true,
+        message: 'Software Daily Report submitted successfully!',
+        data: report
+      })
+    }
+
+    // ── BDA Report Processing ──
+    let onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0)
+    let finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0)
+    let fullNum = Math.max(0, parseInt(fullConversions, 10) || 0)
+    let conversionsNum = onbNum + finNum + fullNum
+    let revenueCalculated = (onbNum * 1500) + (finNum * 4500) + (fullNum * 6000)
+
+    if (conversionsNum === 0 && todayConversions > 0) {
+      conversionsNum = Math.max(0, parseInt(todayConversions, 10) || 0)
+      revenueCalculated = conversionsNum * 6000
+      fullNum = conversionsNum
+    }
+
     if (report) {
       if (!isAdmin) {
         return res.status(403).json({
@@ -73,7 +129,6 @@ export const submitDailyReport = async (req, res) => {
         })
       }
 
-      // Allow Admin to edit/update report
       report.connectedCalls = Math.max(0, parseInt(connectedCalls, 10) || 0)
       report.callsAbove3Min = Math.max(0, parseInt(callsAbove3Min, 10) || 0)
       report.groupsCreated = Math.max(0, parseInt(groupsCreated, 10) || 0)
@@ -85,6 +140,7 @@ export const submitDailyReport = async (req, res) => {
       report.revenue = revenueCalculated
       report.reportTime = timeStr
       report.remarks = remarks || ''
+      report.reportType = 'bda'
       report.updatedByAdmin = user.name || user.email
       await report.save()
 
@@ -100,6 +156,7 @@ export const submitDailyReport = async (req, res) => {
       employeeEmail: user.email.toLowerCase(),
       employeeName: user.name,
       teamName: user.department || 'BDA',
+      reportType: 'bda',
       reportDate: targetDate,
       reportTime: timeStr,
       connectedCalls: Math.max(0, parseInt(connectedCalls, 10) || 0),
@@ -144,7 +201,8 @@ export const getDailyReports = async (req, res) => {
     }
 
     if (date) query.reportDate = date
-    if (teamName) query.teamName = teamName
+    if (teamName && teamName !== 'all') query.teamName = teamName
+    if (req.query.reportType && req.query.reportType !== 'all') query.reportType = req.query.reportType
 
     if (search) {
       query.$or = [

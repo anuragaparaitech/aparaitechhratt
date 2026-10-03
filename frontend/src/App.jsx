@@ -14,27 +14,62 @@ import MyCallingList from './components/MyCallingList'
 import SplashScreen from './components/SplashScreen'
 import { messageAPI } from './services/api'
 
-// ── Admin sidebar nav definition ────────────────────────────────────────────
+// Software Portal Components
+import SoftwareDashboard from './components/SoftwareDashboard'
+import SoftwareTaskManager from './components/SoftwareTaskManager'
+import SoftwareProjectManager from './components/SoftwareProjectManager'
+import SoftwareReportsView from './components/SoftwareReportsView'
+import CodeRepositoryView from './components/CodeRepositoryView'
+import SoftwarePerformanceView from './components/SoftwarePerformanceView'
+import LeaveManagementView from './components/LeaveManagementView'
+import DocumentCenterView from './components/DocumentCenterView'
+import AnnouncementsView from './components/AnnouncementsView'
+import SettingsView from './components/SettingsView'
+import NotificationCenterModal from './components/NotificationCenterModal'
+import SoftwareDailyReportModal from './components/SoftwareDailyReportModal'
+
+// ── Admin sidebar nav definition (BDA / Executive) ──────────────────────────
 const ADMIN_NAV = [
   // 1. Executive Operations & Performance
   { id: 'overview',           icon: 'fa-tachometer-alt',      label: 'Executive Overview',      section: true,  group: 'Command Center' },
   { id: 'aiDataDistribution', icon: 'fa-brain',               label: 'AI Lead Distribution',    section: true,  group: 'Command Center' },
   { id: 'live',               icon: 'fa-eye',                 label: 'Live Check-Ins',          section: true,  group: 'Command Center' },
-  { id: 'dailyReports',   icon: 'fa-clipboard-check',     label: 'Daily Working Reports',   section: true,  group: 'Command Center' },
-  { id: 'mailBlast',      icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
-  { id: 'pipeline',       icon: 'fa-funnel-dollar',       label: 'Onboarding & Pipeline (7-Day)', section: true,  group: 'Command Center' },
-  { id: 'revenue',        icon: 'fa-rupee-sign',          label: 'Revenue & Conversions',   section: true,  group: 'Command Center' },
-  { id: 'messaging',      icon: 'fa-envelope',            label: 'Messaging Center',        section: false, tab: 'messaging', group: 'Command Center' },
+  { id: 'dailyReports',       icon: 'fa-clipboard-check',     label: 'Daily Working Reports',   section: true,  group: 'Command Center' },
+  { id: 'mailBlast',          icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
+  { id: 'pipeline',           icon: 'fa-funnel-dollar',       label: 'Onboarding & Pipeline (7-Day)', section: true,  group: 'Command Center' },
+  { id: 'revenue',            icon: 'fa-rupee-sign',          label: 'Revenue & Conversions',   section: true,  group: 'Command Center' },
+  { id: 'messaging',          icon: 'fa-envelope',            label: 'Messaging Center',        section: false, tab: 'messaging', group: 'Command Center' },
   // 2. Workforce & Attendance Logs
-  { id: 'employees',      icon: 'fa-users',               label: 'Employee Directory',      section: true,  group: 'Workforce & Logs' },
-  { id: 'attendance',     icon: 'fa-calendar-check',      label: 'Attendance Logs',         section: true,  group: 'Workforce & Logs' },
-  { id: 'overall',        icon: 'fa-chart-line',          label: 'Overall Analytics',       section: true,  group: 'Workforce & Logs' },
-  { id: 'missing',        icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',      section: true,  group: 'Workforce & Logs' },
-  { id: 'autocheckout',   icon: 'fa-robot',               label: 'Auto Checkout Records',   section: true,  group: 'Workforce & Logs' },
-  { id: 'holidays',       icon: 'fa-umbrella-beach',      label: 'Holiday Management',      section: true,  group: 'Workforce & Logs' },
-  { id: 'data',           icon: 'fa-database',            label: 'Data Management',         section: true,  group: 'Workforce & Logs' },
+  { id: 'employees',          icon: 'fa-users',               label: 'Employee Directory',      section: true,  group: 'Workforce & Logs' },
+  { id: 'attendance',         icon: 'fa-calendar-check',      label: 'Attendance Logs',         section: true,  group: 'Workforce & Logs' },
+  { id: 'overall',            icon: 'fa-chart-line',          label: 'Overall Analytics',       section: true,  group: 'Workforce & Logs' },
+  { id: 'missing',            icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',       section: true,  group: 'Workforce & Logs' },
+  { id: 'autocheckout',       icon: 'fa-robot',               label: 'Auto Checkout Records',   section: true,  group: 'Workforce & Logs' },
+  { id: 'holidays',           icon: 'fa-umbrella-beach',      label: 'Holiday Management',      section: true,  group: 'Workforce & Logs' },
+  { id: 'data',               icon: 'fa-database',            label: 'Data Management',         section: true,  group: 'Workforce & Logs' },
   // 3. Employee Portal Preview
-  { id: 'companyHub',     icon: 'fa-home',                label: 'Employee Portal View',    section: false, tab: 'companyHub', group: 'Portal Preview' },
+  { id: 'companyHub',         icon: 'fa-home',                label: 'Employee Portal View',    section: false, tab: 'companyHub', group: 'Portal Preview' },
+]
+
+// ── Software Team sidebar nav definition ────────────────────────────────────
+const SOFTWARE_NAV = [
+  // 1. Software Workspace
+  { id: 'softwareDashboard',    icon: 'fa-laptop-code',     label: 'Software Dashboard',  group: 'Software Workspace' },
+  { id: 'softwareTasks',        icon: 'fa-tasks',           label: 'Sprint Tasks Board',  group: 'Software Workspace' },
+  { id: 'softwareProjects',     icon: 'fa-project-diagram', label: 'Projects Hub',        group: 'Software Workspace' },
+  { id: 'softwareDailyReports', icon: 'fa-clipboard-check', label: 'Daily Work Reports',  group: 'Software Workspace' },
+  { id: 'softwareRepos',        icon: 'fa-code-branch',     label: 'Code Repository',     group: 'Software Workspace' },
+  { id: 'softwarePerformance',  icon: 'fa-chart-line',      label: 'Velocity & Metrics',  group: 'Software Workspace' },
+
+  // 2. Attendance & HR Desk
+  { id: 'attendance',           icon: 'fa-fingerprint',     label: 'Attendance & Punch',  group: 'Attendance & HR' },
+  { id: 'softwareLeave',        icon: 'fa-calendar-alt',    label: 'Leave Management',    group: 'Attendance & HR' },
+  { id: 'softwareDocs',         icon: 'fa-file-invoice',    label: 'Document Centre',     group: 'Attendance & HR' },
+
+  // 3. Communications & Setup
+  { id: 'softwareAnnouncements',icon: 'fa-bullhorn',        label: 'Announcements',       group: 'Communication' },
+  { id: 'inbox',                icon: 'fa-inbox',           label: 'Message Centre',      group: 'Communication', badge: true },
+  { id: 'softwareSettings',     icon: 'fa-cog',             label: 'Portal Settings',     group: 'Communication' }
 ]
 
 function App() {
@@ -43,12 +78,59 @@ function App() {
     return saved ? JSON.parse(saved) : null
   })
 
+  // Permission helpers
+  const canSwitchPortal = (
+    currentUser?.role === 'admin' ||
+    currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' ||
+    currentUser?.empId === 'AP7056' ||
+    currentUser?.department === 'Management'
+  )
+
+  const getInitialPortalMode = (user) => {
+    if (!user) return 'bda'
+    const switchable = (
+      user.role === 'admin' ||
+      user.email?.toLowerCase() === 'anunand2004@gmail.com' ||
+      user.empId === 'AP7056' ||
+      user.department === 'Management'
+    )
+    if (switchable) {
+      const saved = localStorage.getItem('aparaitech_portal_mode')
+      if (saved === 'software' || saved === 'bda') return saved
+      if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || user.empId === 'AP7056') return 'software'
+      return user.role === 'admin' ? 'bda' : 'software'
+    }
+    const isDev = (
+      user.department === 'Development' ||
+      user.department === 'Software' ||
+      user.role === 'developer' ||
+      user.role === 'intern' ||
+      user.designation?.toLowerCase().includes('software') ||
+      user.designation?.toLowerCase().includes('developer')
+    )
+    return isDev ? 'software' : 'bda'
+  }
+
+  // Active portal mode ('software' vs 'bda')
+  const [portalMode, setPortalMode] = useState(() => {
+    const saved = localStorage.getItem('aparaitech_current_user')
+    if (saved) {
+      try {
+        const u = JSON.parse(saved)
+        return getInitialPortalMode(u)
+      } catch (e) {}
+    }
+    return 'bda'
+  })
+
   const [toast, setToast] = useState(null)
   const [activeTab, setActiveTab] = useState(() => {
     const saved = localStorage.getItem('aparaitech_current_user')
     if (saved) {
       try {
         const u = JSON.parse(saved)
+        const mode = getInitialPortalMode(u)
+        if (mode === 'software') return 'softwareDashboard'
         return u.role === 'admin' ? 'adminPanel' : 'dashboard'
       } catch (e) {}
     }
@@ -60,22 +142,30 @@ function App() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
+  const [isNotifModalOpen, setIsNotifModalOpen] = useState(false)
+  const [isGlobalReportModalOpen, setIsGlobalReportModalOpen] = useState(false)
 
   const showToast = (message, bg = '#1e293b') => {
     setToast({ message, bg })
   }
 
-  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr'
+  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email === 'anunand2004@gmail.com'
 
   // Reset tab selection when current user changes
   useEffect(() => {
-    if (currentUser?.role === 'admin') {
-      setActiveTab('adminPanel')
-      setAdminSection('overview')
-    } else {
-      setActiveTab('dashboard')
+    if (currentUser) {
+      const mode = getInitialPortalMode(currentUser)
+      setPortalMode(mode)
+      if (mode === 'software') {
+        setActiveTab('softwareDashboard')
+      } else if (currentUser.role === 'admin') {
+        setActiveTab('adminPanel')
+        setAdminSection('overview')
+      } else {
+        setActiveTab('dashboard')
+      }
+      fetchUnreadCount()
     }
-    fetchUnreadCount()
   }, [currentUser])
 
   // Periodic polling for unread messages (every 30 seconds)
@@ -111,7 +201,11 @@ function App() {
   const handleLogin = (user) => {
     setCurrentUser(user)
     localStorage.setItem('aparaitech_current_user', JSON.stringify(user))
-    if (user.role === 'admin') {
+    const mode = getInitialPortalMode(user)
+    setPortalMode(mode)
+    if (mode === 'software') {
+      setActiveTab('softwareDashboard')
+    } else if (user.role === 'admin') {
       setActiveTab('adminPanel')
       setAdminSection('overview')
     } else {
@@ -125,6 +219,22 @@ function App() {
     localStorage.removeItem('aparaitech_current_user')
     localStorage.removeItem('aparaitech_token')
     showToast('🔒 Signed out successfully', '#1e293b')
+  }
+
+  const handleTogglePortal = (mode) => {
+    setPortalMode(mode)
+    localStorage.setItem('aparaitech_portal_mode', mode)
+    if (mode === 'software') {
+      setActiveTab('softwareDashboard')
+    } else {
+      if (currentUser?.role === 'admin') {
+        setActiveTab('adminPanel')
+        setAdminSection('overview')
+      } else {
+        setActiveTab('dashboard')
+      }
+    }
+    showToast(`Switched to ${mode === 'software' ? 'Software Team' : 'BDA Calling'} Portal`, '#2563eb')
   }
 
   // Navigate to an admin section or top-level tab
@@ -170,6 +280,10 @@ function App() {
             currentUser={currentUser}
             onLogout={handleLogout}
             onToggleMobileMenu={() => setMobileDrawerOpen(prev => !prev)}
+            portalMode={portalMode}
+            onTogglePortal={handleTogglePortal}
+            canSwitchPortal={canSwitchPortal}
+            onOpenNotifications={() => setIsNotifModalOpen(true)}
           />
 
           <div className="main-layout" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', padding: '1.5rem' }}>
@@ -190,282 +304,529 @@ function App() {
               height: 'fit-content'
             }}>
 
-              {currentUser.role === 'admin' ? (
+              {/* Portal Mode Switcher in Desktop Sidebar for Management & Admin */}
+              {canSwitchPortal && (
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '14px',
+                  padding: '4px',
+                  display: 'flex',
+                  gap: '4px',
+                  marginBottom: '1rem'
+                }}>
+                  <button
+                    onClick={() => handleTogglePortal('software')}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontSize: '0.76rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
+                      color: portalMode === 'software' ? '#ffffff' : '#64748b',
+                      boxShadow: portalMode === 'software' ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <i className="fas fa-laptop-code"></i>
+                    Software
+                  </button>
+                  <button
+                    onClick={() => handleTogglePortal('bda')}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontSize: '0.76rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
+                      color: portalMode === 'bda' ? '#ffffff' : '#64748b',
+                      boxShadow: portalMode === 'bda' ? '0 2px 8px rgba(5,150,105,0.3)' : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <i className="fas fa-headset"></i>
+                    BDA Portal
+                  </button>
+                </div>
+              )}
+
+              {/* MODE 1: SOFTWARE TEAM WORKSPACE */}
+              {portalMode === 'software' ? (
                 <>
-                  {/* Group 1: Command Center */}
+                  {/* Group 1: Software Workspace */}
                   <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
-                    👑 Command Center
+                    💻 Software Workspace
                   </div>
-
-                  {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
+                  {SOFTWARE_NAV.filter(item => item.group === 'Software Workspace').map(item => (
                     <button
                       key={item.id}
-                      id={`adminNav_${item.id}`}
-                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
-                      style={sidebarBtnStyle(isAdminNavActive(item))}
-                      onClick={() => handleAdminNav(item)}
+                      className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === item.id)}
+                      onClick={() => setActiveTab(item.id)}
                     >
                       <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
                       {item.label}
                     </button>
                   ))}
 
-                  {/* Group 2: Workforce & Logs */}
-                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
-                    👥 Workforce & Logs
+                  {/* Group 2: Attendance & HR */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
+                    ⏱️ Attendance & HR Desk
                   </div>
-
-                  {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
+                  {SOFTWARE_NAV.filter(item => item.group === 'Attendance & HR').map(item => (
                     <button
                       key={item.id}
-                      id={`adminNav_${item.id}`}
-                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
-                      style={sidebarBtnStyle(isAdminNavActive(item))}
-                      onClick={() => handleAdminNav(item)}
+                      className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === item.id)}
+                      onClick={() => setActiveTab(item.id)}
                     >
                       <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
                       {item.label}
                     </button>
                   ))}
 
-                  {/* Group 3: Portal Preview */}
-                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
-                    🏢 Working Portal
+                  {/* Group 3: Communication & Settings */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
+                    💬 Communication & Setup
                   </div>
-
-                  {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
+                  {SOFTWARE_NAV.filter(item => item.group === 'Communication').map(item => (
                     <button
                       key={item.id}
-                      id={`adminNav_${item.id}`}
-                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
-                      style={sidebarBtnStyle(isAdminNavActive(item))}
-                      onClick={() => handleAdminNav(item)}
+                      className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                      style={{ ...sidebarBtnStyle(activeTab === item.id), position: 'relative' }}
+                      onClick={() => setActiveTab(item.id)}
                     >
                       <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
                       {item.label}
+                      {item.badge && unreadCount > 0 && (
+                        <span style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          marginLeft: 'auto'
+                        }}>
+                          {unreadCount}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </>
               ) : (
-                <>
-                  {/* Employee & Manager Navigation */}
-                  <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
-                    📌 Portal Navigation
-                  </div>
+                /* MODE 2: BDA / CALLING TEAM WORKSPACE */
+                currentUser.role === 'admin' ? (
+                  <>
+                    {/* Admin Group 1: Command Center */}
+                    <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                      👑 Command Center
+                    </div>
 
-                  <button
-                    className={`sidebar-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-                    style={sidebarBtnStyle(activeTab === 'dashboard')}
-                    onClick={() => setActiveTab('dashboard')}
-                  >
-                    <i className="fas fa-th-large" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Working Dashboard
-                  </button>
+                    {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
+                      <button
+                        key={item.id}
+                        id={`adminNav_${item.id}`}
+                        className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                        style={sidebarBtnStyle(isAdminNavActive(item))}
+                        onClick={() => handleAdminNav(item)}
+                      >
+                        <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                        {item.label}
+                      </button>
+                    ))}
 
-                  <button
-                    className={`sidebar-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
-                    style={sidebarBtnStyle(activeTab === 'attendance')}
-                    onClick={() => setActiveTab('attendance')}
-                  >
-                    <i className="fas fa-fingerprint" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Attendance & Punch
-                  </button>
+                    {/* Admin Group 2: Workforce & Logs */}
+                    <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                      👥 Workforce & Logs
+                    </div>
 
-                  <button
-                    className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
-                    style={sidebarBtnStyle(activeTab === 'callingList')}
-                    onClick={() => setActiveTab('callingList')}
-                  >
-                    <i className="fas fa-headset" style={{ width: '16px', textAlign: 'center' }}></i>
-                    My Calling List
-                  </button>
+                    {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
+                      <button
+                        key={item.id}
+                        id={`adminNav_${item.id}`}
+                        className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                        style={sidebarBtnStyle(isAdminNavActive(item))}
+                        onClick={() => handleAdminNav(item)}
+                      >
+                        <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                        {item.label}
+                      </button>
+                    ))}
 
-                  <button
-                    className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
-                    style={sidebarBtnStyle(activeTab === 'performance')}
-                    onClick={() => setActiveTab('performance')}
-                  >
-                    <i className="fas fa-chart-line" style={{ width: '16px', textAlign: 'center' }}></i>
-                    My Performance
-                  </button>
+                    {/* Admin Group 3: Portal Preview */}
+                    <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                      🏢 Working Portal
+                    </div>
 
-                  <button
-                    className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
-                    style={sidebarBtnStyle(activeTab === 'leaderboard')}
-                    onClick={() => setActiveTab('leaderboard')}
-                  >
-                    <i className="fas fa-trophy" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Leaderboard
-                  </button>
+                    {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
+                      <button
+                        key={item.id}
+                        id={`adminNav_${item.id}`}
+                        className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                        style={sidebarBtnStyle(isAdminNavActive(item))}
+                        onClick={() => handleAdminNav(item)}
+                      >
+                        <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                        {item.label}
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {/* BDA Employee & Manager Navigation */}
+                    <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
+                      💼 BDA Calling Portal
+                    </div>
 
-                  <button
-                    className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
-                    style={sidebarBtnStyle(activeTab === 'revenue')}
-                    onClick={() => setActiveTab('revenue')}
-                  >
-                    <i className="fas fa-rupee-sign" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Revenue Tracker
-                  </button>
-
-                  {/* Manager / HR Exclusive Navigation Item */}
-                  {isManagerOrAdmin && (
                     <button
-                      className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
-                      style={sidebarBtnStyle(activeTab === 'managerReports')}
-                      onClick={() => setActiveTab('managerReports')}
+                      className={`sidebar-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'dashboard')}
+                      onClick={() => setActiveTab('dashboard')}
                     >
-                      <i className="fas fa-file-invoice" style={{ width: '16px', textAlign: 'center' }}></i>
-                      Team Reports Hub
+                      <i className="fas fa-th-large" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Working Dashboard
                     </button>
-                  )}
 
-                  <button
-                    id="employeeInboxTab"
-                    className={`sidebar-nav-btn ${activeTab === 'inbox' ? 'active' : ''}`}
-                    style={{ ...sidebarBtnStyle(activeTab === 'inbox'), position: 'relative' }}
-                    onClick={() => setActiveTab('inbox')}
-                  >
-                    <i className="fas fa-inbox" style={{ width: '16px', textAlign: 'center' }}></i>
-                    Message Centre
-                    {unreadCount > 0 && (
-                      <span style={{
-                        background: '#ef4444',
-                        color: 'white',
-                        borderRadius: '9999px',
-                        padding: '2px 8px',
-                        fontSize: '0.7rem',
-                        fontWeight: 'bold',
-                        position: 'absolute',
-                        right: '15px'
-                      }}>
-                        {unreadCount}
-                      </span>
+                    <button
+                      className={`sidebar-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'attendance')}
+                      onClick={() => setActiveTab('attendance')}
+                    >
+                      <i className="fas fa-fingerprint" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Attendance & Punch
+                    </button>
+
+                    <button
+                      className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'callingList')}
+                      onClick={() => setActiveTab('callingList')}
+                    >
+                      <i className="fas fa-headset" style={{ width: '16px', textAlign: 'center' }}></i>
+                      My Calling List
+                    </button>
+
+                    <button
+                      className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'performance')}
+                      onClick={() => setActiveTab('performance')}
+                    >
+                      <i className="fas fa-chart-line" style={{ width: '16px', textAlign: 'center' }}></i>
+                      My Performance
+                    </button>
+
+                    <button
+                      className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'leaderboard')}
+                      onClick={() => setActiveTab('leaderboard')}
+                    >
+                      <i className="fas fa-trophy" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Leaderboard
+                    </button>
+
+                    <button
+                      className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'revenue')}
+                      onClick={() => setActiveTab('revenue')}
+                    >
+                      <i className="fas fa-rupee-sign" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Revenue Tracker
+                    </button>
+
+                    {/* Manager / HR Exclusive Navigation Item */}
+                    {isManagerOrAdmin && (
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'managerReports')}
+                        onClick={() => setActiveTab('managerReports')}
+                      >
+                        <i className="fas fa-file-invoice" style={{ width: '16px', textAlign: 'center' }}></i>
+                        Team Reports Hub
+                      </button>
                     )}
-                  </button>
-                </>
+
+                    <button
+                      id="employeeInboxTab"
+                      className={`sidebar-nav-btn ${activeTab === 'inbox' ? 'active' : ''}`}
+                      style={{ ...sidebarBtnStyle(activeTab === 'inbox'), position: 'relative' }}
+                      onClick={() => setActiveTab('inbox')}
+                    >
+                      <i className="fas fa-inbox" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Message Centre
+                      {unreadCount > 0 && (
+                        <span style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          marginLeft: 'auto'
+                        }}>
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )
               )}
             </div>
 
             {/* ── Main Content Pane ────────────────────────────────────── */}
             <div className="content-pane" style={{ flex: 1, minWidth: '320px' }}>
 
-              {/* 1. Admin Panel: Comprehensive Executive Control Center (Default for Admin) */}
-              {activeTab === 'adminPanel' && currentUser.role === 'admin' && (
-                <AdminPanel
-                  currentUser={currentUser}
-                  showToast={showToast}
-                  activeSection={adminSection}
-                  onSectionChange={(newSec) => {
-                    setAdminSection(newSec)
-                    setActiveTab('adminPanel')
-                  }}
-                />
+              {/* ────────────────── SOFTWARE PORTAL VIEWS ────────────────── */}
+              {portalMode === 'software' && (
+                <>
+                  {/* 1. Software Dashboard */}
+                  {activeTab === 'softwareDashboard' && (
+                    <SoftwareDashboard
+                      currentUser={currentUser}
+                      onNavigate={setActiveTab}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 2. Sprint Tasks Kanban & List */}
+                  {activeTab === 'softwareTasks' && (
+                    <SoftwareTaskManager
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 3. Projects Management Hub */}
+                  {activeTab === 'softwareProjects' && (
+                    <SoftwareProjectManager
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 4. Daily Work Reports */}
+                  {activeTab === 'softwareDailyReports' && (
+                    <SoftwareReportsView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 5. Code Repository Integration (GitHub) */}
+                  {activeTab === 'softwareRepos' && (
+                    <CodeRepositoryView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 6. Software Developer Performance Dashboard */}
+                  {activeTab === 'softwarePerformance' && (
+                    <SoftwarePerformanceView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 7. Attendance & Punch (Face recognition, GPS, Master terminal preserved) */}
+                  {activeTab === 'attendance' && (
+                    <EmployeePanel
+                      currentUser={currentUser}
+                      setCurrentUser={(updatedUser) => {
+                        setCurrentUser(updatedUser)
+                        localStorage.setItem('aparaitech_current_user', JSON.stringify(updatedUser))
+                      }}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 8. Leave Management */}
+                  {activeTab === 'softwareLeave' && (
+                    <LeaveManagementView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 9. Document Centre */}
+                  {activeTab === 'softwareDocs' && (
+                    <DocumentCenterView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 10. Announcements */}
+                  {activeTab === 'softwareAnnouncements' && (
+                    <AnnouncementsView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 11. Message Centre */}
+                  {activeTab === 'inbox' && (
+                    currentUser.role === 'admin' ? (
+                      <AdminMessagingCenter
+                        currentUser={currentUser}
+                        showToast={showToast}
+                      />
+                    ) : (
+                      <EmployeeInbox
+                        currentUser={currentUser}
+                        showToast={showToast}
+                        onUnreadUpdate={setUnreadCount}
+                      />
+                    )
+                  )}
+
+                  {/* 12. Settings */}
+                  {activeTab === 'softwareSettings' && (
+                    <SettingsView
+                      currentUser={currentUser}
+                      onLogout={handleLogout}
+                      showToast={showToast}
+                    />
+                  )}
+                </>
               )}
 
-              {/* 2. Employee Working Dashboard (Default for Employee / Manager) */}
-              {(activeTab === 'dashboard' || activeTab === 'companyHub') && (
-                <CompanyDashboard
-                  currentUser={currentUser}
-                  onNavigate={(targetTab) => {
-                    if (currentUser.role === 'admin') {
-                      if (targetTab === 'attendance' || targetTab === 'dashboard') {
+              {/* ────────────────── BDA / SALES PORTAL VIEWS ────────────────── */}
+              {portalMode === 'bda' && (
+                <>
+                  {/* 1. Admin Panel: Comprehensive Executive Control Center (Default for Admin) */}
+                  {activeTab === 'adminPanel' && currentUser.role === 'admin' && (
+                    <AdminPanel
+                      currentUser={currentUser}
+                      showToast={showToast}
+                      activeSection={adminSection}
+                      onSectionChange={(newSec) => {
+                        setAdminSection(newSec)
                         setActiveTab('adminPanel')
-                        setAdminSection('overview')
-                      } else if (targetTab === 'performance') {
-                        setActiveTab('adminPanel')
-                        setAdminSection('dailyReports')
-                      } else if (targetTab === 'leaderboard') {
-                        setActiveTab('leaderboard')
-                      } else if (targetTab === 'revenue') {
-                        setActiveTab('adminPanel')
-                        setAdminSection('revenue')
-                      } else if (targetTab === 'messaging') {
-                        setActiveTab('messaging')
-                      } else if (targetTab === 'inbox') {
-                        setActiveTab('messaging')
-                      } else if (targetTab === 'callingList') {
-                        setActiveTab('adminPanel')
-                        setAdminSection('aiDataDistribution')
-                      } else {
-                        setActiveTab(targetTab)
-                      }
-                    } else {
-                      setActiveTab(targetTab)
-                    }
-                  }}
-                  showToast={showToast}
-                  unreadMessagesCount={unreadCount}
-                />
+                      }}
+                    />
+                  )}
+
+                  {/* 2. Employee Working Dashboard (Default for Employee / Manager) */}
+                  {(activeTab === 'dashboard' || activeTab === 'companyHub') && (
+                    <CompanyDashboard
+                      currentUser={currentUser}
+                      onNavigate={(targetTab) => {
+                        if (currentUser.role === 'admin') {
+                          if (targetTab === 'attendance' || targetTab === 'dashboard') {
+                            setActiveTab('adminPanel')
+                            setAdminSection('overview')
+                          } else if (targetTab === 'performance') {
+                            setActiveTab('adminPanel')
+                            setAdminSection('dailyReports')
+                          } else if (targetTab === 'leaderboard') {
+                            setActiveTab('leaderboard')
+                          } else if (targetTab === 'revenue') {
+                            setActiveTab('adminPanel')
+                            setAdminSection('revenue')
+                          } else if (targetTab === 'messaging') {
+                            setActiveTab('messaging')
+                          } else if (targetTab === 'inbox') {
+                            setActiveTab('messaging')
+                          } else if (targetTab === 'callingList') {
+                            setActiveTab('adminPanel')
+                            setAdminSection('aiDataDistribution')
+                          } else {
+                            setActiveTab(targetTab)
+                          }
+                        } else {
+                          setActiveTab(targetTab)
+                        }
+                      }}
+                      showToast={showToast}
+                      unreadMessagesCount={unreadCount}
+                    />
+                  )}
+
+                  {/* 3. Employee Attendance Panel (Existing Face Verification & Geofence intact) */}
+                  {activeTab === 'attendance' && (
+                    <EmployeePanel
+                      currentUser={currentUser}
+                      setCurrentUser={(updatedUser) => {
+                        setCurrentUser(updatedUser)
+                        localStorage.setItem('aparaitech_current_user', JSON.stringify(updatedUser))
+                      }}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 3.1. My Calling List (AI Distributed Calling Desk) */}
+                  {activeTab === 'callingList' && (
+                    <MyCallingList
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 4. Performance Dashboard */}
+                  {activeTab === 'performance' && (
+                    <PerformanceDashboard
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 5. Live Leaderboard */}
+                  {activeTab === 'leaderboard' && (
+                    <LeaderboardView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 6. Revenue Tracker */}
+                  {activeTab === 'revenue' && (
+                    <RevenueTrackerView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 7. Manager / HR Team Reports Hub */}
+                  {activeTab === 'managerReports' && (
+                    <ManagerReportsView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 8. Admin: Messaging Center */}
+                  {activeTab === 'messaging' && currentUser.role === 'admin' && (
+                    <AdminMessagingCenter
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 9. Employee / Manager: Inbox */}
+                  {activeTab === 'inbox' && (
+                    <EmployeeInbox
+                      currentUser={currentUser}
+                      showToast={showToast}
+                      onUnreadUpdate={setUnreadCount}
+                    />
+                  )}
+                </>
               )}
 
-              {/* 3. Employee Attendance Panel (Existing Face Verification & Geofence intact) */}
-              {activeTab === 'attendance' && (
-                <EmployeePanel
-                  currentUser={currentUser}
-                  setCurrentUser={(updatedUser) => {
-                    setCurrentUser(updatedUser)
-                    localStorage.setItem('aparaitech_current_user', JSON.stringify(updatedUser))
-                  }}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 3.1. My Calling List (AI Distributed Calling Desk) */}
-              {activeTab === 'callingList' && (
-                <MyCallingList
-                  currentUser={currentUser}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 4. Performance Dashboard */}
-              {activeTab === 'performance' && (
-                <PerformanceDashboard
-                  currentUser={currentUser}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 5. Live Leaderboard */}
-              {activeTab === 'leaderboard' && (
-                <LeaderboardView
-                  currentUser={currentUser}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 6. Revenue Tracker */}
-              {activeTab === 'revenue' && (
-                <RevenueTrackerView
-                  currentUser={currentUser}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 7. Manager / HR Team Reports Hub */}
-              {activeTab === 'managerReports' && (
-                <ManagerReportsView
-                  currentUser={currentUser}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 8. Admin: Messaging Center */}
-              {activeTab === 'messaging' && currentUser.role === 'admin' && (
-                <AdminMessagingCenter
-                  currentUser={currentUser}
-                  showToast={showToast}
-                />
-              )}
-
-              {/* 9. Employee / Manager: Inbox */}
-              {activeTab === 'inbox' && (
-                <EmployeeInbox
-                  currentUser={currentUser}
-                  showToast={showToast}
-                  onUnreadUpdate={setUnreadCount}
-                />
-              )}
             </div>
           </div>
 
@@ -498,7 +859,7 @@ function App() {
                     <div>
                       <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>Aparaitech Software</div>
                       <div style={{ fontSize: '0.72rem', color: '#93c5fd' }}>
-                        {currentUser.name} ({currentUser.role})
+                        {currentUser.name} ({portalMode === 'software' ? 'Software Portal' : 'BDA Portal'})
                       </div>
                     </div>
                   </div>
@@ -524,18 +885,80 @@ function App() {
                 </div>
 
                 <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto' }}>
-                  {currentUser.role === 'admin' ? (
+
+                  {/* Portal Switcher for Mobile Drawer (Management & Admin) */}
+                  {canSwitchPortal && (
+                    <div style={{
+                      background: '#f1f5f9',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '12px',
+                      padding: '4px',
+                      display: 'flex',
+                      gap: '4px',
+                      marginBottom: '1rem'
+                    }}>
+                      <button
+                        onClick={() => {
+                          handleTogglePortal('software')
+                          setMobileDrawerOpen(false)
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
+                          color: portalMode === 'software' ? '#ffffff' : '#64748b'
+                        }}
+                      >
+                        <i className="fas fa-laptop-code"></i> Software
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleTogglePortal('bda')
+                          setMobileDrawerOpen(false)
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
+                          color: portalMode === 'bda' ? '#ffffff' : '#64748b'
+                        }}
+                      >
+                        <i className="fas fa-headset"></i> BDA
+                      </button>
+                    </div>
+                  )}
+
+                  {/* MOBILE DRAWER: SOFTWARE MODE */}
+                  {portalMode === 'software' ? (
                     <>
-                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
-                        👑 Command Center
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
+                        💻 Software Workspace
                       </div>
-                      {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
+                      {SOFTWARE_NAV.filter(item => item.group === 'Software Workspace').map(item => (
                         <button
                           key={item.id}
-                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
-                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === item.id)}
                           onClick={() => {
-                            handleAdminNav(item)
+                            setActiveTab(item.id)
                             setMobileDrawerOpen(false)
                           }}
                         >
@@ -544,16 +967,16 @@ function App() {
                         </button>
                       ))}
 
-                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
-                        👥 Workforce & Logs
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        ⏱️ Attendance & HR Desk
                       </div>
-                      {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
+                      {SOFTWARE_NAV.filter(item => item.group === 'Attendance & HR').map(item => (
                         <button
                           key={item.id}
-                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
-                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === item.id)}
                           onClick={() => {
-                            handleAdminNav(item)
+                            setActiveTab(item.id)
                             setMobileDrawerOpen(false)
                           }}
                         >
@@ -562,141 +985,213 @@ function App() {
                         </button>
                       ))}
 
-                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
-                        🏢 Working Portal
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        💬 Communication & Setup
                       </div>
-                      {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
+                      {SOFTWARE_NAV.filter(item => item.group === 'Communication').map(item => (
                         <button
                           key={item.id}
-                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
-                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+                          style={{ ...sidebarBtnStyle(activeTab === item.id), position: 'relative' }}
                           onClick={() => {
-                            handleAdminNav(item)
+                            setActiveTab(item.id)
                             setMobileDrawerOpen(false)
                           }}
                         >
                           <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
                           {item.label}
+                          {item.badge && unreadCount > 0 && (
+                            <span style={{
+                              background: '#ef4444',
+                              color: 'white',
+                              borderRadius: '9999px',
+                              padding: '2px 8px',
+                              fontSize: '0.7rem',
+                              fontWeight: 'bold',
+                              marginLeft: 'auto'
+                            }}>
+                              {unreadCount}
+                            </span>
+                          )}
                         </button>
                       ))}
                     </>
                   ) : (
-                    <>
-                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
-                        📌 Portal Navigation
-                      </div>
+                    /* MOBILE DRAWER: BDA MODE */
+                    currentUser.role === 'admin' ? (
+                      <>
+                        <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                          👑 Command Center
+                        </div>
+                        {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
+                          <button
+                            key={item.id}
+                            className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                            style={sidebarBtnStyle(isAdminNavActive(item))}
+                            onClick={() => {
+                              handleAdminNav(item)
+                              setMobileDrawerOpen(false)
+                            }}
+                          >
+                            <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                            {item.label}
+                          </button>
+                        ))}
 
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-                        style={sidebarBtnStyle(activeTab === 'dashboard')}
-                        onClick={() => {
-                          setActiveTab('dashboard')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-th-large" style={{ width: '18px', textAlign: 'center' }}></i>
-                        Working Dashboard
-                      </button>
+                        <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                          👥 Workforce & Logs
+                        </div>
+                        {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
+                          <button
+                            key={item.id}
+                            className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                            style={sidebarBtnStyle(isAdminNavActive(item))}
+                            onClick={() => {
+                              handleAdminNav(item)
+                              setMobileDrawerOpen(false)
+                            }}
+                          >
+                            <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                            {item.label}
+                          </button>
+                        ))}
 
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
-                        style={sidebarBtnStyle(activeTab === 'attendance')}
-                        onClick={() => {
-                          setActiveTab('attendance')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-fingerprint" style={{ width: '18px', textAlign: 'center' }}></i>
-                        Attendance & Punch
-                      </button>
+                        <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                          🏢 Working Portal
+                        </div>
+                        {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
+                          <button
+                            key={item.id}
+                            className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                            style={sidebarBtnStyle(isAdminNavActive(item))}
+                            onClick={() => {
+                              handleAdminNav(item)
+                              setMobileDrawerOpen(false)
+                            }}
+                          >
+                            <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                            {item.label}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
+                          💼 BDA Calling Portal
+                        </div>
 
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
-                        style={sidebarBtnStyle(activeTab === 'callingList')}
-                        onClick={() => {
-                          setActiveTab('callingList')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-headset" style={{ width: '18px', textAlign: 'center' }}></i>
-                        My Calling List
-                      </button>
-
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
-                        style={sidebarBtnStyle(activeTab === 'performance')}
-                        onClick={() => {
-                          setActiveTab('performance')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-chart-line" style={{ width: '18px', textAlign: 'center' }}></i>
-                        My Performance
-                      </button>
-
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
-                        style={sidebarBtnStyle(activeTab === 'leaderboard')}
-                        onClick={() => {
-                          setActiveTab('leaderboard')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-trophy" style={{ width: '18px', textAlign: 'center' }}></i>
-                        Leaderboard
-                      </button>
-
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
-                        style={sidebarBtnStyle(activeTab === 'revenue')}
-                        onClick={() => {
-                          setActiveTab('revenue')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-rupee-sign" style={{ width: '18px', textAlign: 'center' }}></i>
-                        Revenue Tracker
-                      </button>
-
-                      {isManagerOrAdmin && (
                         <button
-                          className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
-                          style={sidebarBtnStyle(activeTab === 'managerReports')}
+                          className={`sidebar-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'dashboard')}
                           onClick={() => {
-                            setActiveTab('managerReports')
+                            setActiveTab('dashboard')
                             setMobileDrawerOpen(false)
                           }}
                         >
-                          <i className="fas fa-file-invoice" style={{ width: '18px', textAlign: 'center' }}></i>
-                          Team Reports Hub
+                          <i className="fas fa-th-large" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Working Dashboard
                         </button>
-                      )}
 
-                      <button
-                        className={`sidebar-nav-btn ${activeTab === 'inbox' ? 'active' : ''}`}
-                        style={{ ...sidebarBtnStyle(activeTab === 'inbox'), position: 'relative' }}
-                        onClick={() => {
-                          setActiveTab('inbox')
-                          setMobileDrawerOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-inbox" style={{ width: '18px', textAlign: 'center' }}></i>
-                        Message Centre
-                        {unreadCount > 0 && (
-                          <span style={{
-                            background: '#ef4444',
-                            color: 'white',
-                            borderRadius: '9999px',
-                            padding: '2px 8px',
-                            fontSize: '0.7rem',
-                            fontWeight: 'bold',
-                            marginLeft: 'auto'
-                          }}>
-                            {unreadCount}
-                          </span>
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'attendance')}
+                          onClick={() => {
+                            setActiveTab('attendance')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-fingerprint" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Attendance & Punch
+                        </button>
+
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'callingList')}
+                          onClick={() => {
+                            setActiveTab('callingList')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-headset" style={{ width: '18px', textAlign: 'center' }}></i>
+                          My Calling List
+                        </button>
+
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'performance')}
+                          onClick={() => {
+                            setActiveTab('performance')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-chart-line" style={{ width: '18px', textAlign: 'center' }}></i>
+                          My Performance
+                        </button>
+
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'leaderboard')}
+                          onClick={() => {
+                            setActiveTab('leaderboard')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-trophy" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Leaderboard
+                        </button>
+
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'revenue')}
+                          onClick={() => {
+                            setActiveTab('revenue')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-rupee-sign" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Revenue Tracker
+                        </button>
+
+                        {isManagerOrAdmin && (
+                          <button
+                            className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
+                            style={sidebarBtnStyle(activeTab === 'managerReports')}
+                            onClick={() => {
+                              setActiveTab('managerReports')
+                              setMobileDrawerOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-file-invoice" style={{ width: '18px', textAlign: 'center' }}></i>
+                            Team Reports Hub
+                          </button>
                         )}
-                      </button>
-                    </>
+
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'inbox' ? 'active' : ''}`}
+                          style={{ ...sidebarBtnStyle(activeTab === 'inbox'), position: 'relative' }}
+                          onClick={() => {
+                            setActiveTab('inbox')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-inbox" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Message Centre
+                          {unreadCount > 0 && (
+                            <span style={{
+                              background: '#ef4444',
+                              color: 'white',
+                              borderRadius: '9999px',
+                              padding: '2px 8px',
+                              fontSize: '0.7rem',
+                              fontWeight: 'bold',
+                              marginLeft: 'auto'
+                            }}>
+                              {unreadCount}
+                            </span>
+                          )}
+                        </button>
+                      </>
+                    )
                   )}
 
                   <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
@@ -731,84 +1226,30 @@ function App() {
 
           {/* ── Mobile Sticky Bottom Navigation Bar (<1024px) ─────────────────── */}
           <nav className="bottom-nav-bar mobile-bottom-nav">
-            {currentUser.role === 'admin' ? (
+            {portalMode === 'software' ? (
               <>
                 <button
-                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'overview' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('adminPanel')
-                    setAdminSection('overview')
-                  }}
+                  className={`bottom-nav-item ${activeTab === 'softwareDashboard' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('softwareDashboard')}
                 >
-                  <i className="fas fa-tachometer-alt"></i>
-                  <span>Overview</span>
-                </button>
-
-                <button
-                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'aiDataDistribution' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('adminPanel')
-                    setAdminSection('aiDataDistribution')
-                  }}
-                >
-                  <i className="fas fa-brain"></i>
-                  <span>AI Leads</span>
-                </button>
-
-                <button
-                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'live' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('adminPanel')
-                    setAdminSection('live')
-                  }}
-                >
-                  <i className="fas fa-eye"></i>
-                  <span>Live</span>
-                </button>
-
-                <button
-                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'dailyReports' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('adminPanel')
-                    setAdminSection('dailyReports')
-                  }}
-                >
-                  <i className="fas fa-clipboard-check"></i>
-                  <span>Reports</span>
-                </button>
-
-                <button
-                  className="bottom-nav-item"
-                  onClick={() => setMobileDrawerOpen(true)}
-                >
-                  <i className="fas fa-bars"></i>
-                  <span>Menu</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('dashboard')}
-                >
-                  <i className="fas fa-th-large"></i>
+                  <i className="fas fa-laptop-code"></i>
                   <span>Home</span>
                 </button>
 
                 <button
-                  className={`bottom-nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('attendance')}
+                  className={`bottom-nav-item ${activeTab === 'softwareTasks' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('softwareTasks')}
                 >
-                  <i className="fas fa-fingerprint"></i>
-                  <span>Punch</span>
+                  <i className="fas fa-tasks"></i>
+                  <span>Tasks</span>
                 </button>
 
                 <button
-                  className={`bottom-nav-item ${activeTab === 'callingList' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('callingList')}
+                  className={`bottom-nav-item ${activeTab === 'softwareDailyReports' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('softwareDailyReports')}
                 >
-                  <i className="fas fa-headset"></i>
-                  <span>Calls</span>
+                  <i className="fas fa-clipboard-check"></i>
+                  <span>Reports</span>
                 </button>
 
                 <button
@@ -841,14 +1282,160 @@ function App() {
                   onClick={() => setMobileDrawerOpen(true)}
                 >
                   <i className="fas fa-ellipsis-h"></i>
-                  <span>More</span>
+                  <span>Menu</span>
                 </button>
               </>
+            ) : (
+              currentUser.role === 'admin' ? (
+                <>
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'overview' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab('adminPanel')
+                      setAdminSection('overview')
+                    }}
+                  >
+                    <i className="fas fa-tachometer-alt"></i>
+                    <span>Overview</span>
+                  </button>
+
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'aiDataDistribution' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab('adminPanel')
+                      setAdminSection('aiDataDistribution')
+                    }}
+                  >
+                    <i className="fas fa-brain"></i>
+                    <span>AI Leads</span>
+                  </button>
+
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'live' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab('adminPanel')
+                      setAdminSection('live')
+                    }}
+                  >
+                    <i className="fas fa-eye"></i>
+                    <span>Live</span>
+                  </button>
+
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'dailyReports' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab('adminPanel')
+                      setAdminSection('dailyReports')
+                    }}
+                  >
+                    <i className="fas fa-clipboard-check"></i>
+                    <span>Reports</span>
+                  </button>
+
+                  <button
+                    className="bottom-nav-item"
+                    onClick={() => setMobileDrawerOpen(true)}
+                  >
+                    <i className="fas fa-bars"></i>
+                    <span>Menu</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('dashboard')}
+                  >
+                    <i className="fas fa-th-large"></i>
+                    <span>Home</span>
+                  </button>
+
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('attendance')}
+                  >
+                    <i className="fas fa-fingerprint"></i>
+                    <span>Punch</span>
+                  </button>
+
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'callingList' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('callingList')}
+                  >
+                    <i className="fas fa-headset"></i>
+                    <span>Calls</span>
+                  </button>
+
+                  <button
+                    className={`bottom-nav-item ${activeTab === 'inbox' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('inbox')}
+                    style={{ position: 'relative' }}
+                  >
+                    <i className="fas fa-inbox"></i>
+                    <span>Inbox</span>
+                    {unreadCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: 'calc(50% - 16px)',
+                        background: '#ef4444',
+                        color: '#ffffff',
+                        borderRadius: '9999px',
+                        padding: '1px 5px',
+                        fontSize: '0.62rem',
+                        fontWeight: 'bold',
+                        lineHeight: 1
+                      }}>
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    className="bottom-nav-item"
+                    onClick={() => setMobileDrawerOpen(true)}
+                  >
+                    <i className="fas fa-ellipsis-h"></i>
+                    <span>More</span>
+                  </button>
+                </>
+              )
             )}
           </nav>
         </div>
       )}
 
+      {/* ── Shift & Daily Report Notification Center Modal ── */}
+      <NotificationCenterModal
+        isOpen={isNotifModalOpen}
+        onClose={() => setIsNotifModalOpen(false)}
+        currentUser={currentUser}
+        onNavigate={(tab) => {
+          setIsNotifModalOpen(false)
+          if (tab === 'attendance') setActiveTab('attendance')
+          else if (tab === 'tasks') setActiveTab(portalMode === 'software' ? 'softwareTasks' : 'dashboard')
+          else setActiveTab(tab)
+        }}
+        onOpenReportModal={() => {
+          setIsNotifModalOpen(false)
+          setIsGlobalReportModalOpen(true)
+        }}
+      />
+
+      {/* ── Global Quick Action Software Daily Report Modal ── */}
+      {isGlobalReportModalOpen && (
+        <SoftwareDailyReportModal
+          isOpen={isGlobalReportModalOpen}
+          onClose={() => setIsGlobalReportModalOpen(false)}
+          currentUser={currentUser}
+          onSuccess={() => {
+            setIsGlobalReportModalOpen(false)
+            showToast('🚀 Software daily report submitted successfully!', '#10b981')
+          }}
+        />
+      )}
+
+      {/* Toast Alert */}
       {toast && (
         <div
           className="toast"

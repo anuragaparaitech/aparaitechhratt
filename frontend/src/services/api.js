@@ -89,6 +89,18 @@ export const authAPI = {
     const response = await api.post('/api/auth/login', { email, password })
     return response.data
   },
+  passcodeLogin: async (passcode) => {
+    const response = await api.post('/api/auth/passcode-login', { passcode })
+    return response.data
+  },
+  forgotPassword: async (email) => {
+    const response = await api.post('/api/auth/forgot-password', { email })
+    return response.data
+  },
+  verifyOtp: async (email, code, newPassword) => {
+    const response = await api.post('/api/auth/verify-otp', { email, code, newPassword })
+    return response.data
+  },
   changePassword: async (email, oldPassword, newPassword) => {
     const response = await api.post('/api/auth/change-password', { email, oldPassword, newPassword })
     return response.data
@@ -339,8 +351,80 @@ export const taskAPI = {
     const response = await api.put(`/api/tasks/${id}/status`, data)
     return response.data
   },
+  update: async (id, data) => {
+    const response = await api.put(`/api/tasks/${id}`, data)
+    return response.data
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/api/tasks/${id}`)
+    return response.data
+  },
   addComment: async (id, data) => {
     const response = await api.post(`/api/tasks/${id}/comments`, data)
+    return response.data
+  },
+  addAttachment: async (id, data) => {
+    const response = await api.post(`/api/tasks/${id}/attachments`, data)
+    return response.data
+  }
+}
+
+// ── Project Management API ─────────────────────────────────────────────────────
+export const projectAPI = {
+  getAll: async (params = {}) => {
+    const response = await api.get('/api/projects', { params })
+    return response.data
+  },
+  getById: async (id) => {
+    const response = await api.get(`/api/projects/${id}`)
+    return response.data
+  },
+  create: async (data) => {
+    const response = await api.post('/api/projects', data)
+    return response.data
+  },
+  update: async (id, data) => {
+    const response = await api.put(`/api/projects/${id}`, data)
+    return response.data
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/api/projects/${id}`)
+    return response.data
+  },
+  addMilestone: async (id, data) => {
+    const response = await api.post(`/api/projects/${id}/milestones`, data)
+    return response.data
+  },
+  toggleMilestone: async (id, milestoneId, data = {}) => {
+    const response = await api.put(`/api/projects/${id}/milestones/${milestoneId}`, data)
+    return response.data
+  },
+  addComment: async (id, data) => {
+    const response = await api.post(`/api/projects/${id}/comments`, data)
+    return response.data
+  }
+}
+
+// ── Code Repository & Git Integration API ─────────────────────────────────────
+export const repoAPI = {
+  getOverview: async (repo) => {
+    const response = await api.get('/api/repos/overview', { params: { repo } })
+    return response.data
+  },
+  getCommits: async (repo) => {
+    const response = await api.get('/api/repos/commits', { params: { repo } })
+    return response.data
+  },
+  getPulls: async (repo) => {
+    const response = await api.get('/api/repos/pulls', { params: { repo } })
+    return response.data
+  },
+  getBranches: async (repo) => {
+    const response = await api.get('/api/repos/branches', { params: { repo } })
+    return response.data
+  },
+  getIssues: async (repo) => {
+    const response = await api.get('/api/repos/issues', { params: { repo } })
     return response.data
   }
 }

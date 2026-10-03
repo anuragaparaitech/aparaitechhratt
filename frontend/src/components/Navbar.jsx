@@ -1,7 +1,15 @@
 import React from 'react'
 import { Capacitor } from '@capacitor/core'
 
-function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
+function Navbar({
+  currentUser,
+  onLogout,
+  onToggleMobileMenu,
+  portalMode,
+  onTogglePortal,
+  canSwitchPortal,
+  onOpenNotifications
+}) {
   const isAdmin = currentUser.role === 'admin'
   const isManager = currentUser.role === 'manager' || currentUser.role === 'hr'
   const isNative = Capacitor.isNativePlatform()
@@ -36,9 +44,16 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
   
   const getRoleLabel = () => {
     if (isAdmin) return 'Super Admin'
+    if (currentUser.email === 'anunand2004@gmail.com' || currentUser.empId === 'AP7056') return 'Lead / Management'
     if (isManager) return currentUser.role === 'hr' ? 'HR Manager' : 'Team Manager'
+    if (currentUser.department === 'Development' || currentUser.designation?.toLowerCase().includes('software')) {
+      return currentUser.designation || 'Software Engineer'
+    }
     return `${currentUser.department || 'BDA'} Associate`
   }
+
+  const currentHour = new Date().getHours()
+  const hasUrgentAlert = currentHour >= 19
 
   return (
     <div className="navbar" style={{
@@ -51,7 +66,8 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
       color: '#ffffff',
       gap: '0.75rem',
       width: '100%',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      flexWrap: 'wrap'
     }}>
       <div className="logo-area" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '800', fontSize: '1.05rem', letterSpacing: '-0.02em', minWidth: 0 }}>
         {/* Mobile Hamburger Toggle */}
@@ -134,7 +150,104 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
         </div>
       </div>
 
-      <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+      {/* Middle: Portal Switcher (For Management/Anurag & Admin) */}
+      {canSwitchPortal && (
+        <div className="portal-switcher-header" style={{
+          display: 'flex',
+          alignItems: 'center',
+          background: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '12px',
+          padding: '3px',
+          border: '1px solid rgba(255, 255, 255, 0.14)',
+          gap: '3px',
+          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)'
+        }}>
+          <button
+            onClick={() => onTogglePortal('software')}
+            title="Switch to Software Development Portal"
+            style={{
+              background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
+              color: portalMode === 'software' ? '#ffffff' : '#94a3b8',
+              border: 'none',
+              borderRadius: '9px',
+              padding: '6px 12px',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease',
+              boxShadow: portalMode === 'software' ? '0 2px 8px rgba(37,99,235,0.45)' : 'none'
+            }}
+          >
+            <i className="fas fa-laptop-code"></i>
+            <span>Software Portal</span>
+          </button>
+          <button
+            onClick={() => onTogglePortal('bda')}
+            title="Switch to BDA Calling / Sales Portal"
+            style={{
+              background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
+              color: portalMode === 'bda' ? '#ffffff' : '#94a3b8',
+              border: 'none',
+              borderRadius: '9px',
+              padding: '6px 12px',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease',
+              boxShadow: portalMode === 'bda' ? '0 2px 8px rgba(5,150,105,0.45)' : 'none'
+            }}
+          >
+            <i className="fas fa-headset"></i>
+            <span>BDA Portal</span>
+          </button>
+        </div>
+      )}
+
+      {/* Right User Actions */}
+      <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0 }}>
+        {/* Notification Bell Button */}
+        <button
+          onClick={onOpenNotifications}
+          title="Notification Center & Shift Alerts"
+          style={{
+            position: 'relative',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            color: '#38bdf8',
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            flexShrink: 0,
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <i className="fas fa-bell"></i>
+          {hasUrgentAlert && (
+            <span style={{
+              position: 'absolute',
+              top: '5px',
+              right: '5px',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#ef4444',
+              boxShadow: '0 0 8px #ef4444',
+              border: '1.5px solid #0a192f'
+            }}></span>
+          )}
+        </button>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}>
           <i className="fas fa-user-circle" style={{ fontSize: '1.35rem', color: '#38bdf8', flexShrink: 0 }}></i>
           <div className="navbar-user-text">
@@ -146,6 +259,7 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
             </div>
           </div>
         </div>
+
         {!isNative && (
           <>
             <a
@@ -196,6 +310,7 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
             </button>
           </>
         )}
+
         <button
           className="logout-btn"
           onClick={onLogout}
