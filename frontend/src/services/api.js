@@ -393,6 +393,40 @@ export const conversionsAPI = {
   }
 }
 
+// ── AI-Powered Lead Data Distribution API ──────────────────────────────────────
+export const leadsAPI = {
+  // Admin: Process raw unstructured text/CSV with AI
+  processAI: async (rawData, options = {}) => {
+    const response = await api.post('/api/leads/ai-process', { rawData, options })
+    return response.data
+  },
+  // Admin: Assign leads to an employee
+  assignLeads: async (data) => {
+    const response = await api.post('/api/leads/assign', data)
+    return response.data
+  },
+  // Admin: Get overall statistics, employee distribution, and master lead list
+  getAdminStats: async (params = {}) => {
+    const response = await api.get('/api/leads/admin-stats', { params })
+    return response.data
+  },
+  // Employee: Get personal calling list and progress metrics
+  getMyCallingList: async (params = {}) => {
+    const response = await api.get('/api/leads/my-calling-list', { params })
+    return response.data
+  },
+  // Employee / Admin: Update call status and notes
+  updateStatus: async (id, data) => {
+    const response = await api.patch(`/api/leads/${id}/status`, data)
+    return response.data
+  },
+  // Admin: Delete lead
+  deleteLead: async (id) => {
+    const response = await api.delete(`/api/leads/${id}`)
+    return response.data
+  }
+}
+
 export default api
 
 

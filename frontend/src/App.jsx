@@ -10,14 +10,16 @@ import PerformanceDashboard from './components/PerformanceDashboard'
 import LeaderboardView from './components/LeaderboardView'
 import RevenueTrackerView from './components/RevenueTrackerView'
 import ManagerReportsView from './components/ManagerReportsView'
+import MyCallingList from './components/MyCallingList'
 import SplashScreen from './components/SplashScreen'
 import { messageAPI } from './services/api'
 
 // ── Admin sidebar nav definition ────────────────────────────────────────────
 const ADMIN_NAV = [
   // 1. Executive Operations & Performance
-  { id: 'overview',       icon: 'fa-tachometer-alt',      label: 'Executive Overview',      section: true,  group: 'Command Center' },
-  { id: 'live',           icon: 'fa-eye',                 label: 'Live Check-Ins',          section: true,  group: 'Command Center' },
+  { id: 'overview',           icon: 'fa-tachometer-alt',      label: 'Executive Overview',      section: true,  group: 'Command Center' },
+  { id: 'aiDataDistribution', icon: 'fa-brain',               label: 'AI Lead Distribution',    section: true,  group: 'Command Center' },
+  { id: 'live',               icon: 'fa-eye',                 label: 'Live Check-Ins',          section: true,  group: 'Command Center' },
   { id: 'dailyReports',   icon: 'fa-clipboard-check',     label: 'Daily Working Reports',   section: true,  group: 'Command Center' },
   { id: 'mailBlast',      icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
   { id: 'pipeline',       icon: 'fa-funnel-dollar',       label: 'Onboarding & Pipeline (7-Day)', section: true,  group: 'Command Center' },
@@ -270,6 +272,15 @@ function App() {
                   </button>
 
                   <button
+                    className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
+                    style={sidebarBtnStyle(activeTab === 'callingList')}
+                    onClick={() => setActiveTab('callingList')}
+                  >
+                    <i className="fas fa-headset" style={{ width: '16px', textAlign: 'center' }}></i>
+                    My Calling List
+                  </button>
+
+                  <button
                     className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
                     style={sidebarBtnStyle(activeTab === 'performance')}
                     onClick={() => setActiveTab('performance')}
@@ -372,6 +383,9 @@ function App() {
                         setActiveTab('messaging')
                       } else if (targetTab === 'inbox') {
                         setActiveTab('messaging')
+                      } else if (targetTab === 'callingList') {
+                        setActiveTab('adminPanel')
+                        setAdminSection('aiDataDistribution')
                       } else {
                         setActiveTab(targetTab)
                       }
@@ -392,6 +406,14 @@ function App() {
                     setCurrentUser(updatedUser)
                     localStorage.setItem('aparaitech_current_user', JSON.stringify(updatedUser))
                   }}
+                  showToast={showToast}
+                />
+              )}
+
+              {/* 3.1. My Calling List (AI Distributed Calling Desk) */}
+              {activeTab === 'callingList' && (
+                <MyCallingList
+                  currentUser={currentUser}
                   showToast={showToast}
                 />
               )}
@@ -586,6 +608,18 @@ function App() {
                       >
                         <i className="fas fa-fingerprint" style={{ width: '18px', textAlign: 'center' }}></i>
                         Attendance & Punch
+                      </button>
+
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'callingList')}
+                        onClick={() => {
+                          setActiveTab('callingList')
+                          setMobileDrawerOpen(false)
+                        }}
+                      >
+                        <i className="fas fa-headset" style={{ width: '18px', textAlign: 'center' }}></i>
+                        My Calling List
                       </button>
 
                       <button

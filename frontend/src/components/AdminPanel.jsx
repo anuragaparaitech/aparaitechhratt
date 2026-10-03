@@ -12,6 +12,7 @@ import OverallAttendance from './OverallAttendance'
 import ConversionPipelineView from './ConversionPipelineView'
 import ConversionDataFillModal from './ConversionDataFillModal'
 import DailyReportModal from './DailyReportModal'
+import AIDataDistributionCenter from './AIDataDistributionCenter'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange }) {
@@ -500,6 +501,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // ── Section label map for breadcrumb ────────────────────────────────────
   const SECTION_LABELS = {
     overview:     { icon: 'fa-tachometer-alt',      label: 'Executive Command & Overview' },
+    aiDataDistribution: { icon: 'fa-brain',         label: 'AI Data Distribution & Calling Engine' },
     live:         { icon: 'fa-eye',                 label: 'Live Checked-In Today' },
     dailyReports: { icon: 'fa-clipboard-check',     label: 'Daily Working Reports Compliance' },
     mailBlast:    { icon: 'fa-mail-bulk',           label: 'Mail Blast Outreach Campaigns' },
@@ -686,6 +688,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       }}>
         {[
           { id: 'overview', icon: 'fa-tachometer-alt', label: 'Overview' },
+          { id: 'aiDataDistribution', icon: 'fa-brain', label: 'AI Lead Distribution', badge: 'AI', badgeColor: '#8b5cf6' },
           { id: 'live', icon: 'fa-eye', label: 'Live Check-Ins', badge: liveSessions.length ? `${liveSessions.length} Active` : null, badgeColor: '#22c55e' },
           { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null, badgeColor: '#ef4444' },
           { id: 'mailBlast', icon: 'fa-mail-bulk', label: 'Mail Blasts' },
@@ -2295,6 +2298,11 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         />
       </div>
       </>)}
+
+      {/* ── AI DATA DISTRIBUTION SYSTEM (show('aiDataDistribution')) ─────────── */}
+      {show('aiDataDistribution') && (
+        <AIDataDistributionCenter currentUser={currentUser} showToast={showToast} />
+      )}
 
       {/* ── 12. SYSTEM DATA MANAGEMENT (show('data')) ───────────────────────── */}
       {show('data') && (<>

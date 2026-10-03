@@ -491,6 +491,29 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                 <div style={{ fontSize: '0.72rem', color: '#854d0e' }}>Detailed call & lead graphs</div>
               </button>
 
+              {/* My Calling List Button */}
+              <button
+                onClick={() => onNavigate('callingList')}
+                style={{
+                  background: '#f0fdfa',
+                  border: '1px solid #99f6e4',
+                  borderRadius: '12px',
+                  padding: '14px 12px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <div style={{ color: '#0d9488', fontSize: '1.25rem' }}>
+                  <i className="fas fa-headset"></i>
+                </div>
+                <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#134e4a' }}>My Calling List</div>
+                <div style={{ fontSize: '0.72rem', color: '#0f766e' }}>AI-Distributed Calling Desk</div>
+              </button>
+
               {/* Log Product Conversion Button */}
               <button
                 onClick={() => setConversionModalOpen(true)}
