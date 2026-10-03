@@ -31,6 +31,11 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
   const [profilePreview, setProfilePreview] = useState('')
   const [savingDetails, setSavingDetails] = useState(false)
 
+  // ── Credentials Visibility & Edit state ───────────────────────────────────
+  const [showCreds, setShowCreds] = useState(false)
+  const [editPassword, setEditPassword] = useState('')
+  const [editPasscode, setEditPasscode] = useState('')
+
   // ── Face ID state ─────────────────────────────────────────────────────────
   const [faceEnrolled, setFaceEnrolled] = useState(false)
   const [faceImageUrl, setFaceImageUrl] = useState('')
@@ -64,6 +69,9 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       setProfileImage(employee.profileImageUrl || '')
       setProfilePreview(employee.profileImageUrl ? `${API_URL}${employee.profileImageUrl}` : '')
       
+      setEditPassword('')
+      setEditPasscode(employee.passcode || '1234')
+      setShowCreds(false)
       setFacePreview(null)
       setFaceDescriptor(null)
       setFaceQualityMsg('')
@@ -254,6 +262,18 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
         status
       }
 
+      if (isAdmin && editPassword.trim()) {
+        updateData.password = editPassword.trim()
+      }
+      if (isAdmin && editPasscode.trim()) {
+        if (editPasscode.trim().length !== 4 || !/^\d{4}$/.test(editPasscode.trim())) {
+          showToast('⚠️ Passcode PIN must be exactly 4 numeric digits (0-9)', '#eab308')
+          setSavingDetails(false)
+          return
+        }
+        updateData.passcode = editPasscode.trim()
+      }
+
       // Send base64 profile image only if it has changed
       if (profileImage.startsWith('data:image/')) {
         updateData.profileImageBase64 = profileImage
@@ -273,6 +293,8 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       employee.shift = res.employee.shift
       employee.status = res.employee.status
       employee.profileImageUrl = res.employee.profileImageUrl
+      if (res.employee.plainPassword) employee.plainPassword = res.employee.plainPassword
+      if (res.employee.passcode) employee.passcode = res.employee.passcode
       setProfilePreview(res.employee.profileImageUrl ? `${API_URL}${res.employee.profileImageUrl}` : '')
     } catch (err) {
       console.error(err)
@@ -496,6 +518,44 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                       </div>
                     </div>
 
+                    {/* Admin Credentials View */}
+                    {isAdmin && (
+                      <div style={{ background: '#f8fafc', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '0.5rem' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f172a', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <i className="fas fa-shield-alt" style={{ color: '#2563eb' }}></i>
+                            Account Credentials (Admin View)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowCreds(prev => !prev)}
+                            style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <i className={`fas ${showCreds ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                            {showCreds ? 'Hide Details' : 'Reveal Details'}
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                          <div style={{ flex: 1, minWidth: '180px' }}>
+                            <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>Login Password</small>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af', background: '#eff6ff', padding: '3px 8px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                                {showCreds ? (employee.plainPassword || employee.password || 'Aparaitech123@') : '••••••••••••'}
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ flex: 1, minWidth: '180px' }}>
+                            <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>4-Digit Passcode PIN</small>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: '#065f46', background: '#ecfdf5', padding: '3px 8px', borderRadius: '6px', border: '1px solid #a7f3d0', letterSpacing: showCreds ? '3px' : 'normal' }}>
+                                {showCreds ? (employee.passcode || '1234') : '••••'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', gap: '0.8rem' }}>
                       <button
                         onClick={() => setEditMode(true)}
@@ -649,6 +709,38 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                         </select>
                       </div>
                     </div>
+
+                    {isAdmin && (
+                      <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: '220px' }}>
+                          <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <i className="fas fa-key" style={{ color: '#2563eb' }}></i> Reset Login Password (Admin)
+                          </label>
+                          <input
+                            type="text"
+                            className="auth-input"
+                            value={editPassword}
+                            onChange={e => setEditPassword(e.target.value)}
+                            placeholder="Enter new password (or leave blank to keep)"
+                            style={{ margin: '4px 0 0', width: '100%' }}
+                          />
+                        </div>
+                        <div style={{ flex: 1, minWidth: '220px' }}>
+                          <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <i className="fas fa-th" style={{ color: '#059669' }}></i> 4-Digit Passcode PIN (Admin)
+                          </label>
+                          <input
+                            type="text"
+                            maxLength={4}
+                            className="auth-input"
+                            value={editPasscode}
+                            onChange={e => setEditPasscode(e.target.value.replace(/\D/g, ''))}
+                            placeholder="4-digit PIN"
+                            style={{ margin: '4px 0 0', width: '100%', letterSpacing: '2px', fontWeight: 700 }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
                       <button

@@ -104,6 +104,10 @@ export const authAPI = {
   changePassword: async (email, oldPassword, newPassword) => {
     const response = await api.post('/api/auth/change-password', { email, oldPassword, newPassword })
     return response.data
+  },
+  changePasscode: async (email, oldPasscode, newPasscode) => {
+    const response = await api.post('/api/auth/change-passcode', { email, oldPasscode, newPasscode })
+    return response.data
   }
 }
 

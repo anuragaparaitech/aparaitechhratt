@@ -74,6 +74,8 @@ export const seedDatabase = async () => {
         name: 'Administrator',
         email: adminEmail.toLowerCase(),
         password: hashedAdminPassword,
+        plainPassword: adminPassword,
+        passcode: '1234',
         department: 'Management',
         role: 'admin',
         status: 'active'
@@ -99,6 +101,8 @@ export const seedDatabase = async () => {
         console.log(`🔄 Updating existing admin account to match configured .env values...`)
         adminExists.email = adminEmail.toLowerCase()
         adminExists.password = await bcrypt.hash(adminPassword, salt)
+        adminExists.plainPassword = adminPassword
+        adminExists.passcode = adminExists.passcode || '1234'
         adminExists.role = 'admin'
         await adminExists.save()
         console.log('✅ Admin account credentials updated successfully!')
@@ -133,6 +137,8 @@ export const seedDatabase = async () => {
         if (emp.department) existingEmp.department = emp.department
         if (emp.designation) existingEmp.designation = emp.designation
         existingEmp.shift = emp.shift || (existingEmp.department === 'Development' ? 'shift_1' : 'shift_2')
+        if (!existingEmp.plainPassword) existingEmp.plainPassword = DEFAULT_PWD
+        if (!existingEmp.passcode) existingEmp.passcode = '1234'
         await existingEmp.save()
       } else {
         await Employee.create({
@@ -140,6 +146,8 @@ export const seedDatabase = async () => {
           name: emp.name,
           email: emp.email.toLowerCase(),
           password: hashedDefaultPassword,
+          plainPassword: DEFAULT_PWD,
+          passcode: '1234',
           department: emp.department || 'Development',
           designation: emp.designation || '',
           phone: emp.phone || '',
@@ -170,8 +178,17 @@ export const getAllEmployees = async (req, res) => {
   try {
     await seedDatabase()
     const employees = await Employee.find({})
-    console.log(`[API Success] GET /api/employees retrieved: ${employees.length} employees.`)
-    res.status(200).json({ employees })
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+    const formattedEmployees = employees.map(emp => {
+      const obj = emp.toObject ? emp.toObject() : { ...emp }
+      if (!obj.passcode) obj.passcode = '1234'
+      if (!obj.plainPassword) {
+        obj.plainPassword = (obj.role === 'admin' || obj.email === 'admin@aparaitech.com') ? adminPassword : DEFAULT_PWD
+      }
+      return obj
+    })
+    console.log(`[API Success] GET /api/employees retrieved: ${formattedEmployees.length} employees.`)
+    res.status(200).json({ employees: formattedEmployees })
   } catch (error) {
     console.error(`[API Error] GET /api/employees failed:`, error.stack)
     res.status(500).json({ message: 'Server error', error: error.message })
@@ -286,7 +303,7 @@ export const deleteAllEmployees = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
   const { email } = req.params
-  const { name, phone, designation, department, status, profileImageBase64, dob, shift } = req.body
+  const { name, phone, designation, department, status, profileImageBase64, dob, shift, password, passcode } = req.body
 
   try {
     const employee = await Employee.findOne({ email: email.toLowerCase() })
@@ -301,6 +318,14 @@ export const updateEmployee = async (req, res) => {
     if (department !== undefined) employee.department = department
     if (status !== undefined) employee.status = status
     if (shift !== undefined) employee.shift = shift
+    if (password) {
+      const salt = await bcrypt.genSalt(10)
+      employee.password = await bcrypt.hash(password, salt)
+      employee.plainPassword = password
+    }
+    if (passcode !== undefined && String(passcode).length === 4) {
+      employee.passcode = String(passcode)
+    }
 
     // Handle base64 profile image if provided
     if (profileImageBase64) {

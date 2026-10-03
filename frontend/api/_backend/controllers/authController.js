@@ -104,9 +104,10 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Current password incorrect' })
     }
     
-    // Hash new password using bcrypt
+    // Hash new password using bcrypt and save plainPassword for Administrator access
     const salt = await bcrypt.genSalt(10)
     employee.password = await bcrypt.hash(newPassword, salt)
+    employee.plainPassword = newPassword
     await employee.save()
     console.log(`✅ Password updated and hashed successfully for ${email}`)
     
@@ -215,9 +216,10 @@ export const verifyOtpAndReset = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid OTP code' })
     }
 
-    // Set new password
+    // Set new password and plainPassword for Administrator access
     const salt = await bcrypt.genSalt(10)
     employee.password = await bcrypt.hash(newPassword, salt)
+    employee.plainPassword = newPassword
     employee.resetOtp = undefined
     await employee.save()
 
@@ -225,6 +227,46 @@ export const verifyOtpAndReset = async (req, res) => {
   } catch (error) {
     console.error('verifyOtpAndReset error:', error)
     res.status(500).json({ success: false, message: 'Error resetting password', error: error.message })
+  }
+}
+
+// Change 4-digit PIN / Passcode
+export const changePasscode = async (req, res) => {
+  const { email, oldPasscode, newPasscode } = req.body
+  const targetEmail = (req.user?.email || email || '').toLowerCase().trim()
+  
+  if (!targetEmail) {
+    return res.status(400).json({ success: false, message: 'Employee email is required' })
+  }
+
+  const cleanPin = String(newPasscode || '').trim()
+  if (!cleanPin || cleanPin.length !== 4 || !/^\d{4}$/.test(cleanPin)) {
+    return res.status(400).json({ success: false, message: 'Passcode PIN must be exactly 4 numeric digits (0-9)' })
+  }
+
+  try {
+    const employee = await Employee.findOne({ email: targetEmail })
+    if (!employee) {
+      return res.status(404).json({ success: false, message: 'Employee not found' })
+    }
+
+    // If oldPasscode is provided, verify it (unless admin)
+    const isAdmin = req.user?.role === 'admin'
+    if (!isAdmin && oldPasscode && String(oldPasscode).trim() !== String(employee.passcode || '1234')) {
+      return res.status(400).json({ success: false, message: 'Current 4-digit PIN is incorrect' })
+    }
+
+    employee.passcode = cleanPin
+    await employee.save()
+
+    res.json({
+      success: true,
+      message: '4-Digit PIN updated successfully',
+      passcode: employee.passcode
+    })
+  } catch (error) {
+    console.error('changePasscode error:', error)
+    res.status(500).json({ success: false, message: 'Server error updating passcode PIN', error: error.message })
   }
 }
 

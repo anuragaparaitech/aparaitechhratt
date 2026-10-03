@@ -42,6 +42,19 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   const [loadingLogs, setLoadingLogs] = useState(false)
   const [logsError, setLogsError] = useState(false)
 
+  // Employee Password & PIN Visibility in Directory
+  const [revealedPasswords, setRevealedPasswords] = useState({})
+  const [revealedPins, setRevealedPins] = useState({})
+  const [showAllCredentials, setShowAllCredentials] = useState(false)
+
+  const togglePasswordReveal = (email) => {
+    setRevealedPasswords(prev => ({ ...prev, [email]: !prev[email] }))
+  }
+
+  const togglePinReveal = (email) => {
+    setRevealedPins(prev => ({ ...prev, [email]: !prev[email] }))
+  }
+
   // Working Portal States in Admin Panel
   const [dailyReports, setDailyReports] = useState([])
   const [mailBlastReports, setMailBlastReports] = useState([])
@@ -1764,6 +1777,22 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             <button className="g-button success" onClick={() => setIsAddOpen(true)}>
               <i className="fas fa-user-plus"></i> Add Employee
             </button>
+            <button 
+              type="button"
+              className="g-button" 
+              onClick={() => setShowAllCredentials(prev => !prev)}
+              style={{
+                background: showAllCredentials ? '#0a192f' : '#2563eb',
+                color: '#fff',
+                fontSize: '0.8rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <i className={`fas ${showAllCredentials ? 'fa-eye-slash' : 'fa-key'}`}></i>
+              {showAllCredentials ? 'Hide Passwords & PINs' : 'View Passwords & PINs'}
+            </button>
             <button className="g-button excel" onClick={handleExportEmployees} style={{ background: '#16a34a' }}>
               <i className="fas fa-download"></i> Export Directory
             </button>
@@ -1776,6 +1805,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 <th>EMP ID</th>
                 <th>NAME</th>
                 <th>EMAIL</th>
+                <th>PASSWORD</th>
+                <th>PIN (PASSCODE)</th>
                 <th>DEPT</th>
                 <th>SHIFT</th>
                 <th>STATUS</th>
@@ -1789,6 +1820,64 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                     <td><strong>{emp.empId}</strong></td>
                     <td>{emp.name}</td>
                     <td>{emp.email}</td>
+                    {/* Password column with show/hide toggle */}
+                    <td>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.82rem',
+                          background: (showAllCredentials || revealedPasswords[emp.email]) ? '#eff6ff' : '#f1f5f9',
+                          color: (showAllCredentials || revealedPasswords[emp.email]) ? '#1e40af' : '#64748b',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          border: (showAllCredentials || revealedPasswords[emp.email]) ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
+                          fontWeight: (showAllCredentials || revealedPasswords[emp.email]) ? '700' : '400'
+                        }}>
+                          {(showAllCredentials || revealedPasswords[emp.email])
+                            ? (emp.plainPassword || emp.password || 'Aparaitech123@')
+                            : '••••••••••••'}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-icon"
+                          style={{ padding: '3px 5px', fontSize: '0.78rem', color: '#64748b', cursor: 'pointer' }}
+                          title={(showAllCredentials || revealedPasswords[emp.email]) ? 'Hide password' : 'View password'}
+                          onClick={() => togglePasswordReveal(emp.email)}
+                        >
+                          <i className={`fas ${(showAllCredentials || revealedPasswords[emp.email]) ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* PIN / Passcode column with show/hide toggle */}
+                    <td>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.85rem',
+                          background: (showAllCredentials || revealedPins[emp.email]) ? '#ecfdf5' : '#f1f5f9',
+                          color: (showAllCredentials || revealedPins[emp.email]) ? '#065f46' : '#64748b',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          border: (showAllCredentials || revealedPins[emp.email]) ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+                          fontWeight: '800',
+                          letterSpacing: (showAllCredentials || revealedPins[emp.email]) ? '3px' : 'normal'
+                        }}>
+                          {(showAllCredentials || revealedPins[emp.email])
+                            ? (emp.passcode || '1234')
+                            : '••••'}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-icon"
+                          style={{ padding: '3px 5px', fontSize: '0.78rem', color: '#64748b', cursor: 'pointer' }}
+                          title={(showAllCredentials || revealedPins[emp.email]) ? 'Hide PIN' : 'View PIN'}
+                          onClick={() => togglePinReveal(emp.email)}
+                        >
+                          <i className={`fas ${(showAllCredentials || revealedPins[emp.email]) ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        </button>
+                      </div>
+                    </td>
                     <td>{emp.department}</td>
                     <td>
                       {(() => {
@@ -1855,7 +1944,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>No employees found</td>
+                  <td colSpan="9" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>No employees found</td>
                 </tr>
               )}
             </tbody>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { authAPI } from '../services/api'
 import ChangePwdModal from './ChangePwdModal'
+import ChangePinModal from './ChangePinModal'
 
 function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangChange }) {
   const [lang, setLang] = useState(currentLang || localStorage.getItem('aparaitech_lang') || 'en')
   const [theme, setTheme] = useState(localStorage.getItem('aparaitech_theme') || 'light')
   const [isPwdModalOpen, setIsPwdModalOpen] = useState(false)
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false)
 
   // Notification toggles
   const [reportReminder, setReportReminder] = useState(true)
@@ -287,6 +289,26 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
           </button>
 
           <button
+            onClick={() => setIsPinModalOpen(true)}
+            style={{
+              background: '#2563eb',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '10px 18px',
+              fontSize: '0.82rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)'
+            }}
+          >
+            <i className="fas fa-th"></i> Change 4-Digit PIN (Passcode)
+          </button>
+
+          <button
             onClick={handleToggleBiometrics}
             style={{
               background: biometricEnabled ? '#ecfdf5' : '#f8fafc',
@@ -356,6 +378,19 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
           currentUser={currentUser}
           onClose={() => setIsPwdModalOpen(false)}
           showToast={showToast}
+        />
+      )}
+
+      {/* Change 4-Digit Passcode PIN Modal */}
+      {isPinModalOpen && (
+        <ChangePinModal
+          isOpen={isPinModalOpen}
+          email={currentUser?.email}
+          onClose={() => setIsPinModalOpen(false)}
+          showToast={showToast}
+          onPinUpdated={(newPin) => {
+            if (currentUser) currentUser.passcode = newPin
+          }}
         />
       )}
     </div>

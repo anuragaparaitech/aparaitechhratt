@@ -21,6 +21,10 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  plainPassword: {
+    type: String,
+    default: 'Aparaitech123@'
+  },
   department: {
     type: String,
     required: true

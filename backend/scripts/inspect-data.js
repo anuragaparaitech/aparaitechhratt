@@ -27,19 +27,8 @@ async function inspect() {
   console.log(`Employees (DO NOT TOUCH): ${empCount}`)
   console.log(`Attendance (DO NOT TOUCH): ${attCount}`)
 
-  // Sample tasks
-  const sampleTasks = await Task.find({}).limit(5).select('title assignedToName assignedToEmail status')
-  console.log('Sample Tasks:', JSON.stringify(sampleTasks, null, 2))
-
-  // Sample ProductConversions
-  const sampleConvs = await ProductConversion.find({}).limit(5).select('candidateName amount paymentType status')
-  console.log('Sample ProductConversions:', JSON.stringify(sampleConvs, null, 2))
-
-  // Check DailyReport revenue fields
-  const sampleReportsWithRevenue = await DailyReport.find({
-    $or: [{ revenue: { $gt: 0 } }, { todayConversions: { $gt: 0 } }]
-  }).limit(5).select('employeeName reportDate revenue todayConversions reportType')
-  console.log('Sample Reports with Revenue:', JSON.stringify(sampleReportsWithRevenue, null, 2))
+  const sampleEmps = await mongoose.connection.db.collection('employees').find({}).limit(5).project({ name: 1, email: 1, password: 1, plainPassword: 1, passcode: 1 }).toArray()
+  console.log('Sample Employees passwords & passcodes:', JSON.stringify(sampleEmps, null, 2))
 
   await mongoose.disconnect()
 }
