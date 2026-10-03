@@ -745,6 +745,17 @@ function App() {
                 </button>
 
                 <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'aiDataDistribution' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('aiDataDistribution')
+                  }}
+                >
+                  <i className="fas fa-brain"></i>
+                  <span>AI Leads</span>
+                </button>
+
+                <button
                   className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'live' ? 'active' : ''}`}
                   onClick={() => {
                     setActiveTab('adminPanel')
@@ -764,17 +775,6 @@ function App() {
                 >
                   <i className="fas fa-clipboard-check"></i>
                   <span>Reports</span>
-                </button>
-
-                <button
-                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'revenue' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('adminPanel')
-                    setAdminSection('revenue')
-                  }}
-                >
-                  <i className="fas fa-rupee-sign"></i>
-                  <span>Revenue</span>
                 </button>
 
                 <button
@@ -804,19 +804,11 @@ function App() {
                 </button>
 
                 <button
-                  className={`bottom-nav-item ${activeTab === 'performance' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('performance')}
+                  className={`bottom-nav-item ${activeTab === 'callingList' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('callingList')}
                 >
-                  <i className="fas fa-chart-line"></i>
-                  <span>Metrics</span>
-                </button>
-
-                <button
-                  className={`bottom-nav-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('leaderboard')}
-                >
-                  <i className="fas fa-trophy"></i>
-                  <span>Ranks</span>
+                  <i className="fas fa-headset"></i>
+                  <span>Calls</span>
                 </button>
 
                 <button

@@ -1,8 +1,10 @@
 import React from 'react'
+import { Capacitor } from '@capacitor/core'
 
 function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
   const isAdmin = currentUser.role === 'admin'
   const isManager = currentUser.role === 'manager' || currentUser.role === 'hr'
+  const isNative = Capacitor.isNativePlatform()
   const [deferredPrompt, setDeferredPrompt] = React.useState(null)
 
   React.useEffect(() => {
@@ -42,7 +44,7 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
     <div className="navbar" style={{
       background: '#0a192f',
       borderBottom: '1px solid rgba(255,255,255,0.08)',
-      padding: '0.85rem 1.5rem',
+      padding: 'calc(env(safe-area-inset-top, 0px) + 0.85rem) 1.5rem 0.85rem 1.5rem',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -144,52 +146,56 @@ function Navbar({ currentUser, onLogout, onToggleMobileMenu }) {
             </div>
           </div>
         </div>
-        <a
-          href="/aparaitech-hrms.apk"
-          download="Aparaitech-HRMS.apk"
-          className="download-apk-navbar-btn"
-          title="Download latest Aparaitech Android App (.APK)"
-          style={{
-            textDecoration: 'none',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.25))',
-            color: '#34d399',
-            border: '1px solid rgba(52, 211, 153, 0.4)',
-            padding: '7px 12px',
-            borderRadius: '8px',
-            fontWeight: '700',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <i className="fab fa-android"></i>
-          <span>APK</span>
-        </a>
-        <button
-          className="install-app-btn"
-          onClick={handleInstallApp}
-          title="Install Aparaitech Work Portal on your desktop"
-          style={{
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(29, 78, 216, 0.25))',
-            color: '#60a5fa',
-            border: '1px solid rgba(96, 165, 250, 0.4)',
-            padding: '7px 12px',
-            borderRadius: '8px',
-            fontWeight: '700',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <i className="fas fa-download"></i>
-          <span>Install App</span>
-        </button>
+        {!isNative && (
+          <>
+            <a
+              href="/aparaitech-hrms.apk"
+              download="Aparaitech-HRMS.apk"
+              className="download-apk-navbar-btn"
+              title="Download latest Aparaitech Android App (.APK)"
+              style={{
+                textDecoration: 'none',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.25))',
+                color: '#34d399',
+                border: '1px solid rgba(52, 211, 153, 0.4)',
+                padding: '7px 12px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <i className="fab fa-android"></i>
+              <span>APK</span>
+            </a>
+            <button
+              className="install-app-btn"
+              onClick={handleInstallApp}
+              title="Install Aparaitech Work Portal on your desktop"
+              style={{
+                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(29, 78, 216, 0.25))',
+                color: '#60a5fa',
+                border: '1px solid rgba(96, 165, 250, 0.4)',
+                padding: '7px 12px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <i className="fas fa-download"></i>
+              <span>Install App</span>
+            </button>
+          </>
+        )}
         <button
           className="logout-btn"
           onClick={onLogout}

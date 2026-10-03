@@ -51,7 +51,7 @@ function LoginScreen({ onLogin, showToast }) {
       alignItems: 'center',
       justifyContent: 'center',
       background: 'linear-gradient(135deg, #07101e 0%, #0b192c 45%, #082f38 100%)',
-      padding: '1.5rem',
+      padding: 'calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.25rem) 1.25rem',
       position: 'relative',
       overflow: 'hidden',
       fontFamily: "'Inter', sans-serif"
@@ -78,31 +78,37 @@ function LoginScreen({ onLogin, showToast }) {
         borderRadius: '50%'
       }} />
 
-      {/* Main Container Container */}
-      <div style={{
-        maxWidth: '1080px',
-        width: '100%',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        background: 'rgba(15, 23, 42, 0.75)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-        overflow: 'hidden',
-        zIndex: 10
-      }}>
+      {/* Main Container */}
+      <div
+        className="login-card-container"
+        style={{
+          maxWidth: '1080px',
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+          overflow: 'hidden',
+          zIndex: 10
+        }}
+      >
 
-        {/* ── Left Hero Branding Panel ──────────────────────────────── */}
-        <div style={{
-          padding: '2.5rem 2rem',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(180deg, rgba(11, 25, 44, 0.9) 0%, rgba(13, 148, 136, 0.15) 100%)',
-          borderRight: '1px solid rgba(255, 255, 255, 0.08)'
-        }}>
+        {/* ── Left Hero Branding Panel (Desktop Only) ──────────────────────────────── */}
+        <div
+          className="login-hero-panel"
+          style={{
+            padding: '2.5rem 2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(180deg, rgba(11, 25, 44, 0.9) 0%, rgba(13, 148, 136, 0.15) 100%)',
+            borderRight: '1px solid rgba(255, 255, 255, 0.08)'
+          }}
+        >
           <div>
             {/* Official Corporate Banner Header */}
             <div style={{
