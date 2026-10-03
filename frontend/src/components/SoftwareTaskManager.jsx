@@ -60,15 +60,15 @@ function SoftwareTaskManager({ currentUser, showToast }) {
     userEmail === 'letsmailvivek100@gmail.com' ||
     userEmpId === '7044' ||
     userEmail === 'kadammahesh803@gmail.com' ||
-    userEmpId === '7056' ||
-    userEmpId === 'AP7056'
+    (userEmpId === '7056' && userEmail !== 'anunand2004@gmail.com')
   )
 
   const isAnuragOrAdmin = !isBlocked && Boolean(
     currentUser && (
       currentUser.role === 'admin' ||
       userEmail === 'anunand2004@gmail.com' ||
-      userEmpId === '7017'
+      userEmpId === '7017' ||
+      userEmpId === 'AP7056'
     )
   )
 

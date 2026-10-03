@@ -10,22 +10,22 @@ const canUserAssignTasks = (user) => {
   const email = (user.email || '').toLowerCase().trim()
   const empId = String(user.empId || '').trim()
 
-  // Explicitly block Vivek and Mahesh
+  // Explicitly block Vivek Jagtap and Mahesh Kadam
   if (
     email === 'letsmailvivek100@gmail.com' ||
     empId === '7044' ||
     email === 'kadammahesh803@gmail.com' ||
-    empId === '7056' ||
-    empId === 'AP7056'
+    (empId === '7056' && email !== 'anunand2004@gmail.com')
   ) {
     return false
   }
 
-  // Only Anurag and Super Admin are permitted
+  // Only Anurag Nand and Super Admin are permitted
   return (
     user.role === 'admin' ||
     email === 'anunand2004@gmail.com' ||
-    empId === '7017'
+    empId === '7017' ||
+    empId === 'AP7056'
   )
 }
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import * as faceapi from 'face-api.js'
 import { employeeAPI, faceAPI, API_URL } from '../services/api'
 import WebcamCaptureModal from './WebcamCaptureModal'
+import ChangePinModal from './ChangePinModal'
+import ChangePwdModal from './ChangePwdModal'
 import { SHIFTS } from '../utils/shiftsAndGeo'
 
 const MODELS_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights'
@@ -35,6 +37,8 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
   const [showCreds, setShowCreds] = useState(false)
   const [editPassword, setEditPassword] = useState('')
   const [editPasscode, setEditPasscode] = useState('')
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false)
+  const [isPwdModalOpen, setIsPwdModalOpen] = useState(false)
 
   // ── Face ID state ─────────────────────────────────────────────────────────
   const [faceEnrolled, setFaceEnrolled] = useState(false)
@@ -518,14 +522,14 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                       </div>
                     </div>
 
-                    {/* Admin Credentials View */}
-                    {isAdmin && (
-                      <div style={{ background: '#f8fafc', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '0.5rem' }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f172a', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <i className="fas fa-shield-alt" style={{ color: '#2563eb' }}></i>
-                            Account Credentials (Admin View)
-                          </span>
+                    {/* Security & Credentials View */}
+                    <div style={{ background: '#f8fafc', padding: '1rem 1.25rem', borderRadius: '14px', border: '1px solid #e2e8f0', marginTop: '0.75rem' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <i className="fas fa-shield-alt" style={{ color: '#2563eb' }}></i>
+                          Account Security & Credentials {isAdmin ? '(Admin View)' : ''}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <button
                             type="button"
                             onClick={() => setShowCreds(prev => !prev)}
@@ -535,26 +539,67 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                             {showCreds ? 'Hide Details' : 'Reveal Details'}
                           </button>
                         </div>
-                        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                          <div style={{ flex: 1, minWidth: '180px' }}>
-                            <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>Login Password</small>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af', background: '#eff6ff', padding: '3px 8px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
-                                {showCreds ? (employee.plainPassword || employee.password || 'Aparaitech123@') : '••••••••••••'}
-                              </span>
-                            </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '12px' }}>
+                        <div style={{ flex: 1, minWidth: '180px' }}>
+                          <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>Login Password</small>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af', background: '#eff6ff', padding: '3px 8px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                              {showCreds ? (employee.plainPassword || employee.password || 'Aparaitech123@') : '••••••••••••'}
+                            </span>
                           </div>
-                          <div style={{ flex: 1, minWidth: '180px' }}>
-                            <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>4-Digit Passcode PIN</small>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: '#065f46', background: '#ecfdf5', padding: '3px 8px', borderRadius: '6px', border: '1px solid #a7f3d0', letterSpacing: showCreds ? '3px' : 'normal' }}>
-                                {showCreds ? (employee.passcode || '1234') : '••••'}
-                              </span>
-                            </div>
+                        </div>
+                        <div style={{ flex: 1, minWidth: '180px' }}>
+                          <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>4-Digit Passcode PIN</small>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: '#065f46', background: '#ecfdf5', padding: '3px 8px', borderRadius: '6px', border: '1px solid #a7f3d0', letterSpacing: showCreds ? '3px' : 'normal' }}>
+                              {showCreds ? (employee.passcode || '1234') : '••••'}
+                            </span>
                           </div>
                         </div>
                       </div>
-                    )}
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
+                        <button
+                          type="button"
+                          onClick={() => setIsPinModalOpen(true)}
+                          style={{
+                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '0.78rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 2px 4px rgba(37,99,235,0.25)'
+                          }}
+                        >
+                          <i className="fas fa-th"></i> Edit 4-Digit PIN
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsPwdModalOpen(true)}
+                          style={{
+                            background: '#0a192f',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '0.78rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <i className="fas fa-key"></i> Change Password
+                        </button>
+                      </div>
+                    </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', gap: '0.8rem' }}>
                       <button
@@ -882,6 +927,31 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
         onCapture={handleWebcamCapture}
         title={webcamTarget === 'profile' ? 'Capture Profile Picture' : 'Capture Face ID Photo'}
         instructions={webcamTarget === 'profile' ? 'Align your face center-frame.' : 'Position face clearly inside oval guide with good lighting.'}
+      />
+
+      {/* Change PIN Modal */}
+      <ChangePinModal
+        isOpen={isPinModalOpen}
+        onClose={() => setIsPinModalOpen(false)}
+        email={employee.email}
+        showToast={showToast}
+        onPinUpdated={(newPin) => {
+          employee.passcode = newPin
+          setEditPasscode(newPin)
+          if (onUpdated) onUpdated({ passcode: newPin })
+        }}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePwdModal
+        isOpen={isPwdModalOpen}
+        onClose={() => setIsPwdModalOpen(false)}
+        email={employee.email}
+        showToast={showToast}
+        onPasswordUpdated={(newPwd) => {
+          employee.plainPassword = newPwd
+          if (onUpdated) onUpdated({ plainPassword: newPwd })
+        }}
       />
     </>
   )

@@ -8,7 +8,9 @@ function Navbar({
   portalMode,
   onTogglePortal,
   canSwitchPortal,
-  onOpenNotifications
+  onOpenNotifications,
+  onOpenProfile,
+  onOpenChangePin
 }) {
   const isAdmin = currentUser.role === 'admin'
   const isManager = currentUser.role === 'manager' || currentUser.role === 'hr'
@@ -44,7 +46,7 @@ function Navbar({
   
   const getRoleLabel = () => {
     if (isAdmin) return 'Super Admin'
-    if (currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017') return 'Technical Lead & Management'
+    if (currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056') return 'Software Technical Lead'
     if (isManager) return currentUser.role === 'hr' ? 'HR Manager' : 'Team Manager'
     if (currentUser.department === 'Development' || currentUser.designation?.toLowerCase().includes('software')) {
       return currentUser.designation || 'Software Engineer'
@@ -248,7 +250,73 @@ function Navbar({
           )}
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}>
+        {/* Profile Quick Button */}
+        {onOpenProfile && (
+          <button
+            onClick={onOpenProfile}
+            title="View My Profile & Credentials"
+            style={{
+              background: 'rgba(56, 189, 248, 0.15)',
+              border: '1px solid rgba(56, 189, 248, 0.35)',
+              color: '#7dd3fc',
+              padding: '7px 11px',
+              borderRadius: '9px',
+              fontWeight: '700',
+              fontSize: '0.78rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <i className="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </button>
+        )}
+
+        {/* Edit PIN Quick Button */}
+        {onOpenChangePin && (
+          <button
+            onClick={onOpenChangePin}
+            title="Change 4-Digit Passcode PIN"
+            style={{
+              background: 'rgba(37, 99, 235, 0.22)',
+              border: '1px solid rgba(147, 197, 253, 0.4)',
+              color: '#93c5fd',
+              padding: '7px 11px',
+              borderRadius: '9px',
+              fontWeight: '700',
+              fontSize: '0.78rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <i className="fas fa-th"></i>
+            <span>Edit PIN</span>
+          </button>
+        )}
+
+        {/* User Pill (Clickable to open profile) */}
+        <div
+          onClick={onOpenProfile}
+          title="Click to view full Profile & Credentials"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.85rem',
+            cursor: onOpenProfile ? 'pointer' : 'default',
+            padding: '4px 8px',
+            borderRadius: '10px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            transition: 'background 0.2s ease'
+          }}
+        >
           <i className="fas fa-user-circle" style={{ fontSize: '1.35rem', color: '#38bdf8', flexShrink: 0 }}></i>
           <div className="navbar-user-text">
             <div style={{ fontWeight: '700', color: '#ffffff', lineHeight: 1.2, whiteSpace: 'nowrap' }}>

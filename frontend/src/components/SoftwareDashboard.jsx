@@ -3,7 +3,7 @@ import { taskAPI, projectAPI, reportsAPI, attendanceAPI } from '../services/api'
 import SoftwareDailyReportModal from './SoftwareDailyReportModal'
 import MarkAttendanceModal from './MarkAttendanceModal'
 
-function SoftwareDashboard({ currentUser, onNavigate, showToast }) {
+function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, onOpenPin }) {
   const [tasks, setTasks] = useState([])
   const [projects, setProjects] = useState([])
   const [todayReportSubmitted, setTodayReportSubmitted] = useState(false)
@@ -83,6 +83,52 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast }) {
         </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', zIndex: 1 }}>
+          {onOpenProfile && (
+            <button
+              onClick={onOpenProfile}
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: '#ffffff',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                fontWeight: '800',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backdropFilter: 'blur(8px)'
+              }}
+            >
+              <i className="fas fa-user-circle" style={{ color: '#38bdf8' }}></i>
+              My Profile
+            </button>
+          )}
+
+          {onOpenPin && (
+            <button
+              onClick={onOpenPin}
+              style={{
+                background: 'linear-gradient(135deg, #059669, #047857)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                fontWeight: '800',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)'
+              }}
+            >
+              <i className="fas fa-th"></i>
+              Edit PIN
+            </button>
+          )}
+
           <button
             onClick={() => setIsAttendanceModalOpen(true)}
             style={{

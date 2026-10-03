@@ -12,7 +12,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
   const [devFilter, setDevFilter] = useState('')
   const [selectedReport, setSelectedReport] = useState(null)
 
-  const isManagerOrAdmin = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.email === 'anunand2004@gmail.com'
+  const isManagerOrAdmin = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.email === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056'
 
   useEffect(() => {
     fetchReports()

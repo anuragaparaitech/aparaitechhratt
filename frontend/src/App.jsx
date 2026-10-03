@@ -27,6 +27,8 @@ import AnnouncementsView from './components/AnnouncementsView'
 import SettingsView from './components/SettingsView'
 import NotificationCenterModal from './components/NotificationCenterModal'
 import SoftwareDailyReportModal from './components/SoftwareDailyReportModal'
+import EmployeeProfileModal from './components/EmployeeProfileModal'
+import ChangePinModal from './components/ChangePinModal'
 
 // ── Admin sidebar nav definition (BDA / Executive) ──────────────────────────
 const ADMIN_NAV = [
@@ -69,7 +71,10 @@ const SOFTWARE_NAV = [
   // 3. Communications & Setup
   { id: 'softwareAnnouncements',icon: 'fa-bullhorn',        label: 'Announcements',       group: 'Communication' },
   { id: 'inbox',                icon: 'fa-inbox',           label: 'Message Centre',      group: 'Communication', badge: true },
-  { id: 'softwareSettings',     icon: 'fa-cog',             label: 'Portal Settings',     group: 'Communication' }
+  { id: 'softwareSettings',     icon: 'fa-cog',             label: 'Portal Settings',     group: 'Communication' },
+
+  // 4. Leadership & Oversight (Anurag & Admin)
+  { id: 'managerReports',       icon: 'fa-clipboard-list',  label: 'BDA Daily Reports',   group: 'Leadership & Oversight', requiresLeadership: true }
 ]
 
 function App() {
@@ -88,13 +93,13 @@ function App() {
       email === 'letsmailvivek100@gmail.com' ||
       empId === '7044' ||
       email === 'kadammahesh803@gmail.com' ||
-      empId === '7056' ||
-      empId === 'AP7056'
+      (empId === '7056' && email !== 'anunand2004@gmail.com')
     )
     return !isBlocked && (
       u.role === 'admin' ||
       email === 'anunand2004@gmail.com' ||
-      empId === '7017'
+      empId === '7017' ||
+      empId === 'AP7056'
     )
   }
 
@@ -102,11 +107,13 @@ function App() {
 
   const getInitialPortalMode = (user) => {
     if (!user) return 'bda'
-    if (isAnuragOrSuperAdmin(user)) {
+    // Anurag Nand is assigned to Software Portal
+    if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7056') {
+      return 'software'
+    }
+    if (user.role === 'admin') {
       const saved = localStorage.getItem('aparaitech_portal_mode')
-      if (saved === 'software' || saved === 'bda') return saved
-      if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017') return 'software'
-      return user.role === 'admin' ? 'bda' : 'software'
+      return saved === 'software' ? 'software' : 'bda'
     }
     const isDev = (
       user.department === 'Development' ||
@@ -152,12 +159,14 @@ function App() {
   const [showSplash, setShowSplash] = useState(true)
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false)
   const [isGlobalReportModalOpen, setIsGlobalReportModalOpen] = useState(false)
+  const [isGlobalProfileOpen, setIsGlobalProfileOpen] = useState(false)
+  const [isGlobalPinOpen, setIsGlobalPinOpen] = useState(false)
 
   const showToast = (message, bg = '#1e293b') => {
     setToast({ message, bg })
   }
 
-  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser?.empId) === '7017'
+  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser?.empId) === '7017' || String(currentUser?.empId) === 'AP7056'
 
   // Reset tab selection when current user changes
   useEffect(() => {
@@ -292,6 +301,8 @@ function App() {
             onTogglePortal={handleTogglePortal}
             canSwitchPortal={canSwitchPortal}
             onOpenNotifications={() => setIsNotifModalOpen(true)}
+            onOpenProfile={() => setIsGlobalProfileOpen(true)}
+            onOpenChangePin={() => setIsGlobalPinOpen(true)}
           />
 
           <div className="main-layout" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', padding: '1.5rem' }}>
@@ -435,6 +446,23 @@ function App() {
                       )}
                     </button>
                   ))}
+
+                  {/* Group 4: Leadership & Oversight (Anurag & Admin) */}
+                  {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056') && (
+                    <>
+                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#0d9488', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
+                        📊 Leadership & Oversight
+                      </div>
+                      <button
+                        className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
+                        style={sidebarBtnStyle(activeTab === 'managerReports')}
+                        onClick={() => setActiveTab('managerReports')}
+                      >
+                        <i className="fas fa-file-invoice" style={{ width: '16px', textAlign: 'center' }}></i>
+                        BDA Daily Reports
+                      </button>
+                    </>
+                  )}
                 </>
               ) : (
                 /* MODE 2: BDA / CALLING TEAM WORKSPACE */
@@ -606,6 +634,8 @@ function App() {
                       currentUser={currentUser}
                       onNavigate={setActiveTab}
                       showToast={showToast}
+                      onOpenProfile={() => setIsGlobalProfileOpen(true)}
+                      onOpenPin={() => setIsGlobalPinOpen(true)}
                     />
                   )}
 
@@ -706,6 +736,14 @@ function App() {
                     <SettingsView
                       currentUser={currentUser}
                       onLogout={handleLogout}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 13. BDA Daily Reports (For Leadership: Anurag & Admin) */}
+                  {(activeTab === 'managerReports' || activeTab === 'bdaDailyReports') && (
+                    <ManagerReportsView
+                      currentUser={currentUser}
                       showToast={showToast}
                     />
                   )}
@@ -1023,6 +1061,26 @@ function App() {
                           )}
                         </button>
                       ))}
+
+                      {/* Leadership & Oversight in Mobile Drawer */}
+                      {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056') && (
+                        <>
+                          <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#0d9488', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                            📊 Leadership & Oversight
+                          </div>
+                          <button
+                            className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
+                            style={sidebarBtnStyle(activeTab === 'managerReports')}
+                            onClick={() => {
+                              setActiveTab('managerReports')
+                              setMobileDrawerOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-file-invoice" style={{ width: '18px', textAlign: 'center' }}></i>
+                            BDA Daily Reports
+                          </button>
+                        </>
+                      )}
                     </>
                   ) : (
                     /* MOBILE DRAWER: BDA MODE */
@@ -1202,7 +1260,55 @@ function App() {
                     )
                   )}
 
-                  <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
+                  <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setMobileDrawerOpen(false)
+                        setIsGlobalProfileOpen(true)
+                      }}
+                      style={{
+                        width: '100%',
+                        background: 'rgba(56, 189, 248, 0.12)',
+                        color: '#0284c7',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <i className="fas fa-user-circle"></i> My Profile & Credentials
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMobileDrawerOpen(false)
+                        setIsGlobalPinOpen(true)
+                      }}
+                      style={{
+                        width: '100%',
+                        background: 'rgba(37, 99, 235, 0.12)',
+                        color: '#2563eb',
+                        border: '1px solid rgba(37, 99, 235, 0.3)',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <i className="fas fa-th"></i> Edit 4-Digit PIN
+                    </button>
+
                     <button
                       onClick={() => {
                         setMobileDrawerOpen(false)
@@ -1442,6 +1548,35 @@ function App() {
           }}
         />
       )}
+
+      {/* ── Global Employee Profile Modal ── */}
+      <EmployeeProfileModal
+        isOpen={isGlobalProfileOpen}
+        onClose={() => setIsGlobalProfileOpen(false)}
+        employee={currentUser}
+        isAdmin={currentUser?.role === 'admin'}
+        showToast={showToast}
+        onUpdated={(updated) => {
+          if (updated) {
+            const nextUser = { ...currentUser, ...updated }
+            setCurrentUser(nextUser)
+            localStorage.setItem('aparaitech_current_user', JSON.stringify(nextUser))
+          }
+        }}
+      />
+
+      {/* ── Global 4-Digit Passcode PIN Modal ── */}
+      <ChangePinModal
+        isOpen={isGlobalPinOpen}
+        onClose={() => setIsGlobalPinOpen(false)}
+        email={currentUser?.email}
+        showToast={showToast}
+        onPinUpdated={(newPin) => {
+          const nextUser = { ...currentUser, passcode: newPin }
+          setCurrentUser(nextUser)
+          localStorage.setItem('aparaitech_current_user', JSON.stringify(nextUser))
+        }}
+      />
 
       {/* Toast Alert */}
       {toast && (

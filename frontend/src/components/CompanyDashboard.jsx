@@ -4,6 +4,8 @@ import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 import DailyReportModal from './DailyReportModal'
 import MailBlastModal from './MailBlastModal'
 import ConversionDataFillModal from './ConversionDataFillModal'
+import EmployeeProfileModal from './EmployeeProfileModal'
+import ChangePinModal from './ChangePinModal'
 
 function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCount = 0 }) {
   const [loading, setLoading] = useState(true)
@@ -18,6 +20,8 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
   const [mailBlastModalOpen, setMailBlastModalOpen] = useState(false)
   const [conversionModalOpen, setConversionModalOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isPinOpen, setIsPinOpen] = useState(false)
 
   const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr'
 
@@ -379,6 +383,52 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {/* My Profile Button */}
+              <button
+                onClick={() => setIsProfileOpen(true)}
+                style={{
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '12px',
+                  padding: '14px 12px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <div style={{ color: '#2563eb', fontSize: '1.25rem' }}>
+                  <i className="fas fa-user-circle"></i>
+                </div>
+                <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#1e3a8a' }}>My Profile</div>
+                <div style={{ fontSize: '0.72rem', color: '#1d4ed8' }}>View ID, credentials & info</div>
+              </button>
+
+              {/* Edit 4-Digit PIN Button */}
+              <button
+                onClick={() => setIsPinOpen(true)}
+                style={{
+                  background: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '12px',
+                  padding: '14px 12px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <div style={{ color: '#059669', fontSize: '1.25rem' }}>
+                  <i className="fas fa-th"></i>
+                </div>
+                <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#064e3b' }}>Edit 4-Digit PIN</div>
+                <div style={{ fontSize: '0.72rem', color: '#047857' }}>Change passcode access</div>
+              </button>
+
               {/* Daily Report Button */}
               <button
                 onClick={() => setDailyModalOpen(true)}
@@ -863,6 +913,24 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
           showToast={showToast}
         />
       )}
+
+      {/* Employee Profile Modal */}
+      <EmployeeProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        employee={currentUser}
+        isAdmin={false}
+        showToast={showToast}
+        onUpdated={() => fetchData()}
+      />
+
+      {/* Change PIN (Passcode) Modal */}
+      <ChangePinModal
+        isOpen={isPinOpen}
+        onClose={() => setIsPinOpen(false)}
+        email={currentUser?.email}
+        showToast={showToast}
+      />
     </div>
   )
 }

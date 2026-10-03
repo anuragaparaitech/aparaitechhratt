@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { attendanceAPI, holidayAPI, faceAPI, reportsAPI } from '../services/api'
 import { API_URL } from '../services/api'
 import ChangePwdModal from './ChangePwdModal'
+import ChangePinModal from './ChangePinModal'
 import FaceVerificationModal from './FaceVerificationModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
 import DailyReportModal from './DailyReportModal'
@@ -13,6 +14,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   const [todayRecord, setTodayRecord] = useState(null)
   const [activeSession, setActiveSession] = useState(null)
   const [isPwdOpen, setIsPwdOpen] = useState(false)
+  const [isPinOpen, setIsPinOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [holidays, setHolidays] = useState([])
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
@@ -250,8 +252,74 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1, flexWrap: 'wrap' }}>
+          {/* Profile & Credentials Controls */}
           <button
-            onClick={() => setDailyReportOpen(true)}
+            onClick={() => {
+              setProfileTab('details')
+              setIsProfileOpen(true)
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '9px 14px',
+              fontSize: '0.8rem',
+              fontWeight: '800',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
+            }}
+          >
+            <i className="fas fa-user-circle"></i>
+            My Profile
+          </button>
+
+          <button
+            onClick={() => setIsPinOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '9px 14px',
+              fontSize: '0.8rem',
+              fontWeight: '800',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+            }}
+          >
+            <i className="fas fa-th"></i>
+            Edit PIN
+          </button>
+
+          <button
+            onClick={() => setIsPwdOpen(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.12)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              borderRadius: '12px',
+              padding: '9px 12px',
+              fontSize: '0.8rem',
+              fontWeight: '700',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <i className="fas fa-key"></i>
+            Password
+          </button>
+
+          <button
+            onClick={() => setDailyModalOpen(true)}
             style={{
               background: 'linear-gradient(135deg, #0d9488, #059669)',
               border: 'none',
@@ -270,11 +338,12 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
             <i className="fas fa-clipboard-list"></i>
             Daily Report
           </button>
+
           {isBda && (
             <button
               onClick={() => setAddConversionOpen(true)}
               style={{
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                 border: 'none',
                 borderRadius: '12px',
                 padding: '9px 14px',
@@ -285,7 +354,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.35)'
               }}
             >
               <i className="fas fa-user-plus"></i>
@@ -761,11 +830,24 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
         isAdmin={false}
         showToast={showToast}
         initialTab={profileTab}
-        onUpdated={() => {
-          // Sync changes back to currentUser in parent App state
+        onUpdated={(updated) => {
+          if (updated) {
+            setCurrentUser(prev => ({ ...prev, ...updated }))
+          }
           faceAPI.get(currentUser.email).then(d => {
             if (d.success && d.enrolled) setEnrolledFaceUrl(d.faceImageUrl)
           }).catch(() => {})
+        }}
+      />
+
+      {/* Change PIN (Passcode) Modal */}
+      <ChangePinModal
+        isOpen={isPinOpen}
+        onClose={() => setIsPinOpen(false)}
+        email={currentUser?.email}
+        showToast={showToast}
+        onPinUpdated={(newPin) => {
+          setCurrentUser(prev => ({ ...prev, passcode: newPin }))
         }}
       />
 
