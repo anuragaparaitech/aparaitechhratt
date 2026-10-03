@@ -18,6 +18,8 @@ import announcementRoutes from './_backend/routes/announcementRoutes.js'
 import documentRoutes from './_backend/routes/documentRoutes.js'
 import productConversionRoutes from './_backend/routes/productConversionRoutes.js'
 import leadRoutes from './_backend/routes/leadRoutes.js'
+import projectRoutes from './_backend/routes/projectRoutes.js'
+import repoRoutes from './_backend/routes/repoRoutes.js'
 import { seedDatabase } from './_backend/controllers/employeeController.js'
 
 dotenv.config()
@@ -124,6 +126,8 @@ apiRouter.use('/conversions', requireDatabase, productConversionRoutes)
 apiRouter.use('/product-conversions', requireDatabase, productConversionRoutes)
 apiRouter.use('/product_conversions', requireDatabase, productConversionRoutes)
 apiRouter.use('/leads', requireDatabase, leadRoutes)
+apiRouter.use('/projects', requireDatabase, projectRoutes)
+apiRouter.use('/repos', requireDatabase, repoRoutes)
 
 // Mount on /api for regular client calls and / for direct serverless rewrites
 app.use('/api', apiRouter)

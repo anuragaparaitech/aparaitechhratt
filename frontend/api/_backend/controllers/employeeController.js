@@ -6,17 +6,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import bcrypt from 'bcryptjs'
 
-const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
-const PROFILE_UPLOADS_DIR = isServerless 
-  ? path.join('/tmp', 'profile-uploads') 
-  : path.join(__dirname, '..', 'profile-uploads')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const PROFILE_UPLOADS_DIR = path.join(__dirname, '..', 'profile-uploads')
 
-try {
-  if (!fs.existsSync(PROFILE_UPLOADS_DIR)) {
-    fs.mkdirSync(PROFILE_UPLOADS_DIR, { recursive: true })
-  }
-} catch (e) {
-  console.warn('Filesystem notice (profile-uploads):', e.message)
+if (!fs.existsSync(PROFILE_UPLOADS_DIR)) {
+  fs.mkdirSync(PROFILE_UPLOADS_DIR, { recursive: true })
 }
 
 const DEFAULT_PWD = 'Aparaitech123@'
@@ -43,9 +37,10 @@ const activeEmployeesList = [
   // Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
   { empId: '7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', phone: '7666921571', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
   { empId: '7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', phone: '7249830281', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Management', designation: 'Technical Lead & Management', role: 'manager', status: 'active', shift: 'shift_1' },
   { empId: '7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' }
+  { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: '7103', name: 'Liza', email: 'liza@aparaitech.com', department: 'BDA', designation: 'BDA Associate', status: 'active', shift: 'shift_2' }
 ]
 
 
@@ -126,6 +121,7 @@ export const seedDatabase = async () => {
         existingEmp.status = 'active'
         existingEmp.name = emp.name
         existingEmp.email = emp.email.toLowerCase()
+        if (emp.role) existingEmp.role = emp.role
         if (emp.phone) existingEmp.phone = emp.phone
         if (emp.department) existingEmp.department = emp.department
         if (emp.designation) existingEmp.designation = emp.designation
@@ -140,23 +136,20 @@ export const seedDatabase = async () => {
           department: emp.department || 'Development',
           designation: emp.designation || '',
           phone: emp.phone || '',
-          role: 'employee',
+          role: emp.role || 'employee',
           status: 'active',
           shift: emp.shift || (emp.department === 'Development' ? 'shift_1' : 'shift_2')
         })
       }
     }
 
-    // 3. Permanently remove all past/inactive employees from database
+    // 3. Remove only explicitly inactive employee records
     const deleteResult = await Employee.deleteMany({
       role: { $ne: 'admin' },
-      $or: [
-        { status: 'inactive' },
-        { email: { $nin: activeEmails } }
-      ]
+      status: 'inactive'
     })
     if (deleteResult.deletedCount > 0) {
-      console.log(`🗑️ Removed ${deleteResult.deletedCount} inactive/past employee records from database.`)
+      console.log(`🗑️ Removed ${deleteResult.deletedCount} inactive employee records from database.`)
     }
 
     console.log('✅ Employee sync completed: Active employees updated, inactive employees removed.')

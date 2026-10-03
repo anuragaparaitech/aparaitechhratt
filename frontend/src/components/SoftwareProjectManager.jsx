@@ -121,7 +121,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
         code: newCode.trim().toUpperCase(),
         description: newDesc.trim() || 'Software development project for Aparaitech Software.',
         category: newCategory,
-        techStack: newTechStack.split(',').map(s => s.trim()),
+        techStack: newTechStack ? newTechStack.split(',').map(s => s.trim()).filter(Boolean) : ['React', 'Node.js'],
         repositoryUrl: newRepoUrl.trim(),
         deadline: newDeadline,
         leadName: currentUser.name,

@@ -161,9 +161,9 @@ export const createProject = async (req, res) => {
       repositoryUrl: repositoryUrl || 'https://github.com/anuragaparaitech/aparaitechhratt',
       deadline,
       assignedTeam: Array.isArray(assignedTeam) ? assignedTeam : [],
-      leadName: leadName || req.user.name,
-      leadEmail: leadEmail || req.user.email,
-      createdBy: req.user.name
+      leadName: leadName || req.user?.name || 'Technical Lead',
+      leadEmail: leadEmail || req.user?.email || 'anunand2004@gmail.com',
+      createdBy: req.user?.name || 'Management'
     })
 
     await project.save()
