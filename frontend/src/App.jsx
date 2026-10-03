@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import LoginScreen from './components/LoginScreen'
 import Navbar from './components/Navbar'
 import AdminPanel from './components/AdminPanel'
@@ -29,6 +29,8 @@ import NotificationCenterModal from './components/NotificationCenterModal'
 import SoftwareDailyReportModal from './components/SoftwareDailyReportModal'
 import EmployeeProfileModal from './components/EmployeeProfileModal'
 import ChangePinModal from './components/ChangePinModal'
+import NotificationBanner from './components/NotificationBanner'
+import { popNotification, requestNotificationPermission } from './services/notificationService'
 
 // ── Admin sidebar nav definition (BDA / Executive) ──────────────────────────
 const ADMIN_NAV = [
@@ -185,6 +187,38 @@ function App() {
     }
   }, [currentUser])
 
+  const prevUnreadRef = useRef(null)
+  const hasNotified7PMTodayRef = useRef(false)
+
+  // 07:00 PM Daily Report Notification Checker (runs every 60s)
+  useEffect(() => {
+    if (!currentUser) return
+    const check7PM = () => {
+      const now = new Date()
+      const hours = now.getHours()
+      // If 7:00 PM or later (19:00 - 23:59) and haven't triggered this session
+      if (hours >= 19 && !hasNotified7PMTodayRef.current) {
+        hasNotified7PMTodayRef.current = true
+        popNotification({
+          title: '📝 07:00 PM Work Report Deadline',
+          body: '07:00 PM deadline reached! Please submit your daily engineering / work report.',
+          tag: 'daily-report-deadline',
+          onClick: () => {
+            if (portalMode === 'software') {
+              setIsGlobalReportModalOpen(true)
+            } else {
+              setActiveTab('dailyReports')
+            }
+          }
+        })
+      }
+    }
+
+    check7PM()
+    const interval = setInterval(check7PM, 60000)
+    return () => clearInterval(interval)
+  }, [currentUser, portalMode])
+
   // Periodic polling for unread messages (every 30 seconds)
   useEffect(() => {
     if (currentUser && currentUser.role !== 'admin') {
@@ -198,7 +232,17 @@ function App() {
       try {
         const response = await messageAPI.getEmployeeMessages()
         if (response.success) {
-          setUnreadCount(response.unreadCount || 0)
+          const count = response.unreadCount || 0
+          if (prevUnreadRef.current !== null && count > prevUnreadRef.current) {
+            popNotification({
+              title: '💬 New Leadership Message',
+              body: `You have ${count} unread message${count > 1 ? 's' : ''} waiting in Message Centre.`,
+              tag: 'unread-message',
+              onClick: () => setActiveTab('inbox')
+            })
+          }
+          prevUnreadRef.current = count
+          setUnreadCount(count)
         }
       } catch (err) {
         console.error('Error fetching unread count:', err)
@@ -218,6 +262,8 @@ function App() {
   const handleLogin = (user) => {
     setCurrentUser(user)
     localStorage.setItem('aparaitech_current_user', JSON.stringify(user))
+    // Request notification permission smoothly on user action
+    requestNotificationPermission()
     const mode = getInitialPortalMode(user)
     setPortalMode(mode)
     if (mode === 'software') {
@@ -1600,6 +1646,9 @@ function App() {
           {toast.message}
         </div>
       )}
+
+      {/* Heads-up floating notification banner */}
+      <NotificationBanner />
     </div>
   )
 }

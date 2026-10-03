@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { authAPI } from '../services/api'
 import ChangePwdModal from './ChangePwdModal'
 import ChangePinModal from './ChangePinModal'
+import { requestNotificationPermission, popNotification, isNotificationPermissionGranted } from '../services/notificationService'
 
 function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangChange }) {
   const [lang, setLang] = useState(currentLang || localStorage.getItem('aparaitech_lang') || 'en')
@@ -9,11 +10,17 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
   const [isPwdModalOpen, setIsPwdModalOpen] = useState(false)
   const [isPinModalOpen, setIsPinModalOpen] = useState(false)
 
-  // Notification toggles
+  // Notification toggles & permission
   const [reportReminder, setReportReminder] = useState(true)
   const [taskAlerts, setTaskAlerts] = useState(true)
   const [messageAlerts, setMessageAlerts] = useState(true)
   const [biometricEnabled, setBiometricEnabled] = useState(true)
+  const [hasNotifPermission, setHasNotifPermission] = useState(false)
+  const [testingNotif, setTestingNotif] = useState(false)
+
+  useEffect(() => {
+    isNotificationPermissionGranted().then(setHasNotifPermission)
+  }, [])
 
   const handleLanguageChange = (newLang) => {
     setLang(newLang)
@@ -240,6 +247,70 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
             </div>
             <input type="checkbox" checked={messageAlerts} onChange={(e) => setMessageAlerts(e.target.checked)} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
           </label>
+
+          {/* Test System & Mobile Popup Button */}
+          <div style={{
+            marginTop: '6px',
+            padding: '12px 14px',
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)',
+            border: '1px solid #bae6fd',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: hasNotifPermission ? '#10b981' : '#f59e0b',
+                  boxShadow: hasNotifPermission ? '0 0 8px #10b981' : 'none'
+                }} />
+                <strong style={{ fontSize: '0.84rem', color: '#0f172a' }}>
+                  {hasNotifPermission ? 'Native Popups Active' : 'Permission Required for Popups'}
+                </strong>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#475569', marginTop: '2px' }}>
+                Supports Chrome Desktop/Mobile & Android Heads-Up Notifications
+              </div>
+            </div>
+
+            <button
+              onClick={async () => {
+                setTestingNotif(true)
+                const granted = await requestNotificationPermission()
+                setHasNotifPermission(granted)
+                await popNotification({
+                  title: '🔔 Aparaitech Notification Test',
+                  body: 'System popup & audio chime verified successfully on your device!',
+                  tag: 'settings-test'
+                })
+                showToast('🔔 Notification popped successfully!', '#10b981')
+                setTimeout(() => setTestingNotif(false), 3000)
+              }}
+              style={{
+                background: testingNotif ? '#10b981' : '#0284c7',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 14px',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)'
+              }}
+            >
+              <i className={`fas ${testingNotif ? 'fa-check' : 'fa-paper-plane'}`}></i>
+              {testingNotif ? 'Notification Sent!' : 'Test System Popup'}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,7 +1,29 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { requestNotificationPermission, popNotification, isNotificationPermissionGranted } from '../services/notificationService'
 
 function NotificationCenterModal({ isOpen, onClose, currentUser, onNavigate, onOpenReportModal }) {
+  const [hasPermission, setHasPermission] = useState(false)
+  const [testSent, setTestSent] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      isNotificationPermissionGranted().then(setHasPermission)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
+
+  const handleTestPop = async () => {
+    const granted = await requestNotificationPermission()
+    setHasPermission(granted)
+    await popNotification({
+      title: '🚀 Aparaitech Alert Active',
+      body: 'Pop-up notifications are operational across Google Chrome & Mobile Android App!',
+      tag: 'test-alert'
+    })
+    setTestSent(true)
+    setTimeout(() => setTestSent(false), 4000)
+  }
 
   const currentHour = new Date().getHours()
   const isAfter7PM = currentHour >= 19
@@ -101,6 +123,51 @@ function NotificationCenterModal({ isOpen, onClose, currentUser, onNavigate, onO
             }}
           >
             ✕
+          </button>
+        </div>
+
+        {/* System & Chrome/Mobile Notification Action Strip */}
+        <div style={{
+          background: '#f8fafc',
+          borderBottom: '1px solid #e2e8f0',
+          padding: '10px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: hasPermission ? '#10b981' : '#f59e0b',
+              boxShadow: hasPermission ? '0 0 8px #10b981' : 'none'
+            }} />
+            <span style={{ fontSize: '0.74rem', color: '#475569', fontWeight: '600' }}>
+              {hasPermission ? 'Popups Enabled (Chrome & App)' : 'Popups Require Permission'}
+            </span>
+          </div>
+
+          <button
+            onClick={handleTestPop}
+            style={{
+              background: testSent ? '#10b981' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '5px 10px',
+              fontSize: '0.72rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)'
+            }}
+          >
+            <i className={`fas ${testSent ? 'fa-check' : 'fa-bell'}`}></i>
+            {testSent ? 'Popped!' : 'Test Pop-up'}
           </button>
         </div>
 

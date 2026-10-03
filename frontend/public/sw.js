@@ -59,3 +59,53 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Notification Click Handler (Brings Chrome window to focus or opens app)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (let client of windowClients) {
+        if ('focus' in client) {
+          if (client.url.includes(self.registration.scope)) {
+            client.focus();
+            if (event.notification.data?.tab) {
+              client.postMessage({ type: 'NAVIGATE_TAB', tab: event.notification.data.tab });
+            }
+            return;
+          }
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+
+// Push Event Handler
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'Aparaitech Alert', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || 'Aparaitech Work Portal';
+  const options = {
+    body: data.body || 'You have an important update from Aparaitech',
+    icon: '/favicon.png',
+    badge: '/favicon.png',
+    vibrate: [200, 100, 200],
+    data: data,
+    tag: data.tag || 'aparaitech-notif-' + Date.now(),
+    renotify: true
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
