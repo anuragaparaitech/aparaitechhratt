@@ -1,4 +1,4 @@
-import Buffer from 'buffer'
+import { Buffer } from 'buffer'
 import Employee from '../models/Employee.js'
 import jwt from 'jsonwebtoken'
 
