@@ -51,7 +51,13 @@ function SoftwareTaskManager({ currentUser, showToast }) {
   const [newHours, setNewHours] = useState('4')
   const [submitting, setSubmitting] = useState(false)
 
-  const isManagerOrAdmin = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.email === 'anunand2004@gmail.com'
+  // Only Anurag and Admin can assign tasks to developers
+  const isAnuragOrAdmin = currentUser && (
+    currentUser.role === 'admin' ||
+    currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' ||
+    currentUser.empId === 'AP7056' ||
+    currentUser.empId === '7017'
+  )
 
   useEffect(() => {
     fetchTasks()
@@ -108,6 +114,10 @@ function SoftwareTaskManager({ currentUser, showToast }) {
 
   const handleCreateTask = async (e) => {
     e.preventDefault()
+    if (!isAnuragOrAdmin) {
+      showToast('⛔ Only Anurag and Administrators are authorized to assign tasks to developers', '#ef4444')
+      return
+    }
     if (!newTitle.trim() || !newAssignee) {
       showToast('⚠️ Please enter task title and assignee', '#f59e0b')
       return
@@ -285,26 +295,28 @@ function SoftwareTaskManager({ currentUser, showToast }) {
             </button>
           </div>
 
-          <button
-            onClick={() => setIsCreateOpen(true)}
-            style={{
-              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '10px 18px',
-              fontWeight: '800',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
-            }}
-          >
-            <i className="fas fa-plus-circle"></i>
-            Assign Task
-          </button>
+          {isAnuragOrAdmin && (
+            <button
+              onClick={() => setIsCreateOpen(true)}
+              style={{
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '10px 18px',
+                fontWeight: '800',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
+              }}
+            >
+              <i className="fas fa-plus-circle"></i>
+              Assign Task
+            </button>
+          )}
         </div>
       </div>
 
@@ -903,8 +915,8 @@ function SoftwareTaskManager({ currentUser, showToast }) {
         </div>
       )}
 
-      {/* Create Task Modal */}
-      {isCreateOpen && (
+      {/* Create Task Modal - Only accessible to Anurag & Admin */}
+      {isCreateOpen && isAnuragOrAdmin && (
         <div style={{
           position: 'fixed',
           inset: 0,

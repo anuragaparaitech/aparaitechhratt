@@ -7,6 +7,21 @@ import Project from '../models/Project.js'
 // @access  Private
 export const createTask = async (req, res) => {
   try {
+    // Only Anurag and Super Admin are authorized to assign tasks to developers
+    const isAnuragOrAdmin = req.user && (
+      req.user.role === 'admin' ||
+      req.user.email?.toLowerCase() === 'anunand2004@gmail.com' ||
+      req.user.empId === 'AP7056' ||
+      req.user.empId === '7017'
+    )
+
+    if (!isAnuragOrAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Only Anurag and Administrators are authorized to assign tasks to developers'
+      })
+    }
+
     const {
       title,
       description,
