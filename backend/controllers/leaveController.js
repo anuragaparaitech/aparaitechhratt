@@ -94,3 +94,29 @@ export const updateLeaveStatus = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error updating leave', error: error.message })
   }
 }
+
+// @desc    Cancel/Delete a leave application
+// @route   DELETE /api/leaves/:id
+// @access  Private
+export const deleteLeave = async (req, res) => {
+  try {
+    const leave = await Leave.findById(req.params.id)
+    if (!leave) {
+      return res.status(404).json({ success: false, message: 'Leave application not found' })
+    }
+
+    const isOwner = leave.employeeEmail === req.user.email.toLowerCase()
+    const isAdminOrManager = req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'hr'
+
+    if (!isAdminOrManager && (!isOwner || leave.status !== 'Pending')) {
+      return res.status(403).json({ success: false, message: 'Only pending requests can be cancelled by employee' })
+    }
+
+    await Leave.findByIdAndDelete(req.params.id)
+    res.json({ success: true, message: 'Leave application cancelled successfully' })
+  } catch (error) {
+    console.error('deleteLeave error:', error)
+    res.status(500).json({ success: false, message: 'Server error cancelling leave', error: error.message })
+  }
+}
+

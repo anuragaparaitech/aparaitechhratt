@@ -22,7 +22,6 @@ import SoftwareReportsView from './components/SoftwareReportsView'
 import CodeRepositoryView from './components/CodeRepositoryView'
 import SoftwarePerformanceView from './components/SoftwarePerformanceView'
 import LeaveManagementView from './components/LeaveManagementView'
-import DocumentCenterView from './components/DocumentCenterView'
 import AnnouncementsView from './components/AnnouncementsView'
 import SettingsView from './components/SettingsView'
 import NotificationCenterModal from './components/NotificationCenterModal'
@@ -46,6 +45,7 @@ const ADMIN_NAV = [
   // 2. Workforce & Attendance Logs
   { id: 'employees',          icon: 'fa-users',               label: 'Employee Directory',      section: true,  group: 'Workforce & Logs' },
   { id: 'attendance',         icon: 'fa-calendar-check',      label: 'Attendance Logs',         section: true,  group: 'Workforce & Logs' },
+  { id: 'leaves',             icon: 'fa-calendar-alt',        label: 'Leave Requests & Approvals', section: false, tab: 'leave', group: 'Workforce & Logs' },
   { id: 'overall',            icon: 'fa-chart-line',          label: 'Overall Analytics',       section: true,  group: 'Workforce & Logs' },
   { id: 'missing',            icon: 'fa-exclamation-triangle',label: 'Missing Checkouts',       section: true,  group: 'Workforce & Logs' },
   { id: 'autocheckout',       icon: 'fa-robot',               label: 'Auto Checkout Records',   section: true,  group: 'Workforce & Logs' },
@@ -68,7 +68,6 @@ const SOFTWARE_NAV = [
   // 2. Attendance & HR Desk
   { id: 'attendance',           icon: 'fa-fingerprint',     label: 'Attendance & Punch',  group: 'Attendance & HR' },
   { id: 'softwareLeave',        icon: 'fa-calendar-alt',    label: 'Leave Management',    group: 'Attendance & HR' },
-  { id: 'softwareDocs',         icon: 'fa-file-invoice',    label: 'Document Centre',     group: 'Attendance & HR' },
 
   // 3. Communications & Setup
   { id: 'softwareAnnouncements',icon: 'fa-bullhorn',        label: 'Announcements',       group: 'Communication' },
@@ -603,6 +602,15 @@ function App() {
                     </button>
 
                     <button
+                      className={`sidebar-nav-btn ${activeTab === 'leave' || activeTab === 'softwareLeave' ? 'active' : ''}`}
+                      style={sidebarBtnStyle(activeTab === 'leave' || activeTab === 'softwareLeave')}
+                      onClick={() => setActiveTab('leave')}
+                    >
+                      <i className="fas fa-calendar-alt" style={{ width: '16px', textAlign: 'center' }}></i>
+                      Leave Management
+                    </button>
+
+                    <button
                       className={`sidebar-nav-btn ${activeTab === 'performance' ? 'active' : ''}`}
                       style={sidebarBtnStyle(activeTab === 'performance')}
                       onClick={() => setActiveTab('performance')}
@@ -738,16 +746,8 @@ function App() {
                   )}
 
                   {/* 8. Leave Management */}
-                  {activeTab === 'softwareLeave' && (
+                  {(activeTab === 'softwareLeave' || activeTab === 'leave') && (
                     <LeaveManagementView
-                      currentUser={currentUser}
-                      showToast={showToast}
-                    />
-                  )}
-
-                  {/* 9. Document Centre */}
-                  {activeTab === 'softwareDocs' && (
-                    <DocumentCenterView
                       currentUser={currentUser}
                       showToast={showToast}
                     />
@@ -887,6 +887,14 @@ function App() {
                   {/* 6. Revenue Tracker */}
                   {activeTab === 'revenue' && (
                     <RevenueTrackerView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 6.1. Leave Management (BDA & All Employees) */}
+                  {(activeTab === 'leave' || activeTab === 'softwareLeave') && (
+                    <LeaveManagementView
                       currentUser={currentUser}
                       showToast={showToast}
                     />
@@ -1226,6 +1234,18 @@ function App() {
                         >
                           <i className="fas fa-headset" style={{ width: '18px', textAlign: 'center' }}></i>
                           My Calling List
+                        </button>
+
+                        <button
+                          className={`sidebar-nav-btn ${activeTab === 'leave' || activeTab === 'softwareLeave' ? 'active' : ''}`}
+                          style={sidebarBtnStyle(activeTab === 'leave' || activeTab === 'softwareLeave')}
+                          onClick={() => {
+                            setActiveTab('leave')
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-calendar-alt" style={{ width: '18px', textAlign: 'center' }}></i>
+                          Leave Management
                         </button>
 
                         <button

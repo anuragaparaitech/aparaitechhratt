@@ -334,6 +334,10 @@ export const leaveAPI = {
   updateStatus: async (id, data) => {
     const response = await api.put(`/api/leaves/${id}/status`, data)
     return response.data
+  },
+  cancel: async (id) => {
+    const response = await api.delete(`/api/leaves/${id}`)
+    return response.data
   }
 }
 

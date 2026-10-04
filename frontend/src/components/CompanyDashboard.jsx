@@ -564,6 +564,29 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                 <div style={{ fontSize: '0.72rem', color: '#0f766e' }}>AI-Distributed Calling Desk</div>
               </button>
 
+              {/* Leave Management Button */}
+              <button
+                onClick={() => onNavigate('leave')}
+                style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '12px',
+                  padding: '14px 12px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <div style={{ color: '#ef4444', fontSize: '1.25rem' }}>
+                  <i className="fas fa-calendar-alt"></i>
+                </div>
+                <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#991b1b' }}>Leave Management</div>
+                <div style={{ fontSize: '0.72rem', color: '#b91c1c' }}>Apply & track leave requests</div>
+              </button>
+
               {/* Log Product Conversion Button */}
               <button
                 onClick={() => setConversionModalOpen(true)}
