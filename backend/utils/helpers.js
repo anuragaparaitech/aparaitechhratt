@@ -76,11 +76,31 @@ export const calculateDistanceMeters = (lat1, lon1, lat2 = GEOFENCE.latitude, lo
   return Math.round(R * c)
 }
 
+// ── TEMPORARY TESTING BYPASS ────────────────────────────────────────────────
+// Geofence bypassed for testing for ~15-20 minutes (until 12:25 PM IST)
+export const GEOFENCE_DISABLED_UNTIL = new Date('2026-10-04T12:25:00+05:30').getTime()
+
+export const isGeofenceBypassed = () => {
+  return Date.now() < GEOFENCE_DISABLED_UNTIL
+}
+
 /**
  * Checks whether given coordinates are within the Aparaitech Software geofence perimeter
  */
 export const isWithinGeofence = (lat, lon, allowedRadius = GEOFENCE.allowedRadiusMeters) => {
+  const isBypassed = isGeofenceBypassed()
   const dist = calculateDistanceMeters(lat, lon)
+
+  if (isBypassed) {
+    return {
+      within: true,
+      distance: dist !== null ? dist : 0,
+      allowedRadius,
+      officeName: GEOFENCE.name,
+      bypassed: true
+    }
+  }
+
   if (dist === null) {
     return {
       within: false,
@@ -95,6 +115,7 @@ export const isWithinGeofence = (lat, lon, allowedRadius = GEOFENCE.allowedRadiu
     officeName: GEOFENCE.name
   }
 }
+
 
 export const timeToMinutes = (timeStr) => {
   if (!timeStr) return null

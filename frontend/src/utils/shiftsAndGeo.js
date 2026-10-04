@@ -73,11 +73,31 @@ export const calculateDistanceMeters = (lat1, lon1, lat2 = GEOFENCE.latitude, lo
   return Math.round(R * c)
 }
 
+// ── TEMPORARY TESTING BYPASS ────────────────────────────────────────────────
+// Geofence bypassed for testing for ~15-20 minutes (until 12:25 PM IST)
+export const GEOFENCE_DISABLED_UNTIL = new Date('2026-10-04T12:25:00+05:30').getTime()
+
+export const isGeofenceBypassed = () => {
+  return Date.now() < GEOFENCE_DISABLED_UNTIL
+}
+
 /**
  * Check if given latitude and longitude are within the office geofence
  */
 export const checkGeofence = (latitude, longitude, maxDistance = GEOFENCE.allowedRadiusMeters) => {
+  const isBypassed = isGeofenceBypassed()
   const distance = calculateDistanceMeters(latitude, longitude)
+
+  if (isBypassed) {
+    return {
+      verified: true,
+      distance: distance || 0,
+      allowedRadius: maxDistance,
+      officeName: GEOFENCE.name,
+      message: `Geofence Bypassed for Testing (Active until 12:25 PM, ${distance !== null ? distance + 'm recorded' : 'Office Coordinates'})`
+    }
+  }
+
   if (distance === null) {
     return {
       verified: false,
@@ -102,6 +122,52 @@ export const checkGeofence = (latitude, longitude, maxDistance = GEOFENCE.allowe
  */
 export const getCurrentGpsLocation = (timeoutMs = 8000) => {
   return new Promise((resolve) => {
+    // If geofence is bypassed for testing, ensure attendance can proceed smoothly even if GPS is denied or unavailable
+    if (isGeofenceBypassed()) {
+      if (!navigator.geolocation) {
+        resolve({
+          success: true,
+          latitude: GEOFENCE.latitude,
+          longitude: GEOFENCE.longitude,
+          accuracy: 10,
+          distance: 0,
+          isWithinGeofence: true,
+          geoMessage: 'Geofence Bypassed for Testing (Active)'
+        })
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy } = pos.coords
+          const geoResult = checkGeofence(latitude, longitude)
+          resolve({
+            success: true,
+            latitude,
+            longitude,
+            accuracy,
+            distance: geoResult.distance,
+            isWithinGeofence: true,
+            geoMessage: geoResult.message
+          })
+        },
+        () => {
+          // If GPS denied/failed on tester's device, fallback to office coordinates
+          resolve({
+            success: true,
+            latitude: GEOFENCE.latitude,
+            longitude: GEOFENCE.longitude,
+            accuracy: 10,
+            distance: 0,
+            isWithinGeofence: true,
+            geoMessage: 'Geofence Bypassed for Testing (Office GPS fallback)'
+          })
+        },
+        { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 15000 }
+      )
+      return
+    }
+
     if (!navigator.geolocation) {
       resolve({ success: false, error: 'Geolocation not supported by device' })
       return
@@ -140,3 +206,4 @@ export const getCurrentGpsLocation = (timeoutMs = 8000) => {
     )
   })
 }
+
