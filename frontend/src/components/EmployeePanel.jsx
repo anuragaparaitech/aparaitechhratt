@@ -9,7 +9,7 @@ import DailyReportModal from './DailyReportModal'
 import ConversionDataFillModal from './ConversionDataFillModal'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
-function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
+function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
   const [history, setHistory] = useState([])
   const [todayRecord, setTodayRecord] = useState(null)
   const [activeSession, setActiveSession] = useState(null)
@@ -380,6 +380,29 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
             <i className="fas fa-clipboard-list"></i>
             Daily Report
           </button>
+
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('leave')}
+              style={{
+                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '9px 14px',
+                fontSize: '0.8rem',
+                fontWeight: '800',
+                color: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
+              }}
+            >
+              <i className="fas fa-calendar-alt"></i>
+              Leaves
+            </button>
+          )}
 
           {isBda && (
             <button

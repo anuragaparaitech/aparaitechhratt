@@ -904,6 +904,7 @@ function App() {
                         localStorage.setItem('aparaitech_current_user', JSON.stringify(updatedUser))
                       }}
                       showToast={showToast}
+                      onNavigate={(tab) => setActiveTab(tab)}
                     />
                   )}
 
@@ -1019,6 +1020,7 @@ function App() {
                         localStorage.setItem('aparaitech_current_user', JSON.stringify(updatedUser))
                       }}
                       showToast={showToast}
+                      onNavigate={(tab) => setActiveTab(tab)}
                     />
                   )}
 
