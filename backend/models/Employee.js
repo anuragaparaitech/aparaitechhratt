@@ -76,7 +76,7 @@ const EmployeeSchema = new mongoose.Schema({
   emergencyContact: {
     type: String
   },
-  // Face Enrollment Fields (optional — added by webcam feature)
+  // Face Enrollment Fields (ArcFace 512D + SCRFD + Anti-Spoofing)
   faceImageUrl: {
     type: String // Relative URL path: /face-uploads/emp-xxx.jpg
   },
@@ -84,7 +84,19 @@ const EmployeeSchema = new mongoose.Schema({
     type: Date // When the face was last enrolled/updated
   },
   faceDescriptor: {
-    type: [Number] // 128-dimensional face embedding vector (Float32Array serialized as plain array)
+    type: [Number] // 512-dimensional ArcFace or 128-dimensional legacy vector
+  },
+  faceEmbeddingModel: {
+    type: String,
+    enum: ['arcface-512d', 'face-api-128d'],
+    default: 'arcface-512d'
+  },
+  livenessVerified: {
+    type: Boolean,
+    default: false
+  },
+  livenessScore: {
+    type: Number
   }
 }, {
   timestamps: true

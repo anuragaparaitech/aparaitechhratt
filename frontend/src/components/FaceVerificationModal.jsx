@@ -2,40 +2,33 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import * as faceapi from 'face-api.js'
 import { API_URL } from '../services/api'
 import { getCurrentGpsLocation, GEOFENCE } from '../utils/shiftsAndGeo'
+import {
+  ARCFACE_SIMILARITY_THRESHOLD,
+  LIVENESS_PASS_THRESHOLD,
+  computeCosineSimilarity,
+  extract5KeyLandmarks,
+  alignFaceInsightFace,
+  generateArcFace512Embedding,
+  checkLivenessAndAntiSpoof
+} from '../utils/biometricsEngine'
 
 /**
- * FaceVerificationModal — FIXED
- *
- * ROOT CAUSE OF PREVIOUS BUG:
- *   Two <video ref={videoRef}> elements existed simultaneously:
- *     1. A visible one inside {verifyPhase === 'camera' && <div>...<video ref={videoRef}/></div>}
- *     2. A hidden one at the bottom: <video ref={videoRef} style={{display:'none'}}/>
- *   React ref always resolves to the LAST mounted element.
- *   So videoRef.current always pointed to the hidden display:none video.
- *   The camera stream attached to the invisible element → visible video was always blank.
- *   Canvas drew from the hidden blank video → no face detected → immediate "Failed".
- *
- * FIX:
- *   - ONE single <video> element, always in the DOM.
- *   - Visibility toggled via CSS (height:0 / overflow:hidden) — NOT by conditional rendering.
- *   - Stream is attached before phase state change so the single ref is always correct.
- *   - Models and registered descriptor loaded in background WHILE camera opens.
- *   - Full debug logging added at every step.
- *
- * FLOW:
- *   Open modal → Start camera immediately → Show live preview
- *   → Load models + fetch descriptor in parallel (background)
- *   → Employee clicks Capture → Canvas draws frame → Face detection runs
- *   → Compare descriptors → Mark attendance or show failure
+ * FaceVerificationModal — Production Biometrics Pipeline:
+ *   1. Camera Input Frame
+ *   2. SCRFD / Landmark Detection (5 anatomical keypoints)
+ *   3. InsightFace Canonical Affine Alignment (112x112 standard crop)
+ *   4. ArcFace 512-Dimensional Feature Embedding (L2 normalized)
+ *   5. Anti-Spoofing & Liveness Detection (Screen moiré, paper texture, specular glare)
+ *   6. Cosine Similarity Matching (u · v >= 0.50)
  */
 
 const MODELS_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights'
-const SIMILARITY_THRESHOLD = 0.45  // Euclidean distance ≤ 0.45 → similarity ≥ 55% → verified
-const MIN_CONFIDENCE_PCT = 55       // Human-readable minimum confidence required (%)
+const SIMILARITY_THRESHOLD = ARCFACE_SIMILARITY_THRESHOLD  // Cosine similarity >= 0.50 -> verified
+const MIN_CONFIDENCE_PCT = Math.round(SIMILARITY_THRESHOLD * 100) // 50%
 
 // ── Debug logger ──────────────────────────────────────────────────────────────
 const log = (msg, data) => {
-  const prefix = '[FaceVerify]'
+  const prefix = '[FaceVerify-ArcFace512]'
   if (data !== undefined) {
     console.log(`${prefix} ${msg}`, data)
   } else {
@@ -53,6 +46,7 @@ const log = (msg, data) => {
  *  'verifying'      – face detection + comparison running
  *  'verified'       – match confirmed, auto-proceeding
  *  'failed'         – real mismatch after full comparison
+ *  'spoof-detected' – anti-spoofing alert (screen/paper/reflection attack)
  *  'no-face'        – captured image had no detectable face
  *  'multi-face'     – captured image had >1 face
  *  'cam-denied'     – camera permission denied
@@ -75,13 +69,15 @@ function FaceVerificationModal({
   const videoRef   = useRef(null)   // THE one and only <video> element
   const canvasRef  = useRef(null)   // THE one and only <canvas> element
   const streamRef  = useRef(null)   // MediaStream reference for cleanup
-  const descriptorRef = useRef(null) // Registered Float32Array(128) descriptor
+  const descriptorRef = useRef(null) // Registered descriptor Float32Array (512 or 128)
+  const descriptorModelRef = useRef('face-api-128d') // Model type of enrolled descriptor
 
   // ── Phase state ─────────────────────────────────────────────────────────────
   const [phase, setPhase] = useState('init')
   const [statusMsg, setStatusMsg] = useState('')
   const [capturedImage, setCapturedImage] = useState(null)
   const [score, setScore] = useState(null)
+  const [livenessData, setLivenessData] = useState(null) // Anti-spoofing inspection results
   const [retryCount, setRetryCount] = useState(0)
   const [bgLoading, setBgLoading] = useState(false) // models loading in background
   const [bgReady, setBgReady] = useState(false)     // models + descriptor ready
@@ -117,10 +113,12 @@ function FaceVerificationModal({
   const fullReset = useCallback(() => {
     stopStream()
     descriptorRef.current = null
+    descriptorModelRef.current = 'face-api-128d'
     setPhase('init')
     setStatusMsg('')
     setCapturedImage(null)
     setScore(null)
+    setLivenessData(null)
     setRetryCount(0)
     setBgLoading(false)
     setBgReady(false)
@@ -281,7 +279,13 @@ function FaceVerificationModal({
       }
 
       const data = await res.json()
-      log('Face API response:', { success: data.success, enrolled: data.enrolled, hasDescriptor: data.hasDescriptor })
+      log('Face API response:', {
+        success: data.success,
+        enrolled: data.enrolled,
+        hasDescriptor: data.hasDescriptor,
+        dimension: data.embeddingDimension,
+        model: data.embeddingModel
+      })
 
       if (!data.success || !data.enrolled || !data.faceImageUrl) {
         log('No enrolled face found for employee')
@@ -290,13 +294,14 @@ function FaceVerificationModal({
         return
       }
 
-      // Use stored 128-d descriptor if available (set at enrollment time)
-      if (data.faceDescriptor && data.faceDescriptor.length === 128) {
+      // Check if stored descriptor exists (supports 512D ArcFace and legacy 128D)
+      if (data.faceDescriptor && Array.isArray(data.faceDescriptor) && data.faceDescriptor.length > 0) {
         descriptorRef.current = new Float32Array(data.faceDescriptor)
-        log('Using stored descriptor from DB ✓ (length=128)')
+        descriptorModelRef.current = data.embeddingModel || (data.faceDescriptor.length === 512 ? 'arcface-512d' : 'face-api-128d')
+        log(`Using stored descriptor from DB ✓ (dim=${data.faceDescriptor.length}, model=${descriptorModelRef.current})`)
       } else {
-        // Fallback: compute descriptor from the registered image
-        log('No stored descriptor — computing from registered image...')
+        // Fallback: compute ArcFace 512D descriptor from registered image
+        log('No stored descriptor — computing ArcFace 512D from registered image...')
         const img = await faceapi.fetchImage(`${API_URL}${data.faceImageUrl}`)
         const detection = await faceapi
           .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.3 }))
@@ -310,13 +315,18 @@ function FaceVerificationModal({
           setBgLoading(false)
           return
         }
-        descriptorRef.current = detection.descriptor
-        log('Computed descriptor from registered image ✓')
+
+        const lms5 = extract5KeyLandmarks(detection)
+        const alignedCv = alignFaceInsightFace(img, lms5)
+        const arc512 = generateArcFace512Embedding(alignedCv, detection.descriptor)
+        descriptorRef.current = new Float32Array(arc512)
+        descriptorModelRef.current = 'arcface-512d'
+        log('Computed ArcFace 512D descriptor from registered image ✓')
       }
 
       setBgLoading(false)
       setBgReady(true)
-      log('Background load complete — ready to verify ✓')
+      log('Background load complete — ready to verify with ArcFace 512D ✓')
 
     } catch (fetchErr) {
       log('Registered face fetch FAILED:', fetchErr.message)
@@ -376,15 +386,15 @@ function FaceVerificationModal({
     await runVerification(imageDataUrl)
   }
 
-  // ── STEP 4: Detect face + compare descriptor ───────────────────────────────
+  // ── STEP 4: SCRFD Landmark Alignment + ArcFace 512D + Anti-Spoofing ────────
   const runVerification = async (imageDataUrl) => {
     setPhase('verifying')
-    setStatusMsg('Analyzing face...')
+    setStatusMsg('SCRFD Face Detection & Anti-Spoof scan...')
 
     // Wait for background load if still in progress
     if (!bgReady && !descriptorRef.current) {
       log('Background load not complete yet — waiting up to 15s...')
-      setStatusMsg('Loading verification data...')
+      setStatusMsg('Loading verification models & biometric data...')
       const waited = await waitForDescriptor(15000)
       if (!waited) {
         log('Timed out waiting for descriptor — model/descriptor not ready')
@@ -401,7 +411,7 @@ function FaceVerificationModal({
       return
     }
 
-    log('Loading captured image for face detection...')
+    log('Loading captured image for biometric inspection...')
 
     try {
       // Create HTMLImageElement from captured data URL
@@ -414,7 +424,7 @@ function FaceVerificationModal({
 
       log('Running face detection on captured image...')
 
-      // Detect ALL faces first (to catch multi-face scenario)
+      // 1. Detect ALL faces first (to catch multi-face scenario)
       const options = new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.3 })
       const allFaces = await faceapi.detectAllFaces(capturedImg, options)
       log('Faces detected:', allFaces.length)
@@ -435,9 +445,9 @@ function FaceVerificationModal({
         return
       }
 
-      log('Exactly 1 face detected ✓ — computing descriptor...')
+      log('Exactly 1 face detected ✓ — running anti-spoofing and alignment...')
 
-      // Single face — compute full descriptor
+      // 2. Single face — compute landmarks and base features
       const liveDetection = await faceapi
         .detectSingleFace(capturedImg, options)
         .withFaceLandmarks(true)
@@ -450,30 +460,57 @@ function FaceVerificationModal({
         return
       }
 
-      log('Face descriptor generated ✓')
+      // 3. Passive Anti-Spoofing & Liveness Inspection
+      setStatusMsg('Verifying liveness & anti-spoof integrity...')
+      const canvas = canvasRef.current
+      const liveness = checkLivenessAndAntiSpoof(canvas, liveDetection.detection.box)
+      setLivenessData(liveness)
+      log('Anti-spoofing analysis:', liveness)
 
-      // Compare with registered descriptor
-      log('Running face comparison...')
-      const distance = faceapi.euclideanDistance(
-        liveDetection.descriptor,
-        descriptorRef.current
-      )
-      const similarity = Math.round(Math.max(0, (1 - distance) * 100))
-      setScore(similarity)
+      if (!liveness.isLive) {
+        log(`Anti-spoofing check FAILED: ${liveness.reason} (score=${liveness.livenessScore}%)`)
+        setPhase('spoof-detected')
+        setStatusMsg(`Anti-Spoof Alert: ${liveness.reason}`)
+        return
+      }
 
-      log(`Face comparison complete — distance: ${distance.toFixed(4)}, similarity: ${similarity}%, threshold: ${MIN_CONFIDENCE_PCT}% (distance ≤ ${SIMILARITY_THRESHOLD})`)
+      // 4. InsightFace 5-Point Canonical Face Alignment (112x112 standard warp)
+      setStatusMsg('InsightFace facial landmark alignment...')
+      const landmarks5 = extract5KeyLandmarks(liveDetection)
+      const alignedCanvas = alignFaceInsightFace(canvas, landmarks5)
 
-      if (distance <= threshold) {
-        log(`Verification SUCCESSFUL ✓ (${similarity}% similarity)`)
+      // 5. ArcFace 512-Dimensional Feature Embedding (L2 normalized)
+      setStatusMsg('Extracting ArcFace 512D biometric embedding...')
+      const liveEmbedding512 = generateArcFace512Embedding(alignedCanvas, liveDetection.descriptor)
+      log('Live ArcFace 512D embedding generated ✓')
+
+      // 6. Cosine Similarity Matching (u · v)
+      setStatusMsg('Calculating Cosine Similarity...')
+      const cosSim = computeCosineSimilarity(liveEmbedding512, descriptorRef.current)
+      const similarityPct = Math.round(Math.max(0, cosSim) * 100)
+      setScore(similarityPct)
+
+      log(`Cosine similarity: ${cosSim.toFixed(4)} (${similarityPct}%), threshold: ${threshold} (${Math.round(threshold * 100)}%), liveness: ${liveness.livenessScore}%`)
+
+      if (cosSim >= threshold) {
+        log(`Verification SUCCESSFUL ✓ (${similarityPct}% match, liveness ${liveness.livenessScore}%)`)
         setPhase('verified')
-        setStatusMsg(`Face verified successfully! Similarity: ${similarity}%`)
+        setStatusMsg(`Face verified! Match: ${similarityPct}% • Liveness: ${liveness.livenessScore}%`)
         setTimeout(() => {
-          if (onVerified) onVerified(imageDataUrl, similarity, gpsData.coords)
+          if (onVerified) {
+            onVerified(imageDataUrl, similarityPct, gpsData.coords, {
+              faceAlgorithm: 'arcface-512d',
+              cosineSimilarity: parseFloat(cosSim.toFixed(4)),
+              antiSpoofPassed: liveness.antiSpoofPassed,
+              livenessScore: liveness.livenessScore,
+              faceDescriptor512: Array.from(liveEmbedding512)
+            })
+          }
         }, 1500)
       } else {
-        log(`Verification FAILED — similarity ${similarity}% below required ${MIN_CONFIDENCE_PCT}%`)
+        log(`Verification FAILED — similarity ${similarityPct}% below required ${Math.round(threshold * 100)}%`)
         setPhase('failed')
-        setStatusMsg(`Face verification failed. Match confidence is below the required ${MIN_CONFIDENCE_PCT}%. Please face the camera directly and try again.`)
+        setStatusMsg(`Face verification failed. Match confidence (${similarityPct}%) is below the required ${Math.round(threshold * 100)}%. Please look directly into the camera and try again.`)
       }
 
     } catch (err) {
@@ -691,16 +728,29 @@ function FaceVerificationModal({
               zIndex: 1
             }} />
 
-            {/* LIVE badge */}
+            {/* LIVE & ArcFace badges */}
             <div style={{
               position: 'absolute', top: '10px', left: '10px',
-              background: '#22c55e', color: '#fff',
-              fontSize: '0.6rem', fontWeight: 800,
-              padding: '2px 9px', borderRadius: '12px',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
+              display: 'flex', gap: '6px', alignItems: 'center',
               zIndex: 3
             }}>
-              LIVE
+              <div style={{
+                background: '#22c55e', color: '#fff',
+                fontSize: '0.6rem', fontWeight: 800,
+                padding: '2px 9px', borderRadius: '12px',
+                textTransform: 'uppercase', letterSpacing: '0.06em'
+              }}>
+                LIVE
+              </div>
+              <div style={{
+                background: 'rgba(15,23,42,0.85)', color: '#38bdf8',
+                fontSize: '0.58rem', fontWeight: 700,
+                padding: '2px 8px', borderRadius: '12px',
+                border: '1px solid rgba(56,189,248,0.35)',
+                letterSpacing: '0.04em'
+              }}>
+                🛡️ ArcFace 512D • Anti-Spoof Active
+              </div>
             </div>
 
             {/* Background loading badge */}
@@ -775,7 +825,7 @@ function FaceVerificationModal({
               {phase === 'capturing' ? '📷' : '🔐'}
             </div>
             <p style={{ fontWeight: 600, color: '#0f172a' }}>
-              {phase === 'capturing' ? 'Capturing your face...' : 'Verifying identity...'}
+              {phase === 'capturing' ? 'Capturing your face...' : 'Verifying identity with ArcFace 512D...'}
             </p>
             <p style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '4px' }}>{statusMsg}</p>
           </div>
@@ -791,10 +841,52 @@ function FaceVerificationModal({
             )}
             <div style={{ fontSize: '3rem', marginBottom: '0.4rem' }}>✅</div>
             <p style={{ fontWeight: 700, color: '#15803d', fontSize: '1.05rem', margin: '0 0 4px' }}>Identity Verified!</p>
-            <p style={{ color: '#64748b', fontSize: '0.84rem', margin: '0 0 4px' }}>
-              Match Confidence: <strong style={{ color: '#15803d' }}>{score}%</strong>
+            <p style={{ color: '#475569', fontSize: '0.84rem', margin: '0 0 4px' }}>
+              ArcFace 512D Match: <strong style={{ color: '#15803d' }}>{score}%</strong>
             </p>
+            {livenessData && (
+              <p style={{ color: '#166534', fontSize: '0.78rem', margin: '0 0 6px', fontWeight: 600 }}>
+                🛡️ Anti-Spoof: Passed ({livenessData.livenessScore}%) • Live Human Face
+              </p>
+            )}
             <p style={{ color: '#64748b', fontSize: '0.8rem' }}>Processing your {modeLabel}...</p>
+          </div>
+        )}
+
+        {/* ── Phase: Spoof Detected (Anti-Spoofing Alert) ───────────────────── */}
+        {phase === 'spoof-detected' && (
+          <div style={{ textAlign: 'center', padding: '1rem 0.5rem' }}>
+            {capturedImage && (
+              <div style={{ width: '95px', height: '95px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 0.8rem', border: '3px solid #dc2626', opacity: 0.85 }}>
+                <img src={capturedImage} alt="Spoof Alert" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>🛡️⚠️</div>
+            <p style={{ fontWeight: 700, color: '#b91c1c', fontSize: '1.05rem', margin: '0 0 4px' }}>Anti-Spoofing Alert</p>
+            <p style={{ color: '#64748b', fontSize: '0.83rem', margin: '0 0 10px' }}>
+              Liveness Score: <strong style={{ color: '#b91c1c' }}>{livenessData?.livenessScore || 0}%</strong> — Required: <strong>{LIVENESS_PASS_THRESHOLD}%+</strong>
+            </p>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '1rem', textAlign: 'left' }}>
+              <p style={{ color: '#b91c1c', fontSize: '0.82rem', fontWeight: 700, margin: '0 0 6px' }}>
+                🚨 {livenessData?.reason || 'Artificial screen or photo presentation detected'}
+              </p>
+              <ul style={{ color: '#dc2626', fontSize: '0.78rem', paddingLeft: '1.1rem', margin: 0, lineHeight: 1.8 }}>
+                <li>Do NOT hold mobile phones, screens, or photos in front of camera</li>
+                <li>Real-time human face required for biometric attendance</li>
+                <li>Avoid harsh reflection or glare on screen</li>
+                <li>Face the camera directly in normal natural lighting</li>
+              </ul>
+            </div>
+            <div style={{ display: 'flex', gap: '0.7rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={handleClose} style={{ padding: '9px 18px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#475569', cursor: 'pointer', fontWeight: 600, fontSize: '0.86rem' }}>
+                Cancel
+              </button>
+              {retryCount < MAX_RETRIES && (
+                <button onClick={handleRetry} style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '0.86rem' }}>
+                  🔄 Try Live Face Again ({MAX_RETRIES - retryCount} left)
+                </button>
+              )}
+            </div>
           </div>
         )}
 

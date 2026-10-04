@@ -76,6 +76,21 @@ const AttendanceSchema = new mongoose.Schema({
   faceScore: {
     type: Number // Similarity score 0-100
   },
+  faceAlgorithm: {
+    type: String,
+    enum: ['arcface-512d', 'face-api-128d'],
+    default: 'arcface-512d'
+  },
+  cosineSimilarity: {
+    type: Number // Normalized cosine similarity (-1.0 to 1.0)
+  },
+  antiSpoofPassed: {
+    type: Boolean,
+    default: null // true = real human face, false = spoof/screen/paper detected
+  },
+  livenessScore: {
+    type: Number // Liveness probability 0-100
+  },
   faceVerifiedAt: {
     type: Date // Timestamp of verification
   },

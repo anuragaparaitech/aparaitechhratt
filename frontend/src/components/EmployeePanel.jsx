@@ -88,7 +88,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
   }, [currentUser.email])
 
   // ── Triggered by FaceVerificationModal after successful verification ──────────
-  const handleVerifiedCheckIn = async (capturedImageDataUrl, faceScore, coords) => {
+  const handleVerifiedCheckIn = async (capturedImageDataUrl, faceScore, coords, biometricsMeta = {}) => {
     setFaceVerifyOpen(false)
     setLoading(true)
     try {
@@ -100,8 +100,29 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
       if (capturedImageDataUrl) {
         faceAPI.saveAttendancePhoto(
           currentUser.email, today, 'checkin',
-          capturedImageDataUrl, faceScore !== null, faceScore
+          capturedImageDataUrl, faceScore !== null, faceScore,
+          {
+            faceAlgorithm: biometricsMeta.faceAlgorithm || 'arcface-512d',
+            cosineSimilarity: biometricsMeta.cosineSimilarity,
+            antiSpoofPassed: biometricsMeta.antiSpoofPassed,
+            livenessScore: biometricsMeta.livenessScore
+          }
         ).catch(e => console.warn('[FacePhoto] Save error:', e.message))
+
+        // Auto-upgrade to 512D ArcFace descriptor if available
+        if (biometricsMeta.faceDescriptor512 && biometricsMeta.faceDescriptor512.length === 512) {
+          faceAPI.enroll(
+            currentUser.email,
+            capturedImageDataUrl,
+            'Auto-Upgrade (ArcFace 512D)',
+            biometricsMeta.faceDescriptor512,
+            {
+              faceEmbeddingModel: 'arcface-512d',
+              livenessVerified: biometricsMeta.antiSpoofPassed,
+              livenessScore: biometricsMeta.livenessScore
+            }
+          ).catch(e => console.warn('[FaceUpgrade] Non-blocking upgrade error:', e.message))
+        }
       }
       fetchEmployeeData()
     } catch (err) {
@@ -113,7 +134,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
     }
   }
 
-  const handleVerifiedCheckOut = async (capturedImageDataUrl, faceScore, coords) => {
+  const handleVerifiedCheckOut = async (capturedImageDataUrl, faceScore, coords, biometricsMeta = {}) => {
     setFaceVerifyOpen(false)
     setLoading(true)
     try {
@@ -125,8 +146,29 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast }) {
       if (capturedImageDataUrl) {
         faceAPI.saveAttendancePhoto(
           currentUser.email, today, 'checkout',
-          capturedImageDataUrl, faceScore !== null, faceScore
+          capturedImageDataUrl, faceScore !== null, faceScore,
+          {
+            faceAlgorithm: biometricsMeta.faceAlgorithm || 'arcface-512d',
+            cosineSimilarity: biometricsMeta.cosineSimilarity,
+            antiSpoofPassed: biometricsMeta.antiSpoofPassed,
+            livenessScore: biometricsMeta.livenessScore
+          }
         ).catch(e => console.warn('[FacePhoto] Save error:', e.message))
+
+        // Auto-upgrade to 512D ArcFace descriptor if available
+        if (biometricsMeta.faceDescriptor512 && biometricsMeta.faceDescriptor512.length === 512) {
+          faceAPI.enroll(
+            currentUser.email,
+            capturedImageDataUrl,
+            'Auto-Upgrade (ArcFace 512D)',
+            biometricsMeta.faceDescriptor512,
+            {
+              faceEmbeddingModel: 'arcface-512d',
+              livenessVerified: biometricsMeta.antiSpoofPassed,
+              livenessScore: biometricsMeta.livenessScore
+            }
+          ).catch(e => console.warn('[FaceUpgrade] Non-blocking upgrade error:', e.message))
+        }
       }
       fetchEmployeeData()
     } catch (err) {

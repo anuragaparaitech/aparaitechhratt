@@ -82,20 +82,23 @@ export const enrollFace = async (req, res) => {
     const faceImageUrl = `/face-uploads/${filename}`
     employee.faceImageUrl = faceImageUrl
     employee.faceEnrolledAt = new Date()
-    // Store face descriptor if provided (128-d embedding from face-api.js)
-    if (faceDescriptor && Array.isArray(faceDescriptor) && faceDescriptor.length === 128) {
+    // Store face descriptor if provided (512-d ArcFace or 128-d legacy embedding)
+    if (faceDescriptor && Array.isArray(faceDescriptor) && (faceDescriptor.length === 512 || faceDescriptor.length === 128)) {
       employee.faceDescriptor = faceDescriptor
+      employee.faceEmbeddingModel = faceDescriptor.length === 512 ? 'arcface-512d' : 'face-api-128d'
     }
     await employee.save()
 
-    console.log(`[Face Enroll] Face enrolled for ${employee.name} (${employee.email}) by ${enrolledBy || 'self'}`)
+    console.log(`[Face Enroll] Face enrolled for ${employee.name} (${employee.email}) by ${enrolledBy || 'self'} [Model: ${employee.faceEmbeddingModel || 'arcface-512d'}]`)
 
     return res.status(200).json({
       success: true,
       message: 'Face enrolled successfully',
       faceImageUrl,
       faceEnrolledAt: employee.faceEnrolledAt,
-      hasDescriptor: !!(employee.faceDescriptor && employee.faceDescriptor.length === 128)
+      hasDescriptor: !!(employee.faceDescriptor && employee.faceDescriptor.length > 0),
+      embeddingDimension: employee.faceDescriptor?.length || 0,
+      embeddingModel: employee.faceEmbeddingModel || 'arcface-512d'
     })
   } catch (error) {
     console.error('[Face Enroll Error]', error.message)
@@ -130,7 +133,9 @@ export const getEnrolledFace = async (req, res) => {
       enrolled: true,
       faceImageUrl: employee.faceImageUrl,
       faceEnrolledAt: employee.faceEnrolledAt,
-      hasDescriptor: !!(employee.faceDescriptor && employee.faceDescriptor.length === 128),
+      hasDescriptor: !!(employee.faceDescriptor && employee.faceDescriptor.length > 0),
+      embeddingDimension: employee.faceDescriptor?.length || 0,
+      embeddingModel: employee.faceEmbeddingModel || (employee.faceDescriptor?.length === 512 ? 'arcface-512d' : 'face-api-128d'),
       faceDescriptor: employee.faceDescriptor || null,
       employeeName: employee.name,
       empId: employee.empId
@@ -168,6 +173,8 @@ export const resetFace = async (req, res) => {
     // Clear DB fields
     employee.faceImageUrl = undefined
     employee.faceEnrolledAt = undefined
+    employee.faceDescriptor = undefined
+    employee.faceEmbeddingModel = undefined
     await employee.save()
 
     console.log(`[Face Reset] Face data cleared for ${employee.name} (${employee.email})`)
@@ -186,7 +193,7 @@ export const resetFace = async (req, res) => {
 export const getAllFaceStatus = async (req, res) => {
   try {
     const employees = await Employee.find({ role: 'employee' })
-      .select('empId name email department faceImageUrl faceEnrolledAt status')
+      .select('empId name email department faceImageUrl faceEnrolledAt faceDescriptor faceEmbeddingModel status')
       .sort({ name: 1 })
 
     const result = employees.map(e => ({
@@ -198,7 +205,9 @@ export const getAllFaceStatus = async (req, res) => {
       enrolled: !!e.faceImageUrl,
       faceImageUrl: e.faceImageUrl || null,
       faceEnrolledAt: e.faceEnrolledAt || null,
-      hasDescriptor: !!(e.faceDescriptor && e.faceDescriptor.length === 128)
+      hasDescriptor: !!(e.faceDescriptor && e.faceDescriptor.length > 0),
+      embeddingDimension: e.faceDescriptor?.length || 0,
+      embeddingModel: e.faceEmbeddingModel || (e.faceDescriptor?.length === 512 ? 'arcface-512d' : 'face-api-128d')
     }))
 
     return res.status(200).json({ success: true, employees: result })
@@ -211,10 +220,21 @@ export const getAllFaceStatus = async (req, res) => {
 // ────────────────────────────────────────────────────────────────────────────────
 // POST /api/face/save-attendance-photo
 // Saves photo URL and verification result to an attendance record
-// Body: { attendanceId, photoUrl, photoType, faceVerified, faceScore }
+// Body: { email, date, photoType, imageDataUrl, faceVerified, faceScore, faceAlgorithm, cosineSimilarity, antiSpoofPassed, livenessScore }
 // ────────────────────────────────────────────────────────────────────────────────
 export const saveAttendancePhoto = async (req, res) => {
-  const { email, date, photoType, imageDataUrl, faceVerified, faceScore } = req.body
+  const {
+    email,
+    date,
+    photoType,
+    imageDataUrl,
+    faceVerified,
+    faceScore,
+    faceAlgorithm,
+    cosineSimilarity,
+    antiSpoofPassed,
+    livenessScore
+  } = req.body
 
   if (!email || !date || !imageDataUrl || !photoType) {
     return res.status(400).json({ success: false, message: 'email, date, photoType and imageDataUrl are required' })
@@ -253,6 +273,10 @@ export const saveAttendancePhoto = async (req, res) => {
       }
       if (faceVerified !== undefined) record.faceVerified = faceVerified
       if (faceScore !== undefined) record.faceScore = faceScore
+      if (faceAlgorithm) record.faceAlgorithm = faceAlgorithm
+      if (cosineSimilarity !== undefined) record.cosineSimilarity = cosineSimilarity
+      if (antiSpoofPassed !== undefined) record.antiSpoofPassed = antiSpoofPassed
+      if (livenessScore !== undefined) record.livenessScore = livenessScore
       record.faceVerifiedAt = new Date()
       await record.save()
     }
@@ -263,3 +287,4 @@ export const saveAttendancePhoto = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error', error: error.message })
   }
 }
+

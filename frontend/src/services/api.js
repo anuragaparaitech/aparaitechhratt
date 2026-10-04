@@ -201,9 +201,15 @@ export const attendanceAPI = {
 
 // ── Face Enrollment & Verification API ──────────────────────────────────────────
 export const faceAPI = {
-  // Enroll / update a face image for an employee (+ optional 128-d descriptor)
-  enroll: async (email, imageDataUrl, enrolledBy, faceDescriptor) => {
-    const response = await api.post('/api/face/enroll', { email, imageDataUrl, enrolledBy, faceDescriptor })
+  // Enroll / update a face image for an employee (+ optional 512-d or 128-d descriptor and metadata)
+  enroll: async (email, imageDataUrl, enrolledBy, faceDescriptor, extraMeta = {}) => {
+    const response = await api.post('/api/face/enroll', {
+      email,
+      imageDataUrl,
+      enrolledBy,
+      faceDescriptor,
+      ...extraMeta
+    })
     return response.data
   },
   // Get enrolled face info for an employee
@@ -221,10 +227,16 @@ export const faceAPI = {
     const response = await api.get('/api/face/all-status')
     return response.data
   },
-  // Save captured attendance photo and verification result
-  saveAttendancePhoto: async (email, date, photoType, imageDataUrl, faceVerified, faceScore) => {
+  // Save captured attendance photo and verification result (+ ArcFace 512D and liveness metrics)
+  saveAttendancePhoto: async (email, date, photoType, imageDataUrl, faceVerified, faceScore, extraMeta = {}) => {
     const response = await api.post('/api/face/save-attendance-photo', {
-      email, date, photoType, imageDataUrl, faceVerified, faceScore
+      email,
+      date,
+      photoType,
+      imageDataUrl,
+      faceVerified,
+      faceScore,
+      ...extraMeta
     })
     return response.data
   }
