@@ -194,7 +194,7 @@ export const getDailyReports = async (req, res) => {
     let query = {}
 
     // Employees can only view their own reports unless they are manager/admin/leadership
-    const isLeadership = user.role === 'admin' || user.role === 'manager' || user.role === 'hr' || (user.email && user.email.toLowerCase() === 'anunand2004@gmail.com') || String(user.empId) === '7017' || String(user.empId) === 'AP7056'
+    const isLeadership = user.role === 'admin' || user.role === 'manager' || user.role === 'hr' || (user.email && user.email.toLowerCase() === 'anunand2004@gmail.com') || String(user.empId) === '7017' || String(user.empId) === 'AP7017'
     if (!isLeadership) {
       query.employeeEmail = user.email.toLowerCase()
     } else if (email) {

@@ -36,7 +36,7 @@ function LeaveManagementView({ currentUser, showToast }) {
     currentUser?.role === 'hr' ||
     currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' ||
     String(currentUser?.empId) === '7017' ||
-    String(currentUser?.empId) === 'AP7056'
+    String(currentUser?.empId) === 'AP7017'
   )
 
   useEffect(() => {

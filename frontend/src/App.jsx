@@ -114,15 +114,16 @@ function App() {
     const isBlocked = (
       email === 'letsmailvivek100@gmail.com' ||
       empId === '7044' ||
+      empId === 'AP7044' ||
       email === 'kadammahesh803@gmail.com' ||
-      (empId === '7056' && email !== 'anunand2004@gmail.com')
+      ((empId === '7056' || empId === 'AP7056') && email !== 'anunand2004@gmail.com')
     )
     return !isBlocked && (
       u.role === 'admin' ||
       u.role === 'hr' ||
       email === 'anunand2004@gmail.com' ||
       empId === '7017' ||
-      empId === 'AP7056'
+      empId === 'AP7017'
     )
   }
 
@@ -131,12 +132,12 @@ function App() {
   const getInitialPortalMode = (user) => {
     if (!user) return 'bda'
     const saved = localStorage.getItem('aparaitech_portal_mode')
-    if (saved && ['software', 'bda', 'hr'].includes(saved) && (user.role === 'admin' || user.role === 'hr' || user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7056')) {
+    if (saved && ['software', 'bda', 'hr'].includes(saved) && (user.role === 'admin' || user.role === 'hr' || user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7017')) {
       return saved
     }
     if (user.role === 'hr') return 'hr'
     // Anurag Nand default is Software Portal with HR & BDA access
-    if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7056') {
+    if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7017') {
       return 'software'
     }
     if (user.role === 'admin') {
@@ -193,7 +194,7 @@ function App() {
     setToast({ message, bg })
   }
 
-  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser?.empId) === '7017' || String(currentUser?.empId) === 'AP7056'
+  const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr' || currentUser?.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser?.empId) === '7017' || String(currentUser?.empId) === 'AP7017'
 
   // Reset tab selection when current user changes
   useEffect(() => {
@@ -596,7 +597,7 @@ function App() {
                   ))}
 
                   {/* Group 4: Leadership & Oversight (Anurag & Admin) */}
-                  {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056') && (
+                  {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7017') && (
                     <>
                       <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#0d9488', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
                         📊 Leadership & Oversight
@@ -1360,7 +1361,7 @@ function App() {
                       ))}
 
                       {/* Leadership & Oversight in Mobile Drawer */}
-                      {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056') && (
+                      {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7017') && (
                         <>
                           <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#0d9488', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
                             📊 Leadership & Oversight

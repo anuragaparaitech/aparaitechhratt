@@ -89,7 +89,7 @@ export const adminOnly = (req, res, next) => {
     req.user.role === 'hr' ||
     req.user.email?.toLowerCase() === 'anunand2004@gmail.com' ||
     String(req.user.empId) === '7017' ||
-    String(req.user.empId) === 'AP7056'
+    String(req.user.empId) === 'AP7017'
   )
   if (isAuthorized) {
     next()
@@ -108,7 +108,7 @@ export const managerOrAdmin = (req, res, next) => {
     req.user.role === 'hr' ||
     req.user.email?.toLowerCase() === 'anunand2004@gmail.com' ||
     String(req.user.empId) === '7017' ||
-    String(req.user.empId) === 'AP7056'
+    String(req.user.empId) === 'AP7017'
   )
   if (isAuthorized) {
     next()

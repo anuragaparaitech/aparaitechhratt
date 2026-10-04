@@ -26,28 +26,28 @@ const DEFAULT_PWD = 'Aparaitech123@'
 // - Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
 // - BDA / Sales Active Members -> Shift 2 (11:00 AM - 05:00 PM)
 const activeEmployeesList = [
-  { empId: '7086', name: 'Disha Kale', email: 'kaledisha868@gmail.com', phone: '8767416802', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7088', name: 'Shweta Vijay Chougale', email: 'shwetachougale2004@gmail.com', phone: '8010252987', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7089', name: 'Dnyaneshwari Sanjay Dandagawhal', email: 'dandagaehaldnyaneshwari@gmail.com', phone: '9307293946', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7090', name: 'Sejal Milind Pethe', email: 'sejalpethe640@gmail.com', phone: '7058668138', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7091', name: 'Anmol Mohan Ugale', email: 'anmolugale13@gmail.com', phone: '9021625125', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7092', name: 'Shraddha Dipak Dhepe', email: 'shraddhadhepe610@gmail.com', phone: '8208591006', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7094', name: 'Shital Kantilal Bhade', email: 'shitalbhade74@gmail.com', phone: '8830292849', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7095', name: 'Vaishnavi Deepak Patil', email: 'patilvaishnavi30102003@gmail.com', phone: '7709232088', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7096', name: 'Ashvini Sanjay Rajput', email: 'rajputashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7097', name: 'Vikesh Kumar', email: 'kvikesh535@gmail.com', phone: '8793039515', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: '7100', name: 'Tanmay Bhapkar', email: 'bhapkartanmay88@gmail.com', phone: '9172875676', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7086', name: 'Disha Kale', email: 'kaledisha868@gmail.com', phone: '8767416802', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7088', name: 'Shweta Vijay Chougale', email: 'shwetachougale2004@gmail.com', phone: '8010252987', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7089', name: 'Dnyaneshwari Sanjay Dandagawhal', email: 'dandagaehaldnyaneshwari@gmail.com', phone: '9307293946', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7090', name: 'Sejal Milind Pethe', email: 'sejalpethe640@gmail.com', phone: '7058668138', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7091', name: 'Anmol Mohan Ugale', email: 'anmolugale13@gmail.com', phone: '9021625125', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7092', name: 'Shraddha Dipak Dhepe', email: 'shraddhadhepe610@gmail.com', phone: '8208591006', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7094', name: 'Shital Kantilal Bhade', email: 'shitalbhade74@gmail.com', phone: '8830292849', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7095', name: 'Vaishnavi Deepak Patil', email: 'patilvaishnavi30102003@gmail.com', phone: '7709232088', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7096', name: 'Ashvini Sanjay Rajput', email: 'rajputashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7097', name: 'Vikesh Kumar', email: 'kvikesh535@gmail.com', phone: '8793039515', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7100', name: 'Tanmay Bhapkar', email: 'bhapkartanmay88@gmail.com', phone: '9172875676', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   // Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
-  { empId: '7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', phone: '7666921571', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: '7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', phone: '7249830281', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Management', designation: 'Technical Lead & Management', role: 'manager', status: 'active', shift: 'shift_1' },
-  { empId: '7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: '7103', name: 'Liza', email: 'liza@aparaitech.com', department: 'BDA', designation: 'BDA Associate', status: 'active', shift: 'shift_2' }
+  { empId: 'AP7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', phone: '7666921571', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: 'AP7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', phone: '7249830281', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: 'AP7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Management', designation: 'Technical Lead & Management', role: 'manager', status: 'active', shift: 'shift_1' },
+  { empId: 'AP7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: 'AP7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
+  { empId: 'AP7103', name: 'Liza', email: 'liza@aparaitech.com', department: 'BDA', designation: 'BDA Associate', status: 'active', shift: 'shift_2' }
 ]
 
 

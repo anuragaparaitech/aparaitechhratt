@@ -14,8 +14,9 @@ const canUserAssignTasks = (user) => {
   if (
     email === 'letsmailvivek100@gmail.com' ||
     empId === '7044' ||
+    empId === 'AP7044' ||
     email === 'kadammahesh803@gmail.com' ||
-    (empId === '7056' && email !== 'anunand2004@gmail.com')
+    ((empId === '7056' || empId === 'AP7056') && email !== 'anunand2004@gmail.com')
   ) {
     return false
   }
@@ -25,7 +26,7 @@ const canUserAssignTasks = (user) => {
     user.role === 'admin' ||
     email === 'anunand2004@gmail.com' ||
     empId === '7017' ||
-    empId === 'AP7056'
+    empId === 'AP7017'
   )
 }
 

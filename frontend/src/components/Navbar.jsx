@@ -46,7 +46,7 @@ function Navbar({
   
   const getRoleLabel = () => {
     if (isAdmin) return 'Super Admin'
-    if (currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7056') return 'Software & HR Lead'
+    if (currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7017') return 'Software & HR Lead'
     if (currentUser.role === 'hr') return 'HR Manager'
     if (isManager) return currentUser.role === 'hr' ? 'HR Manager' : 'Team Manager'
     if (currentUser.department === 'Development' || currentUser.designation?.toLowerCase().includes('software')) {

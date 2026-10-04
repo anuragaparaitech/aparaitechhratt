@@ -59,8 +59,9 @@ function SoftwareTaskManager({ currentUser, showToast }) {
   const isBlocked = (
     userEmail === 'letsmailvivek100@gmail.com' ||
     userEmpId === '7044' ||
+    userEmpId === 'AP7044' ||
     userEmail === 'kadammahesh803@gmail.com' ||
-    (userEmpId === '7056' && userEmail !== 'anunand2004@gmail.com')
+    ((userEmpId === '7056' || userEmpId === 'AP7056') && userEmail !== 'anunand2004@gmail.com')
   )
 
   const isAnuragOrAdmin = !isBlocked && Boolean(
@@ -68,7 +69,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
       currentUser.role === 'admin' ||
       userEmail === 'anunand2004@gmail.com' ||
       userEmpId === '7017' ||
-      userEmpId === 'AP7056'
+      userEmpId === 'AP7017'
     )
   )
 
