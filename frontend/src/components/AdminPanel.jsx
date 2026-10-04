@@ -15,7 +15,7 @@ import DailyReportModal from './DailyReportModal'
 import AIDataDistributionCenter from './AIDataDistributionCenter'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
-function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange }) {
+function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange, isHRMode = false }) {
   // Helper: is this section currently visible?
   const show = (id) => activeSection === id
   const setSection = (id) => {
@@ -594,20 +594,20 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 APARAITECH SOFTWARE
               </span>
               <span style={{
-                background: 'rgba(45, 212, 191, 0.2)',
-                border: '1px solid rgba(45, 212, 191, 0.4)',
+                background: isHRMode ? 'rgba(192, 132, 252, 0.2)' : 'rgba(45, 212, 191, 0.2)',
+                border: isHRMode ? '1px solid rgba(192, 132, 252, 0.4)' : '1px solid rgba(45, 212, 191, 0.4)',
                 borderRadius: '6px',
                 padding: '2px 8px',
                 fontSize: '0.68rem',
                 fontWeight: '800',
-                color: '#5eead4',
+                color: isHRMode ? '#c084fc' : '#5eead4',
                 letterSpacing: '0.04em'
               }}>
-                SUPER ADMIN
+                {isHRMode ? 'HR & WORKFORCE DESK' : (currentUser?.role === 'admin' ? 'SUPER ADMIN' : 'MANAGEMENT LEAD')}
               </span>
             </div>
             <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500', marginTop: '3px' }}>
-              INNOVATING SOFTWARE DEVELOPMENT FOR THE FUTURE • PUNE GEOFENCE ACTIVE
+              {isHRMode ? 'HUMAN RESOURCES OPERATIONS • WORKFORCE DIRECTORY, ATTENDANCE & LEAVES' : 'INNOVATING SOFTWARE DEVELOPMENT FOR THE FUTURE • PUNE GEOFENCE ACTIVE'}
             </div>
           </div>
         </div>

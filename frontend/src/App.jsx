@@ -78,13 +78,34 @@ const SOFTWARE_NAV = [
   { id: 'managerReports',       icon: 'fa-clipboard-list',  label: 'BDA Daily Reports',   group: 'Leadership & Oversight', requiresLeadership: true }
 ]
 
+// ── HR Operations sidebar nav definition ────────────────────────────────────
+const HR_NAV = [
+  // 1. HR Command Center
+  { id: 'overview',     icon: 'fa-tachometer-alt',  label: 'HR Overview',               group: 'HR Command Center', section: true },
+  { id: 'employees',    icon: 'fa-users',           label: 'Workforce Directory',       group: 'HR Command Center', section: true },
+  { id: 'leaves',       icon: 'fa-calendar-alt',    label: 'Leave Approvals Desk',      group: 'HR Command Center', section: false, tab: 'leave' },
+  { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'All Daily Work Reports',    group: 'HR Command Center', section: true },
+
+  // 2. Attendance & Workforce Logs
+  { id: 'live',         icon: 'fa-eye',             label: 'Live Check-Ins',            group: 'Attendance & Workforce', section: true },
+  { id: 'attendance',   icon: 'fa-calendar-check',  label: 'Attendance Logs',           group: 'Attendance & Workforce', section: true },
+  { id: 'overall',      icon: 'fa-chart-line',      label: 'Attendance Analytics',      group: 'Attendance & Workforce', section: true },
+  { id: 'missing',      icon: 'fa-exclamation-triangle', label: 'Missing Checkouts',     group: 'Attendance & Workforce', section: true },
+  { id: 'autocheckout', icon: 'fa-robot',           label: 'Auto Checkout Records',     group: 'Attendance & Workforce', section: true },
+  { id: 'holidays',     icon: 'fa-umbrella-beach',  label: 'Holiday Management',        group: 'Attendance & Workforce', section: true },
+
+  // 3. HR Communications & Policies
+  { id: 'announcements',icon: 'fa-bullhorn',        label: 'HR Announcements',          group: 'HR Communications', section: false, tab: 'announcements' },
+  { id: 'messaging',    icon: 'fa-envelope',        label: 'HR Messaging Center',       group: 'HR Communications', section: false, tab: 'messaging' },
+]
+
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('aparaitech_current_user')
     return saved ? JSON.parse(saved) : null
   })
 
-  // Permission helpers: Anurag (Management/Lead) and Super Admin can switch portals.
+  // Permission helpers: Anurag (Management/Lead), HR, and Super Admin can switch portals.
   // Vivek and Mahesh are strictly software developers and stay in the software portal.
   const isAnuragOrSuperAdmin = (u) => {
     if (!u) return false
@@ -98,6 +119,7 @@ function App() {
     )
     return !isBlocked && (
       u.role === 'admin' ||
+      u.role === 'hr' ||
       email === 'anunand2004@gmail.com' ||
       empId === '7017' ||
       empId === 'AP7056'
@@ -108,13 +130,17 @@ function App() {
 
   const getInitialPortalMode = (user) => {
     if (!user) return 'bda'
-    // Anurag Nand is assigned to Software Portal
+    const saved = localStorage.getItem('aparaitech_portal_mode')
+    if (saved && ['software', 'bda', 'hr'].includes(saved) && (user.role === 'admin' || user.role === 'hr' || user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7056')) {
+      return saved
+    }
+    if (user.role === 'hr') return 'hr'
+    // Anurag Nand default is Software Portal with HR & BDA access
     if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7056') {
       return 'software'
     }
     if (user.role === 'admin') {
-      const saved = localStorage.getItem('aparaitech_portal_mode')
-      return saved === 'software' ? 'software' : 'bda'
+      return 'hr'
     }
     const isDev = (
       user.department === 'Development' ||
@@ -127,7 +153,7 @@ function App() {
     return isDev ? 'software' : 'bda'
   }
 
-  // Active portal mode ('software' vs 'bda')
+  // Active portal mode ('software' vs 'bda' vs 'hr')
   const [portalMode, setPortalMode] = useState(() => {
     const saved = localStorage.getItem('aparaitech_current_user')
     if (saved) {
@@ -288,6 +314,9 @@ function App() {
     localStorage.setItem('aparaitech_portal_mode', mode)
     if (mode === 'software') {
       setActiveTab('softwareDashboard')
+    } else if (mode === 'hr') {
+      setActiveTab('adminPanel')
+      setAdminSection('overview')
     } else {
       if (currentUser?.role === 'admin') {
         setActiveTab('adminPanel')
@@ -296,7 +325,8 @@ function App() {
         setActiveTab('dashboard')
       }
     }
-    showToast(`Switched to ${mode === 'software' ? 'Software Team' : 'BDA Calling'} Portal`, '#2563eb')
+    const modeName = mode === 'software' ? 'Software Team' : (mode === 'hr' ? 'Human Resources (HR)' : 'BDA Calling')
+    showToast(`Switched to ${modeName} Portal`, '#2563eb')
   }
 
   // Navigate to an admin section or top-level tab
@@ -383,16 +413,16 @@ function App() {
                     onClick={() => handleTogglePortal('software')}
                     style={{
                       flex: 1,
-                      padding: '8px 10px',
+                      padding: '8px 8px',
                       borderRadius: '10px',
                       border: 'none',
-                      fontSize: '0.76rem',
+                      fontSize: '0.74rem',
                       fontWeight: '700',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
+                      gap: '5px',
                       background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
                       color: portalMode === 'software' ? '#ffffff' : '#64748b',
                       boxShadow: portalMode === 'software' ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
@@ -406,16 +436,16 @@ function App() {
                     onClick={() => handleTogglePortal('bda')}
                     style={{
                       flex: 1,
-                      padding: '8px 10px',
+                      padding: '8px 8px',
                       borderRadius: '10px',
                       border: 'none',
-                      fontSize: '0.76rem',
+                      fontSize: '0.74rem',
                       fontWeight: '700',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
+                      gap: '5px',
                       background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
                       color: portalMode === 'bda' ? '#ffffff' : '#64748b',
                       boxShadow: portalMode === 'bda' ? '0 2px 8px rgba(5,150,105,0.3)' : 'none',
@@ -423,13 +453,86 @@ function App() {
                     }}
                   >
                     <i className="fas fa-headset"></i>
-                    BDA Portal
+                    BDA
+                  </button>
+                  <button
+                    onClick={() => handleTogglePortal('hr')}
+                    style={{
+                      flex: 1,
+                      padding: '8px 8px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontSize: '0.74rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                      color: portalMode === 'hr' ? '#ffffff' : '#64748b',
+                      boxShadow: portalMode === 'hr' ? '0 2px 8px rgba(124,58,237,0.3)' : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <i className="fas fa-users-cog"></i>
+                    HR
                   </button>
                 </div>
               )}
 
-              {/* MODE 1: SOFTWARE TEAM WORKSPACE */}
-              {portalMode === 'software' ? (
+              {/* MODE 1: HR OPERATIONS WORKSPACE */}
+              {portalMode === 'hr' ? (
+                <>
+                  {/* HR Group 1: Command Center */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#7c3aed', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                    👑 HR Command Center
+                  </div>
+                  {HR_NAV.filter(item => item.group === 'HR Command Center').map(item => (
+                    <button
+                      key={item.id}
+                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                      style={sidebarBtnStyle(isAdminNavActive(item))}
+                      onClick={() => handleAdminNav(item)}
+                    >
+                      <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                      {item.label}
+                    </button>
+                  ))}
+
+                  {/* HR Group 2: Attendance & Workforce */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                    ⏱️ Attendance & Workforce
+                  </div>
+                  {HR_NAV.filter(item => item.group === 'Attendance & Workforce').map(item => (
+                    <button
+                      key={item.id}
+                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                      style={sidebarBtnStyle(isAdminNavActive(item))}
+                      onClick={() => handleAdminNav(item)}
+                    >
+                      <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                      {item.label}
+                    </button>
+                  ))}
+
+                  {/* HR Group 3: Communications & Policies */}
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                    📢 Communications
+                  </div>
+                  {HR_NAV.filter(item => item.group === 'HR Communications').map(item => (
+                    <button
+                      key={item.id}
+                      className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                      style={sidebarBtnStyle(isAdminNavActive(item))}
+                      onClick={() => handleAdminNav(item)}
+                    >
+                      <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
+                      {item.label}
+                    </button>
+                  ))}
+                </>
+              ) : portalMode === 'software' ? (
                 <>
                   {/* Group 1: Software Workspace */}
                   <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
@@ -506,12 +609,20 @@ function App() {
                         <i className="fas fa-file-invoice" style={{ width: '16px', textAlign: 'center' }}></i>
                         BDA Daily Reports
                       </button>
+                      <button
+                        className="sidebar-nav-btn"
+                        style={{ ...sidebarBtnStyle(false), background: 'rgba(124,58,237,0.08)', color: '#7c3aed', marginTop: '4px' }}
+                        onClick={() => handleTogglePortal('hr')}
+                      >
+                        <i className="fas fa-users-cog" style={{ width: '16px', textAlign: 'center' }}></i>
+                        HR Operations Hub
+                      </button>
                     </>
                   )}
                 </>
               ) : (
-                /* MODE 2: BDA / CALLING TEAM WORKSPACE */
-                currentUser.role === 'admin' ? (
+                /* MODE 3: BDA / CALLING TEAM WORKSPACE */
+                (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) ? (
                   <>
                     {/* Admin Group 1: Command Center */}
                     <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
@@ -679,6 +790,57 @@ function App() {
             {/* ── Main Content Pane ────────────────────────────────────── */}
             <div className="content-pane" style={{ flex: 1, minWidth: '320px' }}>
 
+              {/* ────────────────── HR PORTAL VIEWS ────────────────── */}
+              {portalMode === 'hr' && (
+                <>
+                  {/* 1. AdminPanel in HR Mode */}
+                  {activeTab === 'adminPanel' && (
+                    <AdminPanel
+                      currentUser={currentUser}
+                      showToast={showToast}
+                      activeSection={adminSection}
+                      onSectionChange={(newSec) => {
+                        setAdminSection(newSec)
+                        setActiveTab('adminPanel')
+                      }}
+                      isHRMode={true}
+                    />
+                  )}
+
+                  {/* 2. Organization-Wide Leave Approvals Desk */}
+                  {(activeTab === 'leave' || activeTab === 'softwareLeave') && (
+                    <LeaveManagementView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 3. HR Announcements Broadcast */}
+                  {(activeTab === 'announcements' || activeTab === 'softwareAnnouncements') && (
+                    <AnnouncementsView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 4. HR Messaging Center */}
+                  {activeTab === 'messaging' && (
+                    <AdminMessagingCenter
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+
+                  {/* 5. Team Reports Hub */}
+                  {activeTab === 'managerReports' && (
+                    <ManagerReportsView
+                      currentUser={currentUser}
+                      showToast={showToast}
+                    />
+                  )}
+                </>
+              )}
+
               {/* ────────────────── SOFTWARE PORTAL VIEWS ────────────────── */}
               {portalMode === 'software' && (
                 <>
@@ -800,7 +962,7 @@ function App() {
               {portalMode === 'bda' && (
                 <>
                   {/* 1. Admin Panel: Comprehensive Executive Control Center (Default for Admin) */}
-                  {activeTab === 'adminPanel' && currentUser.role === 'admin' && (
+                  {activeTab === 'adminPanel' && (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) && (
                     <AdminPanel
                       currentUser={currentUser}
                       showToast={showToast}
@@ -817,7 +979,7 @@ function App() {
                     <CompanyDashboard
                       currentUser={currentUser}
                       onNavigate={(targetTab) => {
-                        if (currentUser.role === 'admin') {
+                        if (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) {
                           if (targetTab === 'attendance' || targetTab === 'dashboard') {
                             setActiveTab('adminPanel')
                             setAdminSection('overview')
@@ -909,7 +1071,7 @@ function App() {
                   )}
 
                   {/* 8. Admin: Messaging Center */}
-                  {activeTab === 'messaging' && currentUser.role === 'admin' && (
+                  {activeTab === 'messaging' && (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) && (
                     <AdminMessagingCenter
                       currentUser={currentUser}
                       showToast={showToast}
@@ -959,7 +1121,7 @@ function App() {
                     <div>
                       <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>Aparaitech Software</div>
                       <div style={{ fontSize: '0.72rem', color: '#93c5fd' }}>
-                        {currentUser.name} ({portalMode === 'software' ? 'Software Portal' : 'BDA Portal'})
+                        {currentUser.name} ({portalMode === 'software' ? 'Software Portal' : (portalMode === 'hr' ? 'HR Portal' : 'BDA Portal')})
                       </div>
                     </div>
                   </div>
@@ -1004,16 +1166,16 @@ function App() {
                         }}
                         style={{
                           flex: 1,
-                          padding: '8px 10px',
+                          padding: '8px 6px',
                           borderRadius: '8px',
                           border: 'none',
-                          fontSize: '0.75rem',
+                          fontSize: '0.74rem',
                           fontWeight: '700',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
+                          gap: '5px',
                           background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
                           color: portalMode === 'software' ? '#ffffff' : '#64748b'
                         }}
@@ -1027,27 +1189,106 @@ function App() {
                         }}
                         style={{
                           flex: 1,
-                          padding: '8px 10px',
+                          padding: '8px 6px',
                           borderRadius: '8px',
                           border: 'none',
-                          fontSize: '0.75rem',
+                          fontSize: '0.74rem',
                           fontWeight: '700',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
+                          gap: '5px',
                           background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
                           color: portalMode === 'bda' ? '#ffffff' : '#64748b'
                         }}
                       >
                         <i className="fas fa-headset"></i> BDA
                       </button>
+                      <button
+                        onClick={() => {
+                          handleTogglePortal('hr')
+                          setMobileDrawerOpen(false)
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 6px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          fontSize: '0.74rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '5px',
+                          background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                          color: portalMode === 'hr' ? '#ffffff' : '#64748b'
+                        }}
+                      >
+                        <i className="fas fa-users-cog"></i> HR
+                      </button>
                     </div>
                   )}
 
-                  {/* MOBILE DRAWER: SOFTWARE MODE */}
-                  {portalMode === 'software' ? (
+                  {/* MOBILE DRAWER: HR MODE */}
+                  {portalMode === 'hr' ? (
+                    <>
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#7c3aed', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
+                        👑 HR Command Center
+                      </div>
+                      {HR_NAV.filter(item => item.group === 'HR Command Center').map(item => (
+                        <button
+                          key={item.id}
+                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          onClick={() => {
+                            handleAdminNav(item)
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                          {item.label}
+                        </button>
+                      ))}
+
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        ⏱️ Attendance & Workforce
+                      </div>
+                      {HR_NAV.filter(item => item.group === 'Attendance & Workforce').map(item => (
+                        <button
+                          key={item.id}
+                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          onClick={() => {
+                            handleAdminNav(item)
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                          {item.label}
+                        </button>
+                      ))}
+
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        📢 Communications
+                      </div>
+                      {HR_NAV.filter(item => item.group === 'HR Communications').map(item => (
+                        <button
+                          key={item.id}
+                          className={`sidebar-nav-btn ${isAdminNavActive(item) ? 'active' : ''}`}
+                          style={sidebarBtnStyle(isAdminNavActive(item))}
+                          onClick={() => {
+                            handleAdminNav(item)
+                            setMobileDrawerOpen(false)
+                          }}
+                        >
+                          <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
+                          {item.label}
+                        </button>
+                      ))}
+                    </>
+                  ) : portalMode === 'software' ? (
                     <>
                       <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
                         💻 Software Workspace
@@ -1133,12 +1374,23 @@ function App() {
                             <i className="fas fa-file-invoice" style={{ width: '18px', textAlign: 'center' }}></i>
                             BDA Daily Reports
                           </button>
+                          <button
+                            className="sidebar-nav-btn"
+                            style={{ ...sidebarBtnStyle(false), background: 'rgba(124,58,237,0.08)', color: '#7c3aed', marginTop: '4px' }}
+                            onClick={() => {
+                              handleTogglePortal('hr')
+                              setMobileDrawerOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-users-cog" style={{ width: '18px', textAlign: 'center' }}></i>
+                            HR Operations Hub
+                          </button>
                         </>
                       )}
                     </>
                   ) : (
                     /* MOBILE DRAWER: BDA MODE */
-                    currentUser.role === 'admin' ? (
+                    (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) ? (
                       <>
                         <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
                           👑 Command Center
@@ -1406,7 +1658,58 @@ function App() {
 
           {/* ── Mobile Sticky Bottom Navigation Bar (<1024px) ─────────────────── */}
           <nav className="bottom-nav-bar mobile-bottom-nav">
-            {portalMode === 'software' ? (
+            {portalMode === 'hr' ? (
+              <>
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'overview' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('overview')
+                  }}
+                >
+                  <i className="fas fa-tachometer-alt"></i>
+                  <span>Overview</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'employees' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('employees')
+                  }}
+                >
+                  <i className="fas fa-users"></i>
+                  <span>Staff</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'attendance' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('adminPanel')
+                    setAdminSection('attendance')
+                  }}
+                >
+                  <i className="fas fa-calendar-check"></i>
+                  <span>Punches</span>
+                </button>
+
+                <button
+                  className={`bottom-nav-item ${activeTab === 'leave' || activeTab === 'softwareLeave' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('leave')}
+                >
+                  <i className="fas fa-calendar-alt"></i>
+                  <span>Leaves</span>
+                </button>
+
+                <button
+                  className="bottom-nav-item"
+                  onClick={() => setMobileDrawerOpen(true)}
+                >
+                  <i className="fas fa-bars"></i>
+                  <span>Menu</span>
+                </button>
+              </>
+            ) : portalMode === 'software' ? (
               <>
                 <button
                   className={`bottom-nav-item ${activeTab === 'softwareDashboard' ? 'active' : ''}`}
@@ -1466,7 +1769,7 @@ function App() {
                 </button>
               </>
             ) : (
-              currentUser.role === 'admin' ? (
+              (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) ? (
                 <>
                   <button
                     className={`bottom-nav-item ${activeTab === 'adminPanel' && adminSection === 'overview' ? 'active' : ''}`}
