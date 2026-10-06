@@ -729,7 +729,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
           <div>
             <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <i className="fas fa-bullseye" style={{ color: '#2563eb' }}></i>
-              Intern Monthly Target & Performance Tracker
+              {performance?.targets?.monthLabel ? `${performance.targets.monthLabel} Target & Performance Tracker` : 'Monthly Target & Performance Tracker'}
             </div>
             <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
               {performance?.targets?.note || 'Benchmark decided by Management for this active month'}

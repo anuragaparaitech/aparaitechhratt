@@ -75,6 +75,20 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   })
   const [savingInternTarget, setSavingInternTarget] = useState(false)
 
+  // BDA Revenue-Based Salary Criteria & Payout States
+  const [bdaCriteriaData, setBdaCriteriaData] = useState({
+    1: { month: 1, target: 42000, targetConversions: 7, belowTargetPercent: 26, onTargetPercent: 36, excessPercent: 8, label: 'Month 1' },
+    2: { month: 2, target: 54000, targetConversions: 9, belowTargetPercent: 25, onTargetPercent: 35, excessPercent: 8, label: 'Month 2' },
+    3: { month: 3, target: 72000, targetConversions: 12, belowTargetPercent: 25, onTargetPercent: 35, excessPercent: 8, label: 'Month 3' },
+    4: { month: 4, target: 90000, targetConversions: 15, belowTargetPercent: 25, onTargetPercent: 35, excessPercent: 8, label: 'Month 4+' }
+  })
+  const [bdaEmployees, setBdaEmployees] = useState([])
+  const [savingBdaCriteria, setSavingBdaCriteria] = useState(false)
+  const [updatingTenure, setUpdatingTenure] = useState({})
+  const [bdaSearch, setBdaSearch] = useState('')
+  const [simMonth, setSimMonth] = useState(1)
+  const [simRevenue, setSimRevenue] = useState(42000)
+
   // View More / View Less Pagination Limits
   const [empLimit, setEmpLimit] = useState(5)
   const [autoLimit, setAutoLimit] = useState(5)
@@ -132,7 +146,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     setLoadingLogs(true)
     setLogsError(false)
     try {
-      const [empsData, attsData, holsData, missingData, dailyData, mailData, teamData, revData, targetRes] = await Promise.all([
+      const [empsData, attsData, holsData, missingData, dailyData, mailData, teamData, revData, targetRes, bdaRes] = await Promise.all([
         employeeAPI.getAll().catch(() => ({ employees: [] })),
         attendanceAPI.getAll().catch(() => ({ records: [], liveSessions: [] })),
         holidayAPI.getAll().catch(() => ({ holidays: [] })),
@@ -141,7 +155,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         reportsAPI.getMailBlast().catch(() => ({ data: [] })),
         analyticsAPI.getTeamOverview().catch(() => null),
         analyticsAPI.getRevenueTracker().catch(() => null),
-        analyticsAPI.getInternTarget().catch(() => null)
+        analyticsAPI.getInternTarget().catch(() => null),
+        analyticsAPI.getBdaSalaryCriteria().catch(() => null)
       ])
 
       setEmployees(empsData.employees || [])
@@ -155,6 +170,10 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       if (teamData?.success) setTeamOverview(teamData.data)
       if (revData?.success) setRevenueData(revData.data)
       if (targetRes?.success && targetRes.target) setInternTargetData(targetRes.target)
+      if (bdaRes?.success) {
+        if (bdaRes.criteria) setBdaCriteriaData(bdaRes.criteria)
+        if (bdaRes.employees) setBdaEmployees(bdaRes.employees)
+      }
     } catch (err) {
       console.error(err)
       setLogsError(true)
@@ -347,6 +366,115 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       showToast(err.response?.data?.message || err.message || 'Error updating target', '#ef4444')
     } finally {
       setSavingInternTarget(false)
+    }
+  }
+
+  // ── BDA SALARY CRITERIA HANDLERS ──────────────────────────────────────────
+  const handleSaveBdaCriteria = async (e) => {
+    if (e) e.preventDefault()
+    setSavingBdaCriteria(true)
+    try {
+      const res = await analyticsAPI.updateBdaSalaryCriteria(bdaCriteriaData)
+      if (res?.success) {
+        showToast('💼 BDA Salary Criteria updated successfully!', '#16a34a')
+        if (res.criteria) setBdaCriteriaData(res.criteria)
+        const ref = await analyticsAPI.getBdaSalaryCriteria().catch(() => null)
+        if (ref?.employees) setBdaEmployees(ref.employees)
+      } else {
+        showToast(res?.message || 'Failed to update criteria', '#ef4444')
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message || 'Error updating criteria', '#ef4444')
+    } finally {
+      setSavingBdaCriteria(false)
+    }
+  }
+
+  const handleUpdateEmployeeTenure = async (empId, newTenure) => {
+    setUpdatingTenure(prev => ({ ...prev, [empId]: true }))
+    try {
+      const res = await analyticsAPI.updateEmployeeTenure(empId, newTenure)
+      if (res?.success) {
+        showToast(`✅ ${res.message || 'Tenure updated'}`, '#0284c7')
+        const ref = await analyticsAPI.getBdaSalaryCriteria().catch(() => null)
+        if (ref?.employees) setBdaEmployees(ref.employees)
+      } else {
+        showToast(res?.message || 'Failed to update tenure', '#ef4444')
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message || 'Error updating tenure', '#ef4444')
+    } finally {
+      setUpdatingTenure(prev => ({ ...prev, [empId]: false }))
+    }
+  }
+
+  const handleExportBdaSalary = () => {
+    if (!bdaEmployees.length) {
+      alert('No BDA employee data to export')
+      return
+    }
+    const data = [['Employee ID', 'Employee Name', 'Email', 'Tenure Month', 'Monthly Revenue', 'Monthly Convs', 'Target Status', 'Target Amount', 'Base Rate / Below Rate', 'Excess Bonus', 'Total Calculated Salary', 'Formula Breakdown']]
+    bdaEmployees.forEach(emp => {
+      const calc = emp.calculation || {}
+      const bd = calc.breakdown || {}
+      data.push([
+        emp.empId,
+        emp.name,
+        emp.email,
+        `Month ${emp.tenureMonth}`,
+        emp.monthlyRevenue || 0,
+        emp.monthlyConversions || 0,
+        calc.isAchieved ? 'Target Achieved' : 'Below Target',
+        calc.target || 0,
+        calc.isAchieved ? `${bd.onTargetPercent}%` : `${bd.belowTargetPercent}%`,
+        calc.isAchieved ? `₹${bd.excessBonus || 0} (${bd.excessPercent}%)` : '₹0',
+        calc.salary || 0,
+        bd.formula || ''
+      ])
+    })
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'BDA_Salary_Payout')
+    XLSX.writeFile(wb, `BDA_Salary_Payout_${getTodayStr()}.xlsx`)
+    showToast('📊 Exported BDA Salary Payout to Excel', '#059669')
+  }
+
+  // BDA Simulator calculation helper
+  const getSimulatedCalculation = (rev, month) => {
+    const m = Math.min(Math.max(1, parseInt(month, 10) || 1), 4)
+    const rule = bdaCriteriaData[m] || { target: 42000, targetConversions: 7, belowTargetPercent: 26, onTargetPercent: 36, excessPercent: 8 }
+    const target = Number(rule.target) || 42000
+    const belowRate = (Number(rule.belowTargetPercent) || 26) / 100
+    const onTargetRate = (Number(rule.onTargetPercent) || 36) / 100
+    const excessRate = (Number(rule.excessPercent) || 8) / 100
+    const revNum = Math.max(0, Number(rev) || 0)
+    const isAchieved = revNum >= target
+
+    if (isAchieved) {
+      const baseSalary = target * onTargetRate
+      const excessRev = revNum - target
+      const excessBonus = excessRev * excessRate
+      const total = baseSalary + excessBonus
+      return {
+        isAchieved: true,
+        target,
+        baseSalary: Math.round(baseSalary),
+        excessRev: Math.round(excessRev),
+        excessBonus: Math.round(excessBonus),
+        totalSalary: Math.round(total),
+        formula: `(₹${target.toLocaleString('en-IN')} × ${rule.onTargetPercent}%) + (₹${Math.round(excessRev).toLocaleString('en-IN')} × ${rule.excessPercent}%) = ₹${Math.round(total).toLocaleString('en-IN')}`
+      }
+    } else {
+      const total = revNum * belowRate
+      return {
+        isAchieved: false,
+        target,
+        baseSalary: 0,
+        excessRev: 0,
+        excessBonus: 0,
+        totalSalary: Math.round(total),
+        formula: `₹${Math.round(revNum).toLocaleString('en-IN')} × ${rule.belowTargetPercent}% = ₹${Math.round(total).toLocaleString('en-IN')}`
+      }
     }
   }
 
@@ -547,6 +675,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     dailyReports: { icon: 'fa-clipboard-check',     label: 'Daily Working Reports Compliance' },
     mailBlast:    { icon: 'fa-mail-bulk',           label: 'Mail Blast Outreach Campaigns' },
     revenue:      { icon: 'fa-rupee-sign',          label: 'Commercial Revenue & Conversions' },
+    bdaSalary:    { icon: 'fa-briefcase',           label: 'BDA Revenue-Based Salary Criteria & Payout' },
     employees:    { icon: 'fa-users',               label: 'Employee Directory & Access Control' },
     attendance:   { icon: 'fa-calendar-check',      label: 'Master Attendance Logs & History' },
     overall:      { icon: 'fa-chart-line',          label: 'Overall Attendance Analytics' },
@@ -734,6 +863,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null, badgeColor: '#ef4444' },
           { id: 'mailBlast', icon: 'fa-mail-bulk', label: 'Mail Blasts' },
           { id: 'revenue', icon: 'fa-rupee-sign', label: 'Revenue' },
+          { id: 'bdaSalary', icon: 'fa-briefcase', label: 'BDA Salary & Targets', badge: 'Payout', badgeColor: '#059669' },
           { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Targets', badge: 'Goal', badgeColor: '#2563eb' },
           { id: 'employees', icon: 'fa-users', label: 'Employees' },
           { id: 'attendance', icon: 'fa-calendar-check', label: 'Attendance Logs' },
@@ -1194,6 +1324,544 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* ── BDA REVENUE-BASED SALARY CRITERIA & PAYOUT MANAGEMENT (When activeSection === 'bdaSalary') ── */}
+      {show('bdaSalary') && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          
+          {/* Top Confidentiality & Policy Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #064e3b 0%, #065f46 60%, #047857 100%)',
+            borderRadius: '18px',
+            padding: '1.4rem 1.8rem',
+            color: '#ffffff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            boxShadow: '0 8px 24px rgba(6, 78, 59, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.15)'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.35rem', fontWeight: '900', letterSpacing: '0.02em' }}>
+                  💼 BDA Revenue-Based Salary Criteria & Payout Model
+                </span>
+                <span style={{
+                  background: '#dcfce7',
+                  color: '#15803d',
+                  fontSize: '0.72rem',
+                  fontWeight: '800',
+                  padding: '3px 10px',
+                  borderRadius: '20px',
+                  border: '1px solid #86efac'
+                }}>
+                  🔒 ADMIN CONFIDENTIAL
+                </span>
+              </div>
+              <p style={{ margin: '6px 0 0', fontSize: '0.86rem', color: '#a7f3d0', maxWidth: '850px', lineHeight: '1.45' }}>
+                Tenure-based monthly criteria for Business Development Associates.
+                <strong> Note:</strong> Criteria percentages (36%, 26%, 25%, 8%) and salary formulas are <strong>strictly hidden from employees</strong>; employees only see their monthly target numbers and progress bar.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleExportBdaSalary}
+                style={{
+                  background: '#ffffff',
+                  color: '#065f46',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '9px 16px',
+                  fontSize: '0.82rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+              >
+                <i className="fas fa-file-excel"></i> Export Payout Sheet
+              </button>
+            </div>
+          </div>
+
+          {/* 1. EDITABLE 4-MONTH CRITERIA CONFIGURATION */}
+          <div className="section-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1.5px solid #a7f3d0', padding: '1.5rem', margin: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', color: '#064e3b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fas fa-sliders-h" style={{ color: '#059669' }}></i>
+                  Tenure-Based Salary Criteria Configuration
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                  Configure targets, base rate on achievement, failure rate, and excess revenue bonus for each tenure month.
+                </p>
+              </div>
+              <button
+                onClick={handleSaveBdaCriteria}
+                disabled={savingBdaCriteria}
+                style={{
+                  background: 'linear-gradient(135deg, #059669, #047857)',
+                  color: '#ffffff',
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  padding: '9px 20px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: savingBdaCriteria ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.3)'
+                }}
+              >
+                <i className={savingBdaCriteria ? 'fas fa-spinner fa-spin' : 'fas fa-save'}></i>
+                {savingBdaCriteria ? 'Saving Criteria...' : 'Save & Update Criteria'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
+              {[1, 2, 3, 4].map(m => {
+                const rule = bdaCriteriaData[m] || { month: m, target: 42000, targetConversions: 7, belowTargetPercent: 26, onTargetPercent: 36, excessPercent: 8, label: `Month ${m}` }
+                const targetRev = Number(rule.target) || 0
+                const onPct = Number(rule.onTargetPercent) || 0
+                const basePayout = Math.round((targetRev * onPct) / 100)
+
+                return (
+                  <div key={m} style={{
+                    background: '#f8fafc',
+                    borderRadius: '14px',
+                    border: '1.5px solid #e2e8f0',
+                    padding: '1.2rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}>
+                    {/* Month Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{
+                        background: '#047857',
+                        color: '#ffffff',
+                        fontWeight: '800',
+                        fontSize: '0.85rem',
+                        padding: '4px 12px',
+                        borderRadius: '8px'
+                      }}>
+                        {m === 4 ? 'Month 4+ (Senior)' : `Month ${m}`}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#059669' }}>
+                        Base Payout: ₹{basePayout.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+
+                    {/* Inputs */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <div>
+                        <label style={{ fontSize: '0.74rem', fontWeight: '700', color: '#475569' }}>Target Revenue (₹)</label>
+                        <input
+                          type="number"
+                          step="1000"
+                          className="auth-input"
+                          style={{ width: '100%', padding: '6px 10px', fontSize: '0.9rem', fontWeight: '800', color: '#064e3b', marginTop: '3px' }}
+                          value={rule.target}
+                          onChange={e => {
+                            const val = parseInt(e.target.value, 10) || 0
+                            setBdaCriteriaData(prev => ({
+                              ...prev,
+                              [m]: { ...prev[m], target: val, targetConversions: Math.round(val / 6000) }
+                            }))
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.74rem', fontWeight: '700', color: '#475569' }}>Target Convs (₹6k)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="auth-input"
+                          style={{ width: '100%', padding: '6px 10px', fontSize: '0.9rem', fontWeight: '800', color: '#064e3b', marginTop: '3px' }}
+                          value={rule.targetConversions}
+                          onChange={e => {
+                            const convs = parseInt(e.target.value, 10) || 1
+                            setBdaCriteriaData(prev => ({
+                              ...prev,
+                              [m]: { ...prev[m], targetConversions: convs, target: convs * 6000 }
+                            }))
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', fontWeight: '700', color: '#dc2626' }} title="If target not achieved">
+                          Below %
+                        </label>
+                        <input
+                          type="number"
+                          step="0.5"
+                          className="auth-input"
+                          style={{ width: '100%', padding: '6px 8px', fontSize: '0.88rem', fontWeight: '800', color: '#b91c1c', marginTop: '3px' }}
+                          value={rule.belowTargetPercent}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value) || 0
+                            setBdaCriteriaData(prev => ({
+                              ...prev,
+                              [m]: { ...prev[m], belowTargetPercent: val }
+                            }))
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', fontWeight: '700', color: '#16a34a' }} title="If target achieved (Base %)">
+                          Target %
+                        </label>
+                        <input
+                          type="number"
+                          step="0.5"
+                          className="auth-input"
+                          style={{ width: '100%', padding: '6px 8px', fontSize: '0.88rem', fontWeight: '800', color: '#15803d', marginTop: '3px' }}
+                          value={rule.onTargetPercent}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value) || 0
+                            setBdaCriteriaData(prev => ({
+                              ...prev,
+                              [m]: { ...prev[m], onTargetPercent: val }
+                            }))
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', fontWeight: '700', color: '#2563eb' }} title="Bonus rate for revenue above target">
+                          Surplus %
+                        </label>
+                        <input
+                          type="number"
+                          step="0.5"
+                          className="auth-input"
+                          style={{ width: '100%', padding: '6px 8px', fontSize: '0.88rem', fontWeight: '800', color: '#1d4ed8', marginTop: '3px' }}
+                          value={rule.excessPercent}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value) || 0
+                            setBdaCriteriaData(prev => ({
+                              ...prev,
+                              [m]: { ...prev[m], excessPercent: val }
+                            }))
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ background: '#f1f5f9', borderRadius: '8px', padding: '8px 10px', fontSize: '0.73rem', color: '#475569', lineHeight: '1.35' }}>
+                      <div>• Below Target: <strong>{rule.belowTargetPercent}%</strong> of revenue</div>
+                      <div>• Target Achieved: <strong>{rule.onTargetPercent}%</strong> of ₹{(rule.target || 0).toLocaleString('en-IN')} (₹{basePayout.toLocaleString('en-IN')}) + <strong>{rule.excessPercent}%</strong> of surplus</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* 2. LIVE BDA EMPLOYEE PAYOUT SHEET & TENURE CONTROLS */}
+          <div className="section-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1.5px solid #e2e8f0', padding: '1.5rem', margin: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fas fa-users-cog" style={{ color: '#2563eb' }}></i>
+                  Active BDA Associates & Monthly Salary Payout Sheet
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                  Calculated using current month revenue. Change an associate's active tenure month anytime using the dropdown.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  className="filter-input"
+                  placeholder="🔍 Search BDA Associate..."
+                  value={bdaSearch}
+                  onChange={e => setBdaSearch(e.target.value)}
+                  style={{ width: '220px' }}
+                />
+              </div>
+            </div>
+
+            {/* Payout Summary Strip */}
+            {(() => {
+              const totalBdaRevenue = bdaEmployees.reduce((acc, e) => acc + (e.monthlyRevenue || 0), 0)
+              const totalBdaConvs = bdaEmployees.reduce((acc, e) => acc + (e.monthlyConversions || 0), 0)
+              const totalBdaSalary = bdaEmployees.reduce((acc, e) => acc + (e.calculation?.salary || 0), 0)
+
+              return (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '12px',
+                  marginBottom: '1.25rem',
+                  background: '#f8fafc',
+                  padding: '14px',
+                  borderRadius: '14px',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>ACTIVE BDA REPS</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#0a192f' }}>{bdaEmployees.length}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Designation: BDA / Sales</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>MONTH CONVERSIONS</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#2563eb' }}>{totalBdaConvs}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>₹6,000 unit sales</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>TOTAL BDA REVENUE</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#059669' }}>₹{totalBdaRevenue.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Generated this month</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>TOTAL SALARY PAYOUT</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#d97706' }}>₹{totalBdaSalary.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Cumulative calculated salary</div>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* BDA Employees Table */}
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>EMPLOYEE</th>
+                    <th>EMP ID</th>
+                    <th>TENURE MONTH</th>
+                    <th>MONTH REVENUE</th>
+                    <th>TARGET STATUS</th>
+                    <th>CALCULATED SALARY</th>
+                    <th>FORMULA BREAKDOWN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bdaEmployees
+                    .filter(emp => !bdaSearch || emp.name?.toLowerCase().includes(bdaSearch.toLowerCase()) || emp.empId?.toLowerCase().includes(bdaSearch.toLowerCase()))
+                    .map(emp => {
+                      const calc = emp.calculation || {}
+                      const bd = calc.breakdown || {}
+                      const isUpdating = updatingTenure[emp.empId]
+
+                      return (
+                        <tr key={emp._id || emp.empId}>
+                          <td>
+                            <div style={{ fontWeight: '700', color: '#0f172a' }}>{emp.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{emp.email} {emp.phone ? `• ${emp.phone}` : ''}</div>
+                          </td>
+                          <td>
+                            <span style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '0.8rem', color: '#334155' }}>
+                              {emp.empId}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <select
+                                value={emp.tenureMonth || 1}
+                                disabled={isUpdating}
+                                onChange={e => handleUpdateEmployeeTenure(emp.empId, parseInt(e.target.value, 10))}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '8px',
+                                  border: '1.5px solid #cbd5e1',
+                                  background: '#ffffff',
+                                  fontWeight: '700',
+                                  fontSize: '0.82rem',
+                                  color: '#0f172a',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <option value="1">Month 1 (Target: ₹42k)</option>
+                                <option value="2">Month 2 (Target: ₹54k)</option>
+                                <option value="3">Month 3 (Target: ₹72k)</option>
+                                <option value="4">Month 4+ (Target: ₹90k)</option>
+                              </select>
+                              {isUpdating && <i className="fas fa-spinner fa-spin" style={{ color: '#0284c7' }}></i>}
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: '800', color: '#059669', fontSize: '0.92rem' }}>
+                              ₹{(emp.monthlyRevenue || 0).toLocaleString('en-IN')}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                              {emp.monthlyConversions || 0} conversions • {emp.monthlyCalls || 0} calls
+                            </div>
+                          </td>
+                          <td>
+                            <span style={{
+                              background: calc.isAchieved ? '#dcfce7' : '#fef3c7',
+                              color: calc.isAchieved ? '#15803d' : '#b45309',
+                              padding: '4px 10px',
+                              borderRadius: '20px',
+                              fontWeight: '800',
+                              fontSize: '0.76rem',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              {calc.isAchieved ? '🟢 Target Achieved' : '🟠 Below Target'}
+                            </span>
+                            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+                              Goal: ₹{(calc.target || 0).toLocaleString('en-IN')}
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: '900', fontSize: '1.15rem', color: '#047857' }}>
+                              ₹{(calc.salary || 0).toLocaleString('en-IN')}
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{
+                              background: '#f8fafc',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '8px',
+                              padding: '5px 10px',
+                              fontSize: '0.75rem',
+                              fontFamily: 'monospace',
+                              color: '#334155',
+                              maxWidth: '380px',
+                              lineHeight: '1.3'
+                            }}>
+                              {bd.formula || '—'}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  {bdaEmployees.length === 0 && (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '28px', color: '#64748b' }}>
+                        No BDA department employees found in directory.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 3. INTERACTIVE SALARY SIMULATOR / CALCULATOR */}
+          <div className="section-card" style={{ background: '#f0fdf4', borderRadius: '16px', border: '1.5px solid #86efac', padding: '1.5rem', margin: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', color: '#064e3b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fas fa-calculator" style={{ color: '#16a34a' }}></i>
+                  Interactive BDA Salary Sandbox & Calculator
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#166534' }}>
+                  Simulate potential payouts for any revenue amount and tenure month.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.2rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '0.78rem', fontWeight: '700', color: '#166534' }}>Select Tenure Month</label>
+                  <select
+                    className="auth-input"
+                    value={simMonth}
+                    onChange={e => setSimMonth(parseInt(e.target.value, 10))}
+                    style={{ width: '100%', marginTop: '4px', fontWeight: '700', padding: '8px 12px' }}
+                  >
+                    <option value="1">Month 1 (Target: ₹42,000 / 7 Convs)</option>
+                    <option value="2">Month 2 (Target: ₹54,000 / 9 Convs)</option>
+                    <option value="3">Month 3 (Target: ₹72,000 / 12 Convs)</option>
+                    <option value="4">Month 4+ (Target: ₹90,000 / 15 Convs)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.78rem', fontWeight: '700', color: '#166534' }}>Enter Simulated Revenue (₹)</label>
+                  <input
+                    type="number"
+                    step="1000"
+                    className="auth-input"
+                    value={simRevenue}
+                    onChange={e => setSimRevenue(parseInt(e.target.value, 10) || 0)}
+                    style={{ width: '100%', marginTop: '4px', fontWeight: '800', fontSize: '1.1rem', color: '#064e3b', padding: '8px 12px' }}
+                  />
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    {[30000, 42000, 54000, 60000, 72000, 90000, 120000].map(amt => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => setSimRevenue(amt)}
+                        style={{
+                          background: simRevenue === amt ? '#16a34a' : '#dcfce7',
+                          color: simRevenue === amt ? '#ffffff' : '#15803d',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '3px 8px',
+                          fontSize: '0.72rem',
+                          fontWeight: '700',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ₹{(amt / 1000)}k
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulation Result Card */}
+              {(() => {
+                const sim = getSimulatedCalculation(simRevenue, simMonth)
+                return (
+                  <div style={{
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    padding: '1.25rem',
+                    border: '1.5px solid #86efac',
+                    boxShadow: '0 4px 15px rgba(22, 163, 74, 0.08)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#166534' }}>
+                        SIMULATED PAYOUT RESULT
+                      </span>
+                      <span style={{
+                        background: sim.isAchieved ? '#dcfce7' : '#fef3c7',
+                        color: sim.isAchieved ? '#15803d' : '#b45309',
+                        padding: '3px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.74rem',
+                        fontWeight: '800'
+                      }}>
+                        {sim.isAchieved ? '🟢 Target Achieved' : '🟠 Below Target'}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '2.2rem', fontWeight: '900', color: '#047857', marginBottom: '6px' }}>
+                      ₹{sim.totalSalary.toLocaleString('en-IN')}
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', color: '#475569', marginBottom: '8px' }}>
+                      Target: ₹{sim.target.toLocaleString('en-IN')} • Revenue: ₹{simRevenue.toLocaleString('en-IN')}
+                    </div>
+
+                    <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.78rem', fontFamily: 'monospace', color: '#1e293b' }}>
+                      {sim.formula}
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
+
         </div>
       )}
 
