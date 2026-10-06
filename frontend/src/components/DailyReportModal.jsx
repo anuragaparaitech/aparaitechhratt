@@ -128,9 +128,17 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
     }))
   }
 
-  const onbCount = Math.max(0, parseInt(formData.onboardingConversions, 10) || 0)
-  const finCount = Math.max(0, parseInt(formData.finalizeConversions, 10) || 0)
-  const fullCount = Math.max(0, parseInt(formData.fullConversions, 10) || 0)
+  const normalizeConversionVal = (val, rate) => {
+    const num = Math.max(0, parseInt(val, 10) || 0)
+    if (num >= rate) {
+      return num % rate === 0 ? num / rate : Math.round(num / rate)
+    }
+    return num
+  }
+
+  const onbCount = normalizeConversionVal(formData.onboardingConversions, 1500)
+  const finCount = normalizeConversionVal(formData.finalizeConversions, 4500)
+  const fullCount = normalizeConversionVal(formData.fullConversions, 6000)
   const totalConversions = onbCount + finCount + fullCount
   const revenueEst = (onbCount * 1500) + (finCount * 4500) + (fullCount * 6000)
 
@@ -150,6 +158,9 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
       const payload = {
         ...formData,
         reportDate,
+        onboardingConversions: onbCount,
+        finalizeConversions: finCount,
+        fullConversions: fullCount,
         todayConversions: totalConversions
       }
       if (isAdmin && (initialReport?.employeeEmail || targetEmployee?.email)) {
@@ -474,8 +485,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
               {/* 1st Part Onboarding */}
               <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '9px 10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0369a1' }}>1st Part Onboarding</span>
-                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#e0f2fe', color: '#0284c7', padding: '1px 5px', borderRadius: '4px' }}>₹1,500</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0369a1' }}>1st Onboarding</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#e0f2fe', color: '#0284c7', padding: '1px 5px', borderRadius: '4px' }}>₹1,500/student</span>
                 </div>
                 <input
                   type="number"
@@ -484,7 +495,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                   value={formData.onboardingConversions}
                   onChange={handleChange}
                   disabled={isLocked}
-                  placeholder="0"
+                  placeholder="Count (e.g. 1)"
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -501,13 +512,18 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                 <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px', textAlign: 'right', fontWeight: '600' }}>
                   = ₹{(onbCount * 1500).toLocaleString('en-IN')}
                 </div>
+                {parseInt(formData.onboardingConversions, 10) >= 1500 && (
+                  <div style={{ fontSize: '0.68rem', color: '#0284c7', marginTop: '2px', fontWeight: '700', textAlign: 'right' }}>
+                    ⚡ Converted to {onbCount} student{onbCount > 1 ? 's' : ''}
+                  </div>
+                )}
               </div>
 
               {/* 2nd Part Finalize */}
               <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '9px 10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#7c3aed' }}>2nd Part Finalize</span>
-                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#ede9fe', color: '#7c3aed', padding: '1px 5px', borderRadius: '4px' }}>₹4,500</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#7c3aed' }}>2nd Finalize</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#ede9fe', color: '#7c3aed', padding: '1px 5px', borderRadius: '4px' }}>₹4,500/student</span>
                 </div>
                 <input
                   type="number"
@@ -516,7 +532,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                   value={formData.finalizeConversions}
                   onChange={handleChange}
                   disabled={isLocked}
-                  placeholder="0"
+                  placeholder="Count (e.g. 1)"
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -533,13 +549,18 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                 <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px', textAlign: 'right', fontWeight: '600' }}>
                   = ₹{(finCount * 4500).toLocaleString('en-IN')}
                 </div>
+                {parseInt(formData.finalizeConversions, 10) >= 4500 && (
+                  <div style={{ fontSize: '0.68rem', color: '#7c3aed', marginTop: '2px', fontWeight: '700', textAlign: 'right' }}>
+                    ⚡ Converted to {finCount} student{finCount > 1 ? 's' : ''}
+                  </div>
+                )}
               </div>
 
               {/* 3rd Option Full Payment */}
               <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '9px 10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#15803d' }}>3rd Full Payment</span>
-                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#dcfce7', color: '#16a34a', padding: '1px 5px', borderRadius: '4px' }}>₹6,000</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#15803d' }}>3rd Full Pay</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: '#dcfce7', color: '#16a34a', padding: '1px 5px', borderRadius: '4px' }}>₹6,000/student</span>
                 </div>
                 <input
                   type="number"
@@ -548,7 +569,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                   value={formData.fullConversions}
                   onChange={handleChange}
                   disabled={isLocked}
-                  placeholder="0"
+                  placeholder="Count (e.g. 1)"
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -565,6 +586,11 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                 <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px', textAlign: 'right', fontWeight: '600' }}>
                   = ₹{(fullCount * 6000).toLocaleString('en-IN')}
                 </div>
+                {parseInt(formData.fullConversions, 10) >= 6000 && (
+                  <div style={{ fontSize: '0.68rem', color: '#16a34a', marginTop: '2px', fontWeight: '700', textAlign: 'right' }}>
+                    ⚡ Converted to {fullCount} student{fullCount > 1 ? 's' : ''}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -586,7 +612,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                   Total Today's Revenue Recorded:
                 </div>
                 <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                  ({onbCount} × ₹1.5k) + ({finCount} × ₹4.5k) + ({fullCount} × ₹6k)
+                  ({onbCount} student{onbCount !== 1 ? 's' : ''} × ₹1.5k) + ({finCount} × ₹4.5k) + ({fullCount} × ₹6k)
                 </div>
               </div>
               <div style={{ fontSize: '1.25rem', fontWeight: '900', letterSpacing: '-0.3px' }}>

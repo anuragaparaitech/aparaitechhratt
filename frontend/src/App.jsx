@@ -732,15 +732,6 @@ function App() {
                     </button>
 
                     <button
-                      className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
-                      style={sidebarBtnStyle(activeTab === 'leaderboard')}
-                      onClick={() => setActiveTab('leaderboard')}
-                    >
-                      <i className="fas fa-trophy" style={{ width: '16px', textAlign: 'center' }}></i>
-                      Leaderboard
-                    </button>
-
-                    <button
                       className={`sidebar-nav-btn ${activeTab === 'revenue' ? 'active' : ''}`}
                       style={sidebarBtnStyle(activeTab === 'revenue')}
                       onClick={() => setActiveTab('revenue')}
@@ -989,7 +980,7 @@ function App() {
                             setActiveTab('adminPanel')
                             setAdminSection('dailyReports')
                           } else if (targetTab === 'leaderboard') {
-                            setActiveTab('leaderboard')
+                            setActiveTab('performance')
                           } else if (targetTab === 'revenue') {
                             setActiveTab('adminPanel')
                             setAdminSection('revenue')
@@ -1041,15 +1032,7 @@ function App() {
                     />
                   )}
 
-                  {/* 5. Live Leaderboard */}
-                  {activeTab === 'leaderboard' && (
-                    <LeaderboardView
-                      currentUser={currentUser}
-                      showToast={showToast}
-                    />
-                  )}
-
-                  {/* 6. Revenue Tracker */}
+                  {/* 5. Revenue Tracker */}
                   {activeTab === 'revenue' && (
                     <RevenueTrackerView
                       currentUser={currentUser}
@@ -1513,18 +1496,6 @@ function App() {
                         >
                           <i className="fas fa-chart-line" style={{ width: '18px', textAlign: 'center' }}></i>
                           My Performance
-                        </button>
-
-                        <button
-                          className={`sidebar-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
-                          style={sidebarBtnStyle(activeTab === 'leaderboard')}
-                          onClick={() => {
-                            setActiveTab('leaderboard')
-                            setMobileDrawerOpen(false)
-                          }}
-                        >
-                          <i className="fas fa-trophy" style={{ width: '18px', textAlign: 'center' }}></i>
-                          Leaderboard
                         </button>
 
                         <button

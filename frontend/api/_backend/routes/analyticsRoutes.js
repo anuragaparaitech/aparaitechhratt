@@ -4,7 +4,9 @@ import {
   getMyPerformance,
   getLeaderboard,
   getRevenueTracker,
-  getTeamOverview
+  getTeamOverview,
+  getInternTarget,
+  setInternTarget
 } from '../controllers/analyticsController.js'
 
 const router = express.Router()
@@ -15,5 +17,7 @@ router.get('/my-performance', getMyPerformance)
 router.get('/leaderboard', getLeaderboard)
 router.get('/revenue', getRevenueTracker)
 router.get('/team-overview', getTeamOverview)
+router.get('/target', getInternTarget)
+router.post('/target', setInternTarget)
 
 export default router

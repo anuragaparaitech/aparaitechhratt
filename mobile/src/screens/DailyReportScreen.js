@@ -95,9 +95,14 @@ export default function DailyReportScreen({ navigation }) {
     }
   };
 
-  const onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0);
-  const finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0);
-  const fullNum = Math.max(0, parseInt(fullConversions, 10) || 0);
+  let onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0);
+  let finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0);
+  let fullNum = Math.max(0, parseInt(fullConversions, 10) || 0);
+
+  if (onbNum >= 1500) onbNum = onbNum % 1500 === 0 ? onbNum / 1500 : Math.round(onbNum / 1500);
+  if (finNum >= 4500) finNum = finNum % 4500 === 0 ? finNum / 4500 : Math.round(finNum / 4500);
+  if (fullNum >= 6000) fullNum = fullNum % 6000 === 0 ? fullNum / 6000 : Math.round(fullNum / 6000);
+
   const totalConversions = onbNum + finNum + fullNum;
   const calculatedRevenue = (onbNum * 1500) + (finNum * 4500) + (fullNum * 6000);
 

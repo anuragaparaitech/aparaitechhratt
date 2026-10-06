@@ -112,6 +112,18 @@ export const submitDailyReport = async (req, res) => {
     let onbNum = Math.max(0, parseInt(onboardingConversions, 10) || 0)
     let finNum = Math.max(0, parseInt(finalizeConversions, 10) || 0)
     let fullNum = Math.max(0, parseInt(fullConversions, 10) || 0)
+
+    // Safeguard: If intern entered the rupee amount instead of count of conversions (e.g. 1500 instead of 1)
+    if (onbNum >= 1500) {
+      onbNum = onbNum % 1500 === 0 ? onbNum / 1500 : Math.round(onbNum / 1500)
+    }
+    if (finNum >= 4500) {
+      finNum = finNum % 4500 === 0 ? finNum / 4500 : Math.round(finNum / 4500)
+    }
+    if (fullNum >= 6000) {
+      fullNum = fullNum % 6000 === 0 ? fullNum / 6000 : Math.round(fullNum / 6000)
+    }
+
     let conversionsNum = onbNum + finNum + fullNum
     let revenueCalculated = (onbNum * 1500) + (finNum * 4500) + (fullNum * 6000)
 
@@ -297,6 +309,17 @@ export const updateDailyReportByAdmin = async (req, res) => {
     let onb = onboardingConversions !== undefined ? Math.max(0, parseInt(onboardingConversions, 10) || 0) : (report.onboardingConversions || 0)
     let fin = finalizeConversions !== undefined ? Math.max(0, parseInt(finalizeConversions, 10) || 0) : (report.finalizeConversions || 0)
     let full = fullConversions !== undefined ? Math.max(0, parseInt(fullConversions, 10) || 0) : (report.fullConversions || 0)
+
+    // Safeguard: If intern entered the rupee amount instead of count of conversions
+    if (onb >= 1500) {
+      onb = onb % 1500 === 0 ? onb / 1500 : Math.round(onb / 1500)
+    }
+    if (fin >= 4500) {
+      fin = fin % 4500 === 0 ? fin / 4500 : Math.round(fin / 4500)
+    }
+    if (full >= 6000) {
+      full = full % 6000 === 0 ? full / 6000 : Math.round(full / 6000)
+    }
 
     report.onboardingConversions = onb
     report.finalizeConversions = fin

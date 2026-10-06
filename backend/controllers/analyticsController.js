@@ -4,6 +4,7 @@ import Attendance from '../models/Attendance.js'
 import ActiveSession from '../models/ActiveSession.js'
 import Employee from '../models/Employee.js'
 import ProductConversion from '../models/ProductConversion.js'
+import SystemSetting from '../models/SystemSetting.js'
 
 // Helper for IST Date
 const getKolkataDateStr = () => {
@@ -71,9 +72,24 @@ export const getMyPerformance = async (req, res) => {
       totalBounces += m.bounceCount || 0
     })
 
-    // Target (Monthly benchmark: 10 conversions = ₹60,000)
-    const targetConversions = 10
-    const targetRevenue = targetConversions * 6000
+    // Target (Monthly benchmark configured by Admin)
+    let targetConversions = 10
+    let targetRevenue = 60000
+    let targetCalls = 500
+    let targetNote = 'Monthly Intern Benchmark Goal'
+
+    try {
+      const setting = await SystemSetting.findOne({ key: 'intern_monthly_target' })
+      if (setting && setting.value) {
+        if (setting.value.targetConversions) targetConversions = Number(setting.value.targetConversions)
+        if (setting.value.targetRevenue !== undefined) targetRevenue = Number(setting.value.targetRevenue)
+        if (setting.value.targetCalls) targetCalls = Number(setting.value.targetCalls)
+        if (setting.value.note) targetNote = setting.value.note
+      }
+    } catch (sErr) {
+      console.warn('SystemSetting lookup notice:', sErr.message)
+    }
+
     const targetAchievedPercent = Math.min(100, Math.round((monthlyConversions / targetConversions) * 100))
 
     // Last 7 days trend
@@ -123,7 +139,9 @@ export const getMyPerformance = async (req, res) => {
         targets: {
           targetConversions,
           targetRevenue,
-          achievedPercent: targetAchievedPercent
+          targetCalls,
+          achievedPercent: targetAchievedPercent,
+          note: targetNote
         },
         trends
       }
@@ -464,3 +482,64 @@ export const getTeamOverview = async (req, res) => {
     })
   }
 }
+
+/**
+ * 5. GET INTERN MONTHLY TARGET (Configured by Admin)
+ */
+export const getInternTarget = async (req, res) => {
+  try {
+    const setting = await SystemSetting.findOne({ key: 'intern_monthly_target' })
+    const target = setting ? setting.value : {
+      targetConversions: 10,
+      targetRevenue: 60000,
+      targetCalls: 500,
+      note: 'Monthly Intern Benchmark Goal'
+    }
+    return res.status(200).json({ success: true, target })
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message })
+  }
+}
+
+/**
+ * 6. SET INTERN MONTHLY TARGET (Admin Only)
+ */
+export const setInternTarget = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'hr') {
+      return res.status(403).json({ success: false, message: 'Only admin can configure intern targets' })
+    }
+
+    const { targetConversions, targetRevenue, targetCalls, note } = req.body
+    const targetConvsNum = Math.max(1, parseInt(targetConversions, 10) || 10)
+    const targetRevNum = targetRevenue !== undefined && targetRevenue !== '' 
+      ? Math.max(0, parseInt(targetRevenue, 10)) 
+      : targetConvsNum * 6000
+    const targetCallsNum = Math.max(0, parseInt(targetCalls, 10) || 500)
+
+    const updatedSetting = await SystemSetting.findOneAndUpdate(
+      { key: 'intern_monthly_target' },
+      {
+        key: 'intern_monthly_target',
+        value: {
+          targetConversions: targetConvsNum,
+          targetRevenue: targetRevNum,
+          targetCalls: targetCallsNum,
+          note: note || ''
+        },
+        updatedBy: req.user.name || req.user.email,
+        updatedAt: new Date()
+      },
+      { upsert: true, new: true }
+    )
+
+    return res.status(200).json({
+      success: true,
+      message: 'Intern monthly target updated successfully!',
+      target: updatedSetting.value
+    })
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message })
+  }
+}
+

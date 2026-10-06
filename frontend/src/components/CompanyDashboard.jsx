@@ -11,7 +11,6 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
   const [loading, setLoading] = useState(true)
   const [todayReportStatus, setTodayReportStatus] = useState({ submitted: false, report: null })
   const [performance, setPerformance] = useState(null)
-  const [miniLeaderboard, setMiniLeaderboard] = useState([])
   const [todayAttendance, setTodayAttendance] = useState(null)
   const [activeSession, setActiveSession] = useState(null)
   const [teamOverview, setTeamOverview] = useState(null)
@@ -40,13 +39,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
         setPerformance(perfRes.data)
       }
 
-      // 3. Fetch Mini Leaderboard (Top 3 for today/month)
-      const leadRes = await analyticsAPI.getLeaderboard('month').catch(() => null)
-      if (leadRes?.success && leadRes.data?.byConversions) {
-        setMiniLeaderboard(leadRes.data.byConversions.slice(0, 3))
-      }
-
-      // 4. Fetch Attendance status for today
+      // 3. Fetch Attendance status for today
       const attData = await attendanceAPI.getAll({ email: currentUser.email }).catch(() => null)
       if (attData) {
         const records = Array.isArray(attData) ? attData : (attData.data || attData.records || [])
@@ -721,169 +714,115 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
         </div>
       </div>
 
-      {/* ── 5. MINI LEADERBOARD & REVENUE PREVIEW ROW ────────────────────────── */}
+      {/* ── 5. INTERN MONTHLY TARGET & REVENUE TRACKER ROW ────────────────────────── */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))',
+        background: '#ffffff',
+        borderRadius: '20px',
+        padding: '1.5rem',
+        border: '1px solid #e2e8f0',
+        boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.03)',
+        display: 'flex',
+        flexDirection: 'column',
         gap: '1.25rem'
       }}>
-        {/* Leaderboard Card */}
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '20px',
-          padding: '1.5rem',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.03)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <div style={{ fontWeight: '700', fontSize: '1rem', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <i className="fas fa-trophy" style={{ color: '#eab308' }}></i>
-              Top Performers (This Month)
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <i className="fas fa-bullseye" style={{ color: '#2563eb' }}></i>
+              Intern Monthly Target & Performance Tracker
             </div>
-            <button
-              onClick={() => onNavigate('leaderboard')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#2563eb',
-                fontWeight: '700',
-                fontSize: '0.8rem',
-                cursor: 'pointer'
-              }}
-            >
-              View Full Leaderboard ↗
-            </button>
+            <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
+              {performance?.targets?.note || 'Benchmark decided by Management for this active month'}
+            </div>
           </div>
-
-          {miniLeaderboard.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '1.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>
-              No conversion records submitted yet this month. Be the first!
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {miniLeaderboard.map((item, idx) => (
-                <div
-                  key={item._id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: '12px',
-                    background: idx === 0 ? '#fefce8' : '#f8fafc',
-                    border: `1px solid ${idx === 0 ? '#fef08a' : '#e2e8f0'}`
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      background: idx === 0 ? '#eab308' : (idx === 1 ? '#94a3b8' : '#cd7f32'),
-                      color: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: '800',
-                      fontSize: '0.8rem'
-                    }}>
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#0a192f' }}>
-                        {item.name}
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                        {item.team || 'BDA'} • {item.totalCalls || 0} calls
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: '800', fontSize: '0.92rem', color: '#2563eb' }}>
-                      {item.totalConversions} Convs
-                    </div>
-                    <div style={{ fontSize: '0.74rem', color: '#16a34a', fontWeight: '600' }}>
-                      ₹{(item.totalRevenue || 0).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <button
+            onClick={() => onNavigate('revenue')}
+            style={{
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              color: '#1d4ed8',
+              fontWeight: '700',
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            Detailed Breakdown ↗
+          </button>
         </div>
 
-        {/* Revenue Tracker Widget */}
+        {/* Dynamic Target Metrics Grid */}
         <div style={{
-          background: '#ffffff',
-          borderRadius: '20px',
-          padding: '1.5rem',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem'
         }}>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div style={{ fontWeight: '700', fontSize: '1rem', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <i className="fas fa-chart-line" style={{ color: '#16a34a' }}></i>
-                Revenue Tracker Summary
-              </div>
-              <button
-                onClick={() => onNavigate('revenue')}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#2563eb',
-                  fontWeight: '700',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Detailed Breakdown ↗
-              </button>
+          {/* Target Conversions */}
+          <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Target Conversions</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>{performance?.monthly?.totalConversions || 0}</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b' }}>/ {performance?.targets?.targetConversions || 10}</span>
             </div>
-
-            <div style={{
-              background: '#f8fafc',
-              borderRadius: '14px',
-              padding: '1rem',
-              border: '1px solid #e2e8f0',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Conversion Multiplier Formula</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0a192f', margin: '4px 0' }}>
-                1 Confirmed Product = ₹6,000 Revenue
-              </div>
-              <div style={{ fontSize: '0.78rem', color: '#475569' }}>
-                Every product conversion recorded in your daily report automatically accrues ₹6,000 towards your and the company's verified portfolio.
-              </div>
-            </div>
-
-            {/* Target Progress Bar */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
-                <span style={{ fontWeight: '600', color: '#475569' }}>Monthly Target Goal (10 Convs = ₹60,000)</span>
-                <span style={{ fontWeight: '800', color: '#2563eb' }}>
-                  {performance?.monthly?.totalConversions || 0} / 10
-                </span>
-              </div>
-              <div style={{
-                height: '10px',
-                borderRadius: '5px',
-                background: '#e2e8f0',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${Math.min(100, ((performance?.monthly?.totalConversions || 0) / 10) * 100)}%`,
-                  background: 'linear-gradient(90deg, #2563eb, #10b981)',
-                  borderRadius: '5px',
-                  transition: 'width 0.5s ease-out'
-                }} />
-              </div>
+            <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '600', marginTop: '2px' }}>
+              Goal: {performance?.targets?.targetConversions || 10} product enrollments
             </div>
           </div>
+
+          {/* Target Revenue */}
+          <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Target Revenue</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#16a34a' }}>₹{(performance?.monthly?.totalRevenue || 0).toLocaleString('en-IN')}</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#64748b' }}>/ ₹{(performance?.targets?.targetRevenue || ((performance?.targets?.targetConversions || 10) * 6000)).toLocaleString('en-IN')}</span>
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: '600', marginTop: '2px' }}>
+              Admin set monthly revenue benchmark
+            </div>
+          </div>
+
+          {/* Target Calls */}
+          <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Target Connected Calls</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>{performance?.monthly?.totalCalls || 0}</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b' }}>/ {performance?.targets?.targetCalls || 500}</span>
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#7c3aed', fontWeight: '600', marginTop: '2px' }}>
+              Active calling outreach requirement
+            </div>
+          </div>
+        </div>
+
+        {/* Target Progress Bar */}
+        <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '14px 16px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '8px' }}>
+            <span style={{ fontWeight: '700', color: '#334155' }}>
+              Monthly Benchmark Progress: {performance?.monthly?.totalConversions || 0} of {performance?.targets?.targetConversions || 10} Conversions
+            </span>
+            <span style={{ fontWeight: '800', color: '#2563eb' }}>
+              {Math.min(100, Math.round(((performance?.monthly?.totalConversions || 0) / (performance?.targets?.targetConversions || 10)) * 100))}% Completed
+            </span>
+          </div>
+          <div style={{
+            height: '12px',
+            borderRadius: '6px',
+            background: '#e2e8f0',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${Math.min(100, Math.round(((performance?.monthly?.totalConversions || 0) / (performance?.targets?.targetConversions || 10)) * 100))}%`,
+              background: 'linear-gradient(90deg, #2563eb, #10b981)',
+              borderRadius: '6px',
+              transition: 'width 0.5s ease-out'
+            }} />
+          </div>
+          <div style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '8px' }}>
+            📌 1 Product Conversion = ₹6,000 Revenue (split as ₹1,500 1st Onboarding + ₹4,500 Finalize). Keep submitting verified daily reports to update your progress.
+          </div>
+        </div>
 
           <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
             <button
@@ -908,7 +847,6 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
             </button>
           </div>
         </div>
-      </div>
 
       {/* ── MODALS ──────────────────────────────────────────────────────────── */}
       <DailyReportModal

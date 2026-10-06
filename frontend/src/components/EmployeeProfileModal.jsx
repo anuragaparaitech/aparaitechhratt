@@ -28,6 +28,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
 
   // ── Profile fields state ──────────────────────────────────────────────────
   const [name, setName] = useState('')
+  const [empId, setEmpId] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [dob, setDob] = useState('')
@@ -69,6 +70,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
   useEffect(() => {
     if (isOpen && employee) {
       setName(employee.name || '')
+      setEmpId(employee.empId || '')
       setEmail(employee.email || '')
       setPhone(employee.phone || '')
       setDob(employee.dob || '')
@@ -282,6 +284,10 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
         department,
         shift,
         status
+      }
+
+      if (isAdmin && empId.trim()) {
+        updateData.empId = empId.trim().toUpperCase()
       }
 
       if (isAdmin && editPassword.trim()) {
@@ -664,7 +670,20 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                     </div>
 
                     <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
-                      <div style={{ flex: 1, minWidth: '220px' }}>
+                      {isAdmin && (
+                        <div style={{ width: '140px' }}>
+                          <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Emp ID</label>
+                          <input
+                            type="text"
+                            className="auth-input"
+                            value={empId}
+                            onChange={e => setEmpId(e.target.value.toUpperCase())}
+                            placeholder="e.g. AP7096"
+                            style={{ margin: '4px 0 0', width: '100%', fontWeight: '700' }}
+                          />
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: '180px' }}>
                         <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Full Name *</label>
                         <input
                           type="text"

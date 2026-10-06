@@ -27,19 +27,19 @@ const DEFAULT_PWD = 'Aparaitech123@'
 // - BDA / Sales Active Members -> Shift 2 (11:00 AM - 05:00 PM)
 const activeEmployeesList = [
   { empId: 'AP7086', name: 'Disha Kale', email: 'kaledisha868@gmail.com', phone: '8767416802', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', dob: '2001-08-03', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7088', name: 'Shweta Vijay Chougale', email: 'shwetachougale2004@gmail.com', phone: '8010252987', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7089', name: 'Dnyaneshwari Sanjay Dandagawhal', email: 'dandagaehaldnyaneshwari@gmail.com', phone: '9307293946', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7090', name: 'Sejal Milind Pethe', email: 'sejalpethe640@gmail.com', phone: '7058668138', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7091', name: 'Anmol Mohan Ugale', email: 'anmolugale13@gmail.com', phone: '9021625125', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7092', name: 'Shraddha Dipak Dhepe', email: 'shraddhadhepe610@gmail.com', phone: '8208591006', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', dob: '2004-06-12', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7094', name: 'Shital Kantilal Bhade', email: 'shitalbhade74@gmail.com', phone: '8830292849', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7095', name: 'Vaishnavi Deepak Patil', email: 'patilvaishnavi30102003@gmail.com', phone: '7709232088', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7096', name: 'Ashvini Sanjay Rajput', email: 'rajputashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7096', name: 'Ashvini Sanjay Rajput', email: 'rajputaashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7097', name: 'Vikesh Kumar', email: 'kvikesh535@gmail.com', phone: '8793039515', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', dob: '2001-04-02', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', dob: '2004-03-21', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7100', name: 'Tanmay Bhapkar', email: 'bhapkartanmay88@gmail.com', phone: '9172875676', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   // Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
   { empId: 'AP7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', phone: '7666921571', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
@@ -47,7 +47,8 @@ const activeEmployeesList = [
   { empId: 'AP7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', department: 'Management', designation: 'Technical Lead & Management', role: 'manager', status: 'active', shift: 'shift_1' },
   { empId: 'AP7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
   { empId: 'AP7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
-  { empId: 'AP7103', name: 'Liza', email: 'liza@aparaitech.com', department: 'BDA', designation: 'BDA Associate', status: 'active', shift: 'shift_2' }
+  { empId: 'AP7103', name: 'Komal Mallikarjun Talwar', email: 'talwarkomalmk@gmail.com', phone: '9699248913', dob: '2004-07-17', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7104', name: 'Sanika Panaskar', email: 'sanikapanskar19@gmail.com', phone: '9325069174', dob: '2004-06-05', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' }
 ]
 
 
@@ -81,66 +82,22 @@ export const seedDatabase = async () => {
         status: 'active'
       })
       console.log('✅ Admin account seeded successfully!')
-    } else {
-      // If it exists but has a different email/password than configured in .env, update it so it matches .env!
-      let needUpdate = false
-      if (adminExists.email !== adminEmail.toLowerCase() || adminExists.role !== 'admin') {
-        needUpdate = true
-      } else {
-        const isBcryptHash = (pwd) => /^\$2[ayb]\$.{56}$/.test(pwd)
-        let isMatch = false
-        if (isBcryptHash(adminExists.password)) {
-          isMatch = await bcrypt.compare(adminPassword, adminExists.password)
-        } else {
-          isMatch = adminExists.password === adminPassword
-        }
-        if (!isMatch) needUpdate = true
-      }
-
-      if (needUpdate) {
-        console.log(`🔄 Updating existing admin account to match configured .env values...`)
-        adminExists.email = adminEmail.toLowerCase()
-        adminExists.password = await bcrypt.hash(adminPassword, salt)
-        adminExists.plainPassword = adminPassword
-        adminExists.passcode = adminExists.passcode || '1234'
-        adminExists.role = 'admin'
-        await adminExists.save()
-        console.log('✅ Admin account credentials updated successfully!')
-      }
     }
 
     const hashedDefaultPassword = await bcrypt.hash(DEFAULT_PWD, salt)
 
-    // 2. Upsert/seed active employees (7086-7102 + Anurag Nand, Vivek Jagtap, Mahesh)
-    const activeEmails = []
+    // 2. Only seed initial employees if they do not exist yet!
+    // Never overwrite an existing employee's details because admin or user may have edited them.
     for (const emp of activeEmployeesList) {
-      activeEmails.push(emp.email.toLowerCase())
-      if (emp.email === 'anunand2004@gmail.com') {
-        activeEmails.push('anunanad2004@gmail.com')
-      }
-
       const query = {
         $or: [
           { email: emp.email.toLowerCase() },
-          ...(emp.email === 'anunand2004@gmail.com' ? [{ email: 'anunanad2004@gmail.com' }] : []),
           { empId: emp.empId }
         ]
       }
 
       const existingEmp = await Employee.findOne(query)
-      if (existingEmp) {
-        existingEmp.status = 'active'
-        existingEmp.name = emp.name
-        existingEmp.email = emp.email.toLowerCase()
-        if (emp.role) existingEmp.role = emp.role
-        if (emp.phone) existingEmp.phone = emp.phone
-        if (emp.department) existingEmp.department = emp.department
-        if (emp.designation) existingEmp.designation = emp.designation
-        existingEmp.shift = emp.shift || (existingEmp.department === 'Development' ? 'shift_1' : 'shift_2')
-        if (!existingEmp.plainPassword) existingEmp.plainPassword = DEFAULT_PWD
-        if (!existingEmp.passcode) existingEmp.passcode = '1234'
-        await existingEmp.save()
-      } else {
+      if (!existingEmp) {
         await Employee.create({
           empId: emp.empId,
           name: emp.name,
@@ -151,6 +108,7 @@ export const seedDatabase = async () => {
           department: emp.department || 'Development',
           designation: emp.designation || '',
           phone: emp.phone || '',
+          dob: emp.dob || '',
           role: emp.role || 'employee',
           status: 'active',
           shift: emp.shift || (emp.department === 'Development' ? 'shift_1' : 'shift_2')
@@ -158,25 +116,18 @@ export const seedDatabase = async () => {
       }
     }
 
-    // 3. Remove only explicitly inactive employee records
-    const deleteResult = await Employee.deleteMany({
-      role: { $ne: 'admin' },
-      status: 'inactive'
-    })
-    if (deleteResult.deletedCount > 0) {
-      console.log(`🗑️ Removed ${deleteResult.deletedCount} inactive employee records from database.`)
-    }
-
-    console.log('✅ Employee sync completed: Active employees updated, inactive employees removed.')
+    console.log('✅ Database seed check completed.')
   } catch (error) {
     console.error('❌ Seeding error:', error.message)
   }
 }
 
 export const getAllEmployees = async (req, res) => {
-  console.log(`[API Request] GET /api/employees received.`)
   try {
-    await seedDatabase()
+    const count = await Employee.countDocuments()
+    if (count === 0) {
+      await seedDatabase()
+    }
     const employees = await Employee.find({})
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
     const formattedEmployees = employees.map(emp => {
@@ -187,7 +138,6 @@ export const getAllEmployees = async (req, res) => {
       }
       return obj
     })
-    console.log(`[API Success] GET /api/employees retrieved: ${formattedEmployees.length} employees.`)
     res.status(200).json({ employees: formattedEmployees })
   } catch (error) {
     console.error(`[API Error] GET /api/employees failed:`, error.stack)
@@ -303,33 +253,110 @@ export const deleteAllEmployees = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
   const { email } = req.params
-  const { name, phone, designation, department, status, profileImageBase64, dob, shift, password, passcode } = req.body
+  const { 
+    name, 
+    email: newEmail, 
+    empId: newEmpId,
+    phone, 
+    designation, 
+    department, 
+    status, 
+    profileImageBase64, 
+    dob, 
+    shift, 
+    password, 
+    passcode 
+  } = req.body
 
   try {
-    const employee = await Employee.findOne({ email: email.toLowerCase() })
+    const target = (email || '').trim().toLowerCase()
+    const employee = await Employee.findOne({
+      $or: [
+        { email: target },
+        { empId: target.toUpperCase() }
+      ]
+    })
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' })
     }
 
-    if (name !== undefined) employee.name = name
-    if (phone !== undefined) employee.phone = phone
-    if (dob !== undefined) employee.dob = dob
-    if (designation !== undefined) employee.designation = designation
-    if (department !== undefined) employee.department = department
+    const oldEmail = employee.email.toLowerCase()
+    const oldEmpId = employee.empId
+
+    // 1. If email is being changed
+    if (newEmail && newEmail.trim().toLowerCase() !== oldEmail) {
+      const normalizedNewEmail = newEmail.trim().toLowerCase()
+      const conflict = await Employee.findOne({
+        email: normalizedNewEmail,
+        _id: { $ne: employee._id }
+      })
+      if (conflict) {
+        return res.status(400).json({ message: `Email ${normalizedNewEmail} is already in use by ${conflict.name}` })
+      }
+      employee.email = normalizedNewEmail
+
+      // Cascade email updates across other collections
+      try {
+        await Attendance.updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } })
+        await ActiveSession.updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } })
+        const db = employee.db
+        if (db) {
+          await db.collection('dailyreports').updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } }).catch(() => {})
+          await db.collection('leaves').updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } }).catch(() => {})
+          await db.collection('tasks').updateMany({ assignedTo: oldEmail }, { $set: { assignedTo: normalizedNewEmail } }).catch(() => {})
+          await db.collection('messages').updateMany({ senderEmail: oldEmail }, { $set: { senderEmail: normalizedNewEmail } }).catch(() => {})
+          await db.collection('messages').updateMany({ recipientEmail: oldEmail }, { $set: { recipientEmail: normalizedNewEmail } }).catch(() => {})
+          await db.collection('leads').updateMany({ assignedToEmail: oldEmail }, { $set: { assignedToEmail: normalizedNewEmail } }).catch(() => {})
+        }
+      } catch (cascadeErr) {
+        console.warn('Notice: cascade email update error:', cascadeErr.message)
+      }
+    }
+
+    // 2. If empId is being changed
+    if (newEmpId && newEmpId.trim().toUpperCase() !== oldEmpId) {
+      const normalizedNewEmpId = newEmpId.trim().toUpperCase()
+      const empConflict = await Employee.findOne({
+        empId: normalizedNewEmpId,
+        _id: { $ne: employee._id }
+      })
+      if (empConflict) {
+        return res.status(400).json({ message: `Employee ID ${normalizedNewEmpId} is already in use by ${empConflict.name}` })
+      }
+      employee.empId = normalizedNewEmpId
+
+      try {
+        await Attendance.updateMany({ empId: oldEmpId }, { $set: { empId: normalizedNewEmpId } })
+      } catch (cascadeErr) {
+        console.warn('Notice: cascade empId update error:', cascadeErr.message)
+      }
+    }
+
+    if (name !== undefined) employee.name = name.trim()
+    if (phone !== undefined) employee.phone = phone.trim()
+    if (dob !== undefined) {
+      let normalizedDob = dob.trim()
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(normalizedDob)) {
+        const [d, m, y] = normalizedDob.split('/')
+        normalizedDob = `${y}-${m}-${d}`
+      }
+      employee.dob = normalizedDob
+    }
+    if (designation !== undefined) employee.designation = designation.trim()
+    if (department !== undefined) employee.department = department.trim()
     if (status !== undefined) employee.status = status
     if (shift !== undefined) employee.shift = shift
-    if (password) {
+    if (password && password.trim()) {
       const salt = await bcrypt.genSalt(10)
-      employee.password = await bcrypt.hash(password, salt)
-      employee.plainPassword = password
+      employee.password = await bcrypt.hash(password.trim(), salt)
+      employee.plainPassword = password.trim()
     }
-    if (passcode !== undefined && String(passcode).length === 4) {
-      employee.passcode = String(passcode)
+    if (passcode !== undefined && String(passcode).trim().length === 4) {
+      employee.passcode = String(passcode).trim()
     }
 
     // Handle base64 profile image if provided
     if (profileImageBase64) {
-      // Basic MIME validation
       if (!profileImageBase64.startsWith('data:image/')) {
         return res.status(400).json({ message: 'Invalid profile image format. Must be a valid image data URL.' })
       }
@@ -371,8 +398,12 @@ export const updateEmployee = async (req, res) => {
         }
       }
 
-      fs.writeFileSync(filePath, imageBuffer)
-      employee.profileImageUrl = `/profile-uploads/${filename}`
+      try {
+        fs.writeFileSync(filePath, imageBuffer)
+        employee.profileImageUrl = `/profile-uploads/${filename}`
+      } catch (writeErr) {
+        console.warn('Notice: profile image disk write skipped:', writeErr.message)
+      }
     }
 
     await employee.save()

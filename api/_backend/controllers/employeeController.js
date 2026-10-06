@@ -398,8 +398,12 @@ export const updateEmployee = async (req, res) => {
         }
       }
 
-      fs.writeFileSync(filePath, imageBuffer)
-      employee.profileImageUrl = `/profile-uploads/${filename}`
+      try {
+        fs.writeFileSync(filePath, imageBuffer)
+        employee.profileImageUrl = `/profile-uploads/${filename}`
+      } catch (writeErr) {
+        console.warn('Notice: profile image disk write skipped:', writeErr.message)
+      }
     }
 
     await employee.save()

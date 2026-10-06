@@ -294,6 +294,14 @@ export const analyticsAPI = {
   getTeamOverview: async () => {
     const response = await api.get('/api/analytics/team-overview')
     return response.data
+  },
+  getInternTarget: async () => {
+    const response = await api.get('/api/analytics/target')
+    return response.data
+  },
+  setInternTarget: async (targetData) => {
+    const response = await api.post('/api/analytics/target', targetData)
+    return response.data
   }
 }
 

@@ -67,6 +67,13 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   const [mailSearch, setMailSearch] = useState('')
   const [mailStatusFilter, setMailStatusFilter] = useState('')
   const [adminEditingReport, setAdminEditingReport] = useState(null)
+  const [internTargetData, setInternTargetData] = useState({
+    targetConversions: 10,
+    targetRevenue: 60000,
+    targetCalls: 500,
+    note: 'Complete monthly intern benchmark'
+  })
+  const [savingInternTarget, setSavingInternTarget] = useState(false)
 
   // View More / View Less Pagination Limits
   const [empLimit, setEmpLimit] = useState(5)
@@ -125,7 +132,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     setLoadingLogs(true)
     setLogsError(false)
     try {
-      const [empsData, attsData, holsData, missingData, dailyData, mailData, teamData, revData] = await Promise.all([
+      const [empsData, attsData, holsData, missingData, dailyData, mailData, teamData, revData, targetRes] = await Promise.all([
         employeeAPI.getAll().catch(() => ({ employees: [] })),
         attendanceAPI.getAll().catch(() => ({ records: [], liveSessions: [] })),
         holidayAPI.getAll().catch(() => ({ holidays: [] })),
@@ -133,7 +140,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         reportsAPI.getDaily().catch(() => ({ data: [] })),
         reportsAPI.getMailBlast().catch(() => ({ data: [] })),
         analyticsAPI.getTeamOverview().catch(() => null),
-        analyticsAPI.getRevenueTracker().catch(() => null)
+        analyticsAPI.getRevenueTracker().catch(() => null),
+        analyticsAPI.getInternTarget().catch(() => null)
       ])
 
       setEmployees(empsData.employees || [])
@@ -146,6 +154,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       setMailBlastReports(mailData.data || [])
       if (teamData?.success) setTeamOverview(teamData.data)
       if (revData?.success) setRevenueData(revData.data)
+      if (targetRes?.success && targetRes.target) setInternTargetData(targetRes.target)
     } catch (err) {
       console.error(err)
       setLogsError(true)
@@ -319,6 +328,25 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     } catch (err) {
       console.error(err)
       showToast('❌ Failed to delete employee', '#dc2626')
+    }
+  }
+
+  const handleSaveInternTarget = async (e) => {
+    e.preventDefault()
+    setSavingInternTarget(true)
+    try {
+      const res = await analyticsAPI.setInternTarget(internTargetData)
+      if (res?.success) {
+        showToast('🎯 Intern monthly target updated successfully!', '#16a34a')
+        if (res.target) setInternTargetData(res.target)
+        fetchData()
+      } else {
+        showToast(res?.message || 'Failed to update target', '#ef4444')
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message || 'Error updating target', '#ef4444')
+    } finally {
+      setSavingInternTarget(false)
     }
   }
 
@@ -706,6 +734,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null, badgeColor: '#ef4444' },
           { id: 'mailBlast', icon: 'fa-mail-bulk', label: 'Mail Blasts' },
           { id: 'revenue', icon: 'fa-rupee-sign', label: 'Revenue' },
+          { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Targets', badge: 'Goal', badgeColor: '#2563eb' },
           { id: 'employees', icon: 'fa-users', label: 'Employees' },
           { id: 'attendance', icon: 'fa-calendar-check', label: 'Attendance Logs' },
           { id: 'missing', icon: 'fa-exclamation-triangle', label: 'Missing Checkouts', badge: missingCheckouts.length ? `${missingCheckouts.length}` : null, badgeColor: '#ea580c' },
@@ -1020,6 +1049,153 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           </div>
         </div>
       </>)}
+
+      {/* ── INTERN MONTHLY TARGET CONFIGURATION (When activeSection === 'internTarget') ── */}
+      {show('internTarget') && (
+        <div className="section-card" style={{
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1.5px solid #bfdbfe',
+          boxShadow: '0 4px 15px rgba(37, 99, 235, 0.08)',
+          padding: '1.5rem',
+          marginBottom: '1.5rem'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="fas fa-bullseye" style={{ color: '#2563eb' }}></i>
+                Intern Monthly Target Configuration
+              </h2>
+              <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                Admin determines the monthly targets for interns (Conversions, Revenue, Calling volume). This dynamically updates all intern & company dashboards.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{
+                background: '#eff6ff',
+                color: '#1d4ed8',
+                border: '1px solid #bfdbfe',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: '700'
+              }}>
+                <i className="fas fa-user-shield" style={{ marginRight: '4px' }}></i> Admin Managed
+              </span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveInternTarget}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
+              {/* Monthly Target Conversions */}
+              <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1e293b', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>🎯 Target Conversions <span style={{ color: '#ef4444' }}>*</span></span>
+                  <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '800' }}>{internTargetData.targetConversions || 10} Convs</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className="auth-input"
+                  value={internTargetData.targetConversions || 10}
+                  onChange={e => {
+                    const convs = Math.max(1, parseInt(e.target.value, 10) || 1)
+                    setInternTargetData(prev => ({
+                      ...prev,
+                      targetConversions: convs,
+                      targetRevenue: convs * 6000
+                    }))
+                  }}
+                  required
+                  style={{ width: '100%', marginTop: '6px', fontWeight: '700', fontSize: '1rem', padding: '8px 12px' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
+                  Benchmark student enrollments expected per intern / month
+                </div>
+              </div>
+
+              {/* Monthly Target Revenue */}
+              <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1e293b', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>💰 Target Revenue (₹) <span style={{ color: '#ef4444' }}>*</span></span>
+                  <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: '800' }}>₹{(internTargetData.targetRevenue || ((internTargetData.targetConversions || 10) * 6000)).toLocaleString('en-IN')}</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="auth-input"
+                  value={internTargetData.targetRevenue ?? ((internTargetData.targetConversions || 10) * 6000)}
+                  onChange={e => setInternTargetData(prev => ({ ...prev, targetRevenue: parseInt(e.target.value, 10) || 0 }))}
+                  required
+                  style={{ width: '100%', marginTop: '6px', fontWeight: '700', fontSize: '1rem', color: '#16a34a', padding: '8px 12px' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
+                  Auto: {internTargetData.targetConversions || 10} × ₹6,000 = ₹{((internTargetData.targetConversions || 10) * 6000).toLocaleString('en-IN')} (editable)
+                </div>
+              </div>
+
+              {/* Monthly Target Calling Outreach */}
+              <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1e293b', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>📞 Target Connected Calls</span>
+                  <span style={{ fontSize: '0.72rem', color: '#7c3aed', fontWeight: '800' }}>{internTargetData.targetCalls || 500} Calls</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="auth-input"
+                  value={internTargetData.targetCalls || 500}
+                  onChange={e => setInternTargetData(prev => ({ ...prev, targetCalls: parseInt(e.target.value, 10) || 0 }))}
+                  style={{ width: '100%', marginTop: '6px', fontWeight: '700', fontSize: '1rem', padding: '8px 12px' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
+                  Total connected candidate calls target per month
+                </div>
+              </div>
+
+              {/* Guidance / Note for Interns */}
+              <div style={{ gridColumn: '1 / -1', background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1e293b' }}>
+                  📋 Benchmark Guidance / Evaluation Note for Interns
+                </label>
+                <input
+                  type="text"
+                  className="auth-input"
+                  value={internTargetData.note || ''}
+                  onChange={e => setInternTargetData(prev => ({ ...prev, note: e.target.value }))}
+                  placeholder="e.g. Complete minimum 10 conversions (₹60,000) for certificate evaluation and performance incentive"
+                  style={{ width: '100%', marginTop: '6px', padding: '8px 12px' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
+                  This guidance note is displayed to interns on their personal performance tracking cards
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="submit"
+                disabled={savingInternTarget}
+                className="g-button"
+                style={{
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: '#ffffff',
+                  fontWeight: '700',
+                  padding: '10px 24px',
+                  borderRadius: '10px',
+                  cursor: savingInternTarget ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <i className={savingInternTarget ? 'fas fa-spinner fa-spin' : 'fas fa-save'}></i>
+                {savingInternTarget ? 'Saving Target...' : 'Save & Update Intern Target'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* ── 2. DEDICATED DAILY REPORTS SECTION (activeSection === 'dailyReports') ─ */}
       {show('dailyReports') && (<>
