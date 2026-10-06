@@ -309,7 +309,9 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       // Update local state details to display
       employee.name = res.employee.name
       employee.email = res.employee.email
+      employee.empId = res.employee.empId
       employee.phone = res.employee.phone
+      employee.dob = res.employee.dob
       employee.designation = res.employee.designation
       employee.department = res.employee.department
       employee.shift = res.employee.shift

@@ -47,7 +47,13 @@ export const enrollFace = async (req, res) => {
   }
 
   try {
-    const employee = await Employee.findOne({ email: email.toLowerCase() })
+    const rawId = (email || '').trim()
+    const employee = await Employee.findOne({
+      $or: [
+        { email: rawId.toLowerCase() },
+        { empId: rawId.toUpperCase() }
+      ]
+    })
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }
@@ -114,7 +120,13 @@ export const getEnrolledFace = async (req, res) => {
   const { email } = req.params
 
   try {
-    const employee = await Employee.findOne({ email: decodeURIComponent(email).toLowerCase() })
+    const rawTarget = decodeURIComponent(email).trim()
+    const employee = await Employee.findOne({
+      $or: [
+        { email: rawTarget.toLowerCase() },
+        { empId: rawTarget.toUpperCase() }
+      ]
+    })
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }
@@ -154,7 +166,13 @@ export const resetFace = async (req, res) => {
   const { email } = req.params
 
   try {
-    const employee = await Employee.findOne({ email: decodeURIComponent(email).toLowerCase() })
+    const rawTarget = decodeURIComponent(email).trim()
+    const employee = await Employee.findOne({
+      $or: [
+        { email: rawTarget.toLowerCase() },
+        { empId: rawTarget.toUpperCase() }
+      ]
+    })
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }

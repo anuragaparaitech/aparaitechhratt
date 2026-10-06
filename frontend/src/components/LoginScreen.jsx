@@ -41,18 +41,18 @@ function LoginScreen({ onLogin, showToast }) {
   const handleEmailSubmit = async (e) => {
     e.preventDefault()
     if (!email || !password) {
-      showToast('⚠️ Please enter your official email and password', '#eab308')
+      showToast('⚠️ Please enter your official email or Employee ID and password', '#eab308')
       return
     }
 
     setLoading(true)
     try {
-      const data = await authAPI.login(email.trim().toLowerCase(), password)
+      const data = await authAPI.login(email.trim(), password)
       if (data.token) localStorage.setItem('aparaitech_token', data.token)
       onLogin(data.user)
     } catch (err) {
       console.error('Login error:', err)
-      const errorMsg = err.response?.data?.message || err.message || 'Invalid email or password'
+      const errorMsg = err.response?.data?.message || err.message || 'Invalid email/Employee ID or password'
       showToast(`❌ ${errorMsg}`, '#dc2626')
     } finally {
       setLoading(false)
@@ -63,7 +63,7 @@ function LoginScreen({ onLogin, showToast }) {
   const handlePasscodeSubmit = async (e) => {
     e.preventDefault()
     if (!passcodeEmail || !passcode) {
-      showToast('⚠️ Please enter your work email and 4-digit PIN', '#eab308')
+      showToast('⚠️ Please enter your work email or Employee ID and 4-digit PIN', '#eab308')
       return
     }
 
@@ -72,7 +72,7 @@ function LoginScreen({ onLogin, showToast }) {
       const response = await fetch('/api/auth/passcode-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: passcodeEmail.trim().toLowerCase(), passcode })
+        body: JSON.stringify({ email: passcodeEmail.trim(), passcode })
       })
       const data = await response.json()
 
@@ -95,19 +95,20 @@ function LoginScreen({ onLogin, showToast }) {
   const handleFaceCaptured = async (imageDataUrl) => {
     setIsFaceModalOpen(false)
     if (!faceEmail) {
-      showToast('⚠️ Please specify your email for face verification', '#f59e0b')
+      showToast('⚠️ Please specify your email or Employee ID for face verification', '#f59e0b')
       return
     }
 
     setLoading(true)
     showToast('🔍 Analyzing facial biometrics...', '#2563eb')
     try {
-      const res = await faceAPI.verifyFace(faceEmail.trim().toLowerCase(), imageDataUrl)
+      const res = await faceAPI.verifyFace(faceEmail.trim(), imageDataUrl)
       if (res.verified) {
         showToast(`✅ Face Authenticated! Welcome, ${res.employeeName || faceEmail}`, '#10b981')
         // Automatically retrieve employee session
         const empRes = await employeeAPI.getAll()
-        const matchedUser = empRes.employees?.find(e => e.email.toLowerCase() === faceEmail.trim().toLowerCase())
+        const targetFace = faceEmail.trim().toLowerCase()
+        const matchedUser = empRes.employees?.find(e => e.email.toLowerCase() === targetFace || e.empId?.toLowerCase() === targetFace)
         if (matchedUser) {
           onLogin(matchedUser)
         } else {
@@ -451,12 +452,12 @@ function LoginScreen({ onLogin, showToast }) {
             <form onSubmit={handleEmailSubmit}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  📧 Official Work Email
+                  📧 Work Email or Employee ID
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
-                    type="email"
-                    placeholder="name@aparaitech.com"
+                    type="text"
+                    placeholder="name@aparaitech.com or AP7098"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -546,11 +547,11 @@ function LoginScreen({ onLogin, showToast }) {
             <form onSubmit={handlePasscodeSubmit}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  📧 Work Email
+                  📧 Work Email or Employee ID
                 </label>
                 <input
-                  type="email"
-                  placeholder="name@aparaitech.com"
+                  type="text"
+                  placeholder="name@aparaitech.com or AP7098"
                   value={passcodeEmail}
                   onChange={(e) => setPasscodeEmail(e.target.value)}
                   required
@@ -613,11 +614,11 @@ function LoginScreen({ onLogin, showToast }) {
             <div style={{ textAlign: 'center', padding: '1rem 0' }}>
               <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  📧 Work Email for Face Match
+                  📧 Work Email or Employee ID for Face Match
                 </label>
                 <input
-                  type="email"
-                  placeholder="name@aparaitech.com"
+                  type="text"
+                  placeholder="name@aparaitech.com or AP7098"
                   value={faceEmail}
                   onChange={(e) => setFaceEmail(e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
