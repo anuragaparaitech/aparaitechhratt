@@ -34,6 +34,12 @@ const EmployeeSchema = new mongoose.Schema({
     required: true,
     default: () => new Date().toISOString().split('T')[0]
   },
+  tenureMonth: {
+    type: Number,
+    default: 1,
+    min: 1,
+    max: 12
+  },
   role: {
     type: String,
     enum: ['admin', 'manager', 'hr', 'employee'],

@@ -302,6 +302,18 @@ export const analyticsAPI = {
   setInternTarget: async (targetData) => {
     const response = await api.post('/api/analytics/target', targetData)
     return response.data
+  },
+  getBdaSalaryCriteria: async () => {
+    const response = await api.get('/api/analytics/bda-salary-criteria')
+    return response.data
+  },
+  updateBdaSalaryCriteria: async (criteria) => {
+    const response = await api.post('/api/analytics/bda-salary-criteria', { criteria })
+    return response.data
+  },
+  updateEmployeeTenure: async (empId, tenureMonth) => {
+    const response = await api.post('/api/analytics/bda-employee-tenure', { empId, tenureMonth })
+    return response.data
   }
 }
 

@@ -28,7 +28,7 @@ export const processAIBulkData = async (req, res) => {
   }
 }
 
-// @desc    Admin: Assign clean, sorted leads to an employee
+// @desc    Admin: Assign clean, sorted leads to one or multiple employees, or all employees
 // @route   POST /api/leads/assign
 // @access  Private (Admin only)
 export const assignLeadsToEmployee = async (req, res) => {
@@ -37,65 +37,161 @@ export const assignLeadsToEmployee = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Administrator privileges required.' })
     }
 
-    const { employeeEmail, employeeId, employeeName, department, leads } = req.body
+    const {
+      employeeEmail,
+      employeeId,
+      employeeName,
+      department,
+      targetEmployees,
+      employeeEmails,
+      distributionMode = 'split',
+      leads
+    } = req.body
 
-    if (!employeeEmail) {
-      return res.status(400).json({ success: false, message: 'Target employee email is required.' })
-    }
     if (!Array.isArray(leads) || leads.length === 0) {
       return res.status(400).json({ success: false, message: 'At least one lead is required to assign.' })
     }
 
-    let emp = null
-    try {
-      emp = await Employee.findOne({ email: employeeEmail.toLowerCase() })
-    } catch (e) {}
+    // Resolve target employee list
+    let empsToAssign = []
 
-    const assignedEmpName = employeeName || emp?.name || employeeEmail.split('@')[0]
-    const assignedEmpId = employeeId || emp?.empId || 'EMP'
-    const assignedEmpDept = department || emp?.department || 'BDA'
+    if (Array.isArray(targetEmployees) && targetEmployees.length > 0) {
+      empsToAssign = targetEmployees
+        .filter(e => e && e.email)
+        .map(e => ({
+          email: e.email.toLowerCase().trim(),
+          name: e.name || e.email.split('@')[0],
+          empId: e.empId || 'EMP',
+          department: e.department || 'BDA'
+        }))
+    } else if (Array.isArray(employeeEmails) && employeeEmails.length > 0) {
+      const cleanEmails = employeeEmails.filter(Boolean).map(e => e.toLowerCase().trim())
+      let dbEmps = []
+      try {
+        dbEmps = await Employee.find({ email: { $in: cleanEmails } })
+      } catch (e) {}
+      const mapByEmail = new Map(dbEmps.map(e => [e.email.toLowerCase(), e]))
+      empsToAssign = cleanEmails.map(email => {
+        const emp = mapByEmail.get(email)
+        return {
+          email,
+          name: emp?.name || email.split('@')[0],
+          empId: emp?.empId || 'EMP',
+          department: emp?.department || 'BDA'
+        }
+      })
+    } else if (employeeEmail) {
+      let emp = null
+      try {
+        emp = await Employee.findOne({ email: employeeEmail.toLowerCase() })
+      } catch (e) {}
+      empsToAssign = [{
+        email: employeeEmail.toLowerCase(),
+        name: employeeName || emp?.name || employeeEmail.split('@')[0],
+        empId: employeeId || emp?.empId || 'EMP',
+        department: department || emp?.department || 'BDA'
+      }]
+    }
 
+    if (empsToAssign.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one target employee is required to assign leads.' })
+    }
+
+    const mode = empsToAssign.length === 1 ? 'single' : (distributionMode === 'all' ? 'all' : 'split')
     const batchId = `BATCH-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
     const now = new Date()
 
-    const docsToInsert = leads.map(l => ({
-      name: l.name || 'Prospective Lead',
-      mobile: l.mobile || '',
-      cleanMobile: l.cleanMobile || '',
-      email: l.email ? l.email.toLowerCase() : '',
-      college: l.college || 'Independent / Unspecified College',
-      domain: l.domain || 'Web Development',
-      priority: l.priority || 'Warm',
-      priorityScore: l.priorityScore || 50,
-      rawText: l.rawText || '',
-      missingFields: Array.isArray(l.missingFields) ? l.missingFields : [],
-      status: 'Not Called',
-      callNotes: '',
-      assignedTo: {
-        empId: assignedEmpId,
-        name: assignedEmpName,
-        email: employeeEmail.toLowerCase(),
-        department: assignedEmpDept
-      },
-      assignedBy: {
-        name: req.user.name || 'Administrator',
-        email: req.user.email
-      },
-      assignedAt: now,
-      batchId
-    }))
+    const docsToInsert = []
+
+    if (mode === 'all') {
+      // Broadcast mode: assign all leads to every selected employee
+      for (const emp of empsToAssign) {
+        for (const l of leads) {
+          docsToInsert.push({
+            name: l.name || 'Prospective Lead',
+            mobile: l.mobile || '',
+            cleanMobile: l.cleanMobile || '',
+            email: l.email ? l.email.toLowerCase() : '',
+            college: l.college || 'Independent / Unspecified College',
+            domain: l.domain || 'Web Development',
+            priority: l.priority || 'Warm',
+            priorityScore: l.priorityScore || 50,
+            rawText: l.rawText || '',
+            missingFields: Array.isArray(l.missingFields) ? l.missingFields : [],
+            status: 'Not Called',
+            callNotes: '',
+            assignedTo: {
+              empId: emp.empId,
+              name: emp.name,
+              email: emp.email,
+              department: emp.department
+            },
+            assignedBy: {
+              name: req.user.name || 'Administrator',
+              email: req.user.email
+            },
+            assignedAt: now,
+            batchId
+          })
+        }
+      }
+    } else {
+      // 'split' (round-robin) or single employee: divide leads among employees
+      leads.forEach((l, idx) => {
+        const emp = empsToAssign[idx % empsToAssign.length]
+        docsToInsert.push({
+          name: l.name || 'Prospective Lead',
+          mobile: l.mobile || '',
+          cleanMobile: l.cleanMobile || '',
+          email: l.email ? l.email.toLowerCase() : '',
+          college: l.college || 'Independent / Unspecified College',
+          domain: l.domain || 'Web Development',
+          priority: l.priority || 'Warm',
+          priorityScore: l.priorityScore || 50,
+          rawText: l.rawText || '',
+          missingFields: Array.isArray(l.missingFields) ? l.missingFields : [],
+          status: 'Not Called',
+          callNotes: '',
+          assignedTo: {
+            empId: emp.empId,
+            name: emp.name,
+            email: emp.email,
+            department: emp.department
+          },
+          assignedBy: {
+            name: req.user.name || 'Administrator',
+            email: req.user.email
+          },
+          assignedAt: now,
+          batchId
+        })
+      })
+    }
 
     const inserted = await Lead.insertMany(docsToInsert)
 
+    const breakdown = empsToAssign.map(emp => ({
+      email: emp.email,
+      name: emp.name,
+      assignedCount: docsToInsert.filter(d => d.assignedTo.email === emp.email).length
+    }))
+
+    const message = empsToAssign.length === 1
+      ? `Successfully assigned and distributed ${inserted.length} leads to ${empsToAssign[0].name}!`
+      : `Successfully distributed ${inserted.length} leads to ${empsToAssign.length} employees (${mode === 'all' ? 'Sent to all' : 'Split evenly'})!`
+
     return res.status(201).json({
       success: true,
-      message: `Successfully assigned and distributed ${inserted.length} leads to ${assignedEmpName}!`,
+      message,
       count: inserted.length,
       batchId,
-      assignedTo: {
-        name: assignedEmpName,
-        email: employeeEmail.toLowerCase()
-      }
+      distributionMode: mode,
+      assignedEmployeesCount: empsToAssign.length,
+      breakdown,
+      assignedTo: empsToAssign.length === 1 ? {
+        name: empsToAssign[0].name,
+        email: empsToAssign[0].email
+      } : undefined
     })
   } catch (err) {
     console.error('[AI Data Controller Error] assignLeadsToEmployee:', err)

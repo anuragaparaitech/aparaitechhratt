@@ -534,7 +534,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                 <div style={{ fontSize: '0.72rem', color: '#854d0e' }}>Detailed call & lead graphs</div>
               </button>
 
-              {/* My Calling List Button */}
+              {/* Company Assign Data Button */}
               <button
                 onClick={() => onNavigate('callingList')}
                 style={{
@@ -553,7 +553,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                 <div style={{ color: '#0d9488', fontSize: '1.25rem' }}>
                   <i className="fas fa-headset"></i>
                 </div>
-                <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#134e4a' }}>My Calling List</div>
+                <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#134e4a' }}>Company Assign Data</div>
                 <div style={{ fontSize: '0.72rem', color: '#0f766e' }}>AI-Distributed Calling Desk</div>
               </button>
 

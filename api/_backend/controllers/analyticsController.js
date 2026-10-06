@@ -17,6 +17,111 @@ const getKolkataDateStr = () => {
   return `${year}-${month}-${day}`
 }
 
+// ── BDA REVENUE SALARY CRITERIA CONFIGURATION ─────────────────────────────────
+export const DEFAULT_BDA_CRITERIA = {
+  1: {
+    month: 1,
+    target: 42000,
+    targetConversions: 7,
+    belowTargetPercent: 26,
+    onTargetPercent: 36,
+    excessPercent: 8,
+    label: 'Month 1'
+  },
+  2: {
+    month: 2,
+    target: 54000,
+    targetConversions: 9,
+    belowTargetPercent: 25,
+    onTargetPercent: 35,
+    excessPercent: 8,
+    label: 'Month 2'
+  },
+  3: {
+    month: 3,
+    target: 72000,
+    targetConversions: 12,
+    belowTargetPercent: 25,
+    onTargetPercent: 35,
+    excessPercent: 8,
+    label: 'Month 3'
+  },
+  4: {
+    month: 4,
+    target: 90000,
+    targetConversions: 15,
+    belowTargetPercent: 25,
+    onTargetPercent: 35,
+    excessPercent: 8,
+    label: 'Month 4+'
+  }
+}
+
+export const getTenureMonthFromJoinDate = (joinDateStr) => {
+  if (!joinDateStr) return 1
+  const join = new Date(joinDateStr)
+  if (isNaN(join.getTime())) return 1
+
+  const now = new Date()
+  const yearDiff = now.getFullYear() - join.getFullYear()
+  const monthDiff = (yearDiff * 12) + (now.getMonth() - join.getMonth())
+  const tenure = Math.max(1, monthDiff + 1)
+  return Math.min(tenure, 4)
+}
+
+export const calculateBdaSalary = (revenue = 0, tenureMonth = 1, criteriaMap = DEFAULT_BDA_CRITERIA) => {
+  const m = Math.min(Math.max(1, parseInt(tenureMonth, 10) || 1), 4)
+  const rule = criteriaMap[m] || criteriaMap[String(m)] || DEFAULT_BDA_CRITERIA[m]
+  const target = Number(rule.target) || 42000
+  const belowRate = (Number(rule.belowTargetPercent) || 26) / 100
+  const onTargetRate = (Number(rule.onTargetPercent) || 36) / 100
+  const excessRate = (Number(rule.excessPercent) || 8) / 100
+
+  const revNum = Math.max(0, Number(revenue) || 0)
+  const isAchieved = revNum >= target
+
+  let salary = 0
+  let breakdown = {}
+
+  if (isAchieved) {
+    const baseSalary = target * onTargetRate
+    const excessRevenue = revNum - target
+    const excessBonus = excessRevenue * excessRate
+    salary = baseSalary + excessBonus
+    breakdown = {
+      isAchieved: true,
+      target,
+      baseSalary: Math.round(baseSalary),
+      onTargetPercent: rule.onTargetPercent,
+      excessRevenue: Math.round(excessRevenue),
+      excessPercent: rule.excessPercent,
+      excessBonus: Math.round(excessBonus),
+      totalSalary: Math.round(salary),
+      formula: `(₹${target.toLocaleString('en-IN')} × ${rule.onTargetPercent}%) + (₹${Math.round(excessRevenue).toLocaleString('en-IN')} × ${rule.excessPercent}%) = ₹${Math.round(salary).toLocaleString('en-IN')}`
+    }
+  } else {
+    salary = revNum * belowRate
+    breakdown = {
+      isAchieved: false,
+      target,
+      revenue: Math.round(revNum),
+      belowTargetPercent: rule.belowTargetPercent,
+      totalSalary: Math.round(salary),
+      formula: `₹${Math.round(revNum).toLocaleString('en-IN')} × ${rule.belowTargetPercent}% = ₹${Math.round(salary).toLocaleString('en-IN')}`
+    }
+  }
+
+  return {
+    revenue: revNum,
+    target,
+    tenureMonth: m,
+    rule,
+    isAchieved,
+    salary: Math.round(salary),
+    breakdown
+  }
+}
+
 /**
  * 1. MY PERFORMANCE (For BDA Team / Individual Employees)
  */
@@ -72,25 +177,51 @@ export const getMyPerformance = async (req, res) => {
       totalBounces += m.bounceCount || 0
     })
 
-    // Target (Monthly benchmark configured by Admin)
+    // Target (Monthly benchmark configured by Admin or Tenure-based for BDA)
     let targetConversions = 10
     let targetRevenue = 60000
     let targetCalls = 500
-    let targetNote = 'Monthly Intern Benchmark Goal'
+    let targetNote = 'Monthly Benchmark Goal'
+    let tenureMonth = 1
+    let monthLabel = 'Month 1'
 
     try {
-      const setting = await SystemSetting.findOne({ key: 'intern_monthly_target' })
-      if (setting && setting.value) {
-        if (setting.value.targetConversions) targetConversions = Number(setting.value.targetConversions)
-        if (setting.value.targetRevenue !== undefined) targetRevenue = Number(setting.value.targetRevenue)
-        if (setting.value.targetCalls) targetCalls = Number(setting.value.targetCalls)
-        if (setting.value.note) targetNote = setting.value.note
+      const empRecord = await Employee.findOne({ email: email })
+      if (empRecord) {
+        tenureMonth = empRecord.tenureMonth || getTenureMonthFromJoinDate(empRecord.joinDate || empRecord.createdAt)
+      }
+      
+      const isBda = !empRecord || !empRecord.department || /bda/i.test(empRecord.department) || /bda/i.test(empRecord.designation || '') || /sales/i.test(empRecord.department || '')
+      
+      if (isBda) {
+        let criteria = DEFAULT_BDA_CRITERIA
+        const criteriaSetting = await SystemSetting.findOne({ key: 'bda_salary_criteria' })
+        if (criteriaSetting && criteriaSetting.value) {
+          criteria = { ...DEFAULT_BDA_CRITERIA, ...criteriaSetting.value }
+        }
+        const mKey = Math.min(Math.max(1, tenureMonth), 4)
+        const rule = criteria[mKey] || criteria[String(mKey)] || DEFAULT_BDA_CRITERIA[mKey]
+        
+        targetConversions = Number(rule.targetConversions) || 7
+        targetRevenue = Number(rule.target) || 42000
+        targetCalls = 500
+        monthLabel = rule.label || `Month ${mKey}`
+        targetNote = `BDA ${monthLabel} Target: ₹${targetRevenue.toLocaleString('en-IN')} (${targetConversions} conversions)`
+      } else {
+        const setting = await SystemSetting.findOne({ key: 'intern_monthly_target' })
+        if (setting && setting.value) {
+          if (setting.value.targetConversions) targetConversions = Number(setting.value.targetConversions)
+          if (setting.value.targetRevenue !== undefined) targetRevenue = Number(setting.value.targetRevenue)
+          if (setting.value.targetCalls) targetCalls = Number(setting.value.targetCalls)
+          if (setting.value.note) targetNote = setting.value.note
+        }
       }
     } catch (sErr) {
-      console.warn('SystemSetting lookup notice:', sErr.message)
+      console.warn('Target lookup notice:', sErr.message)
     }
 
-    const targetAchievedPercent = Math.min(100, Math.round((monthlyConversions / targetConversions) * 100))
+    const targetAchievedPercent = Math.min(100, Math.round((monthlyRevenue / targetRevenue) * 100))
+    const targetConversionsAchievedPercent = Math.min(100, Math.round((monthlyConversions / targetConversions) * 100))
 
     // Last 7 days trend
     const recentReports = await DailyReport.find({
@@ -137,10 +268,13 @@ export const getMyPerformance = async (req, res) => {
           responseRate: totalEmailsSent > 0 ? ((totalResponses / totalEmailsSent) * 100).toFixed(1) : 0
         },
         targets: {
+          tenureMonth,
+          monthLabel,
           targetConversions,
           targetRevenue,
           targetCalls,
           achievedPercent: targetAchievedPercent,
+          achievedConversionsPercent: targetConversionsAchievedPercent,
           note: targetNote
         },
         trends
@@ -539,6 +673,176 @@ export const setInternTarget = async (req, res) => {
       target: updatedSetting.value
     })
   } catch (err) {
+    return res.status(500).json({ success: false, message: err.message })
+  }
+}
+
+/**
+ * 7. GET BDA SALARY CRITERIA & EMPLOYEE PAYOUT SHEET (Admin/HR Only)
+ */
+export const getBdaSalaryCriteria = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'hr') {
+      return res.status(403).json({ success: false, message: 'Access denied. Admin or HR only.' })
+    }
+
+    const setting = await SystemSetting.findOne({ key: 'bda_salary_criteria' })
+    const criteria = setting && setting.value ? { ...DEFAULT_BDA_CRITERIA, ...setting.value } : DEFAULT_BDA_CRITERIA
+
+    const todayStr = getKolkataDateStr()
+    const currentMonthPrefix = todayStr.substring(0, 7) // "YYYY-MM"
+
+    // Find all BDA employees
+    const bdaEmployees = await Employee.find({
+      $or: [
+        { department: { $regex: 'bda|sales|business', $options: 'i' } },
+        { designation: { $regex: 'bda|sales|business', $options: 'i' } }
+      ]
+    }).select('empId name email department designation joinDate tenureMonth status phone')
+
+    // Get current month daily reports to compute employee revenues
+    const monthlyReports = await DailyReport.find({
+      reportDate: { $regex: `^${currentMonthPrefix}` }
+    })
+
+    // Map monthly metrics by email
+    const metricsByEmail = {}
+    monthlyReports.forEach(r => {
+      const em = (r.employeeEmail || '').toLowerCase()
+      if (!metricsByEmail[em]) {
+        metricsByEmail[em] = { revenue: 0, conversions: 0, calls: 0, reportsCount: 0 }
+      }
+      metricsByEmail[em].revenue += (r.revenue || 0)
+      metricsByEmail[em].conversions += (r.todayConversions || 0)
+      metricsByEmail[em].calls += (r.connectedCalls || 0)
+      metricsByEmail[em].reportsCount += 1
+    })
+
+    // Calculate BDA salary for each employee
+    const employeesWithSalary = bdaEmployees.map(emp => {
+      const email = emp.email.toLowerCase()
+      const metrics = metricsByEmail[email] || { revenue: 0, conversions: 0, calls: 0, reportsCount: 0 }
+      const tenureMonth = emp.tenureMonth || getTenureMonthFromJoinDate(emp.joinDate || emp.createdAt)
+      const calculation = calculateBdaSalary(metrics.revenue, tenureMonth, criteria)
+
+      return {
+        _id: emp._id,
+        empId: emp.empId,
+        name: emp.name,
+        email: emp.email,
+        phone: emp.phone,
+        department: emp.department,
+        designation: emp.designation,
+        joinDate: emp.joinDate,
+        status: emp.status,
+        tenureMonth,
+        monthlyRevenue: metrics.revenue,
+        monthlyConversions: metrics.conversions,
+        monthlyCalls: metrics.calls,
+        reportsSubmitted: metrics.reportsCount,
+        calculation
+      }
+    })
+
+    return res.status(200).json({
+      success: true,
+      currentMonth: currentMonthPrefix,
+      criteria,
+      employees: employeesWithSalary
+    })
+  } catch (err) {
+    console.error('[Analytics Error] getBdaSalaryCriteria:', err)
+    return res.status(500).json({ success: false, message: err.message })
+  }
+}
+
+/**
+ * 8. UPDATE BDA SALARY CRITERIA (Admin Only)
+ */
+export const updateBdaSalaryCriteria = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'hr') {
+      return res.status(403).json({ success: false, message: 'Only admin can configure BDA salary criteria' })
+    }
+
+    const { criteria } = req.body
+    if (!criteria || typeof criteria !== 'object') {
+      return res.status(400).json({ success: false, message: 'Invalid criteria data provided' })
+    }
+
+    // Merge with defaults to ensure valid schema
+    const updatedCriteria = { ...DEFAULT_BDA_CRITERIA }
+    for (const m of [1, 2, 3, 4]) {
+      if (criteria[m]) {
+        updatedCriteria[m] = {
+          month: m,
+          target: Math.max(0, parseInt(criteria[m].target, 10) || DEFAULT_BDA_CRITERIA[m].target),
+          targetConversions: Math.max(0, parseInt(criteria[m].targetConversions, 10) || DEFAULT_BDA_CRITERIA[m].targetConversions),
+          belowTargetPercent: Math.max(0, parseFloat(criteria[m].belowTargetPercent) || DEFAULT_BDA_CRITERIA[m].belowTargetPercent),
+          onTargetPercent: Math.max(0, parseFloat(criteria[m].onTargetPercent) || DEFAULT_BDA_CRITERIA[m].onTargetPercent),
+          excessPercent: Math.max(0, parseFloat(criteria[m].excessPercent) || DEFAULT_BDA_CRITERIA[m].excessPercent),
+          label: criteria[m].label || DEFAULT_BDA_CRITERIA[m].label
+        }
+      }
+    }
+
+    const updatedSetting = await SystemSetting.findOneAndUpdate(
+      { key: 'bda_salary_criteria' },
+      {
+        key: 'bda_salary_criteria',
+        value: updatedCriteria,
+        updatedBy: req.user.name || req.user.email,
+        updatedAt: new Date()
+      },
+      { upsert: true, new: true }
+    )
+
+    return res.status(200).json({
+      success: true,
+      message: 'BDA revenue salary criteria updated successfully!',
+      criteria: updatedSetting.value
+    })
+  } catch (err) {
+    console.error('[Analytics Error] updateBdaSalaryCriteria:', err)
+    return res.status(500).json({ success: false, message: err.message })
+  }
+}
+
+/**
+ * 9. UPDATE EMPLOYEE TENURE MONTH (Admin/HR Only)
+ */
+export const updateEmployeeTenureMonth = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'hr') {
+      return res.status(403).json({ success: false, message: 'Only admin can update employee tenure month' })
+    }
+
+    const { empId, email, tenureMonth } = req.body
+    const tenureNum = Math.min(12, Math.max(1, parseInt(tenureMonth, 10) || 1))
+
+    const query = empId ? { empId } : { email: (email || '').toLowerCase() }
+    const updatedEmp = await Employee.findOneAndUpdate(
+      query,
+      { tenureMonth: tenureNum },
+      { new: true }
+    )
+
+    if (!updatedEmp) {
+      return res.status(404).json({ success: false, message: 'Employee not found' })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Updated tenure to Month ${tenureNum} for ${updatedEmp.name}`,
+      employee: {
+        empId: updatedEmp.empId,
+        name: updatedEmp.name,
+        email: updatedEmp.email,
+        tenureMonth: updatedEmp.tenureMonth
+      }
+    })
+  } catch (err) {
+    console.error('[Analytics Error] updateEmployeeTenureMonth:', err)
     return res.status(500).json({ success: false, message: err.message })
   }
 }

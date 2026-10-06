@@ -143,13 +143,13 @@ function MyCallingList({ currentUser, showToast }) {
             marginBottom: '6px',
             color: '#7dd3fc'
           }}>
-            <i className="fas fa-headset"></i> MY AI CALLING DESK
+            <i className="fas fa-headset"></i> COMPANY ASSIGN DATA
           </div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', letterSpacing: '-0.02em' }}>
-            Calling Leads Roster ({leads.length} Leads)
+            Company Assign Data ({leads.length} Leads)
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#cbd5e1' }}>
-            Assigned clean leads with direct dialer, outcome tracking, and live conversion analytics.
+            Assigned company leads with direct dialer, outcome tracking, and live conversion analytics.
           </p>
         </div>
 
@@ -458,7 +458,7 @@ function MyCallingList({ currentUser, showToast }) {
           {loading ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#64748b' }}>
               <i className="fas fa-spinner fa-spin fa-2x"></i>
-              <div style={{ marginTop: '10px', fontWeight: '600' }}>Loading calling leads...</div>
+              <div style={{ marginTop: '10px', fontWeight: '600' }}>Loading company assigned data...</div>
             </div>
           ) : leads.length > 0 ? (
             leads.map(lead => {
@@ -682,9 +682,9 @@ function MyCallingList({ currentUser, showToast }) {
           ) : (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
               <i className="fas fa-clipboard-check fa-3x" style={{ color: '#cbd5e1', marginBottom: '12px' }}></i>
-              <h3 style={{ margin: 0, color: '#1e293b' }}>No Calling Leads Found</h3>
+              <h3 style={{ margin: 0, color: '#1e293b' }}>No Company Assigned Data Found</h3>
               <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '0.85rem' }}>
-                You have no leads assigned under the selected filters. Check with your administrator to assign new AI-processed data.
+                You have no leads assigned under the selected filters. Check with your administrator to assign company data.
               </p>
             </div>
           )}

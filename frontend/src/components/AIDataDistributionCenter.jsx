@@ -26,7 +26,10 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
 
   // Distribution States
   const [employees, setEmployees] = useState([])
-  const [selectedEmployeeEmail, setSelectedEmployeeEmail] = useState('')
+  const [selectedEmployeeEmails, setSelectedEmployeeEmails] = useState([])
+  const [distributionStrategy, setDistributionStrategy] = useState('split') // 'split' | 'all'
+  const [empSearchFilter, setEmpSearchFilter] = useState('')
+  const [empDeptFilter, setEmpDeptFilter] = useState('All')
   const [distributeDomainFilter, setDistributeDomainFilter] = useState('All')
   const [assigning, setAssigning] = useState(false)
 
@@ -49,14 +52,42 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
       const data = await employeeAPI.getAll()
       const list = data.employees || []
       setEmployees(list)
-      if (list.length > 0 && !selectedEmployeeEmail) {
-        // Default to first BDA employee if available, or first employee
-        const bdaEmp = list.find(e => e.department === 'BDA')
-        setSelectedEmployeeEmail(bdaEmp ? bdaEmp.email : list[0].email)
+      if (list.length > 0 && selectedEmployeeEmails.length === 0) {
+        // Default: select BDA employees if available, otherwise first employee
+        const bdaEmps = list.filter(e => (e.department || '').toUpperCase() === 'BDA')
+        if (bdaEmps.length > 0) {
+          setSelectedEmployeeEmails(bdaEmps.map(e => e.email))
+        } else {
+          setSelectedEmployeeEmails([list[0].email])
+        }
       }
     } catch (err) {
       console.error('Error fetching employees:', err)
     }
+  }
+
+  // Quick Selection Helpers
+  const handleSelectAllEmployees = () => {
+    setSelectedEmployeeEmails(employees.map(e => e.email))
+  }
+
+  const handleSelectBDAEmployees = () => {
+    const bdaList = employees.filter(e => (e.department || '').toUpperCase() === 'BDA')
+    if (bdaList.length > 0) {
+      setSelectedEmployeeEmails(bdaList.map(e => e.email))
+    } else {
+      setSelectedEmployeeEmails(employees.map(e => e.email))
+    }
+  }
+
+  const handleClearSelectedEmployees = () => {
+    setSelectedEmployeeEmails([])
+  }
+
+  const toggleSelectEmployee = (email) => {
+    setSelectedEmployeeEmails(prev =>
+      prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]
+    )
   }
 
   const fetchReports = async () => {
@@ -247,12 +278,12 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
     return list
   }
 
-  // Execute Distribution to Employee
+  // Execute Distribution to Employee(s)
   const handleAssignLeads = async () => {
     const leadsToAssign = getLeadsToDistribute()
 
-    if (!selectedEmployeeEmail) {
-      if (showToast) showToast('⚠️ Please select a recipient employee', '#eab308')
+    if (selectedEmployeeEmails.length === 0) {
+      if (showToast) showToast('⚠️ Please select at least one employee', '#eab308')
       return
     }
 
@@ -261,26 +292,29 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
       return
     }
 
-    const empObj = employees.find(e => e.email.toLowerCase() === selectedEmployeeEmail.toLowerCase())
-    const empName = empObj?.name || selectedEmployeeEmail
+    const targetEmpObjs = employees.filter(e => selectedEmployeeEmails.includes(e.email))
+    const targetEmployees = targetEmpObjs.map(e => ({
+      email: e.email,
+      name: e.name,
+      empId: e.empId || 'EMP',
+      department: e.department || 'BDA'
+    }))
 
     setAssigning(true)
     try {
       const res = await leadsAPI.assignLeads({
-        employeeEmail: selectedEmployeeEmail,
-        employeeName: empName,
-        employeeId: empObj?.empId || 'EMP',
-        department: empObj?.department || 'BDA',
+        targetEmployees,
+        distributionMode: distributionStrategy,
         leads: leadsToAssign
       })
 
       if (res.success) {
         if (showToast) {
-          showToast(`🚀 Successfully distributed ${res.count} clean leads to ${empName}!`, '#16a34a')
+          showToast(`🚀 ${res.message || `Successfully distributed ${res.count} clean leads!`}`, '#16a34a')
         }
         // Remove assigned leads from current AI staging results
         const assignedSet = new Set(leadsToAssign)
-        const remaining = aiResult.records.filter(l => !assignedSet.has(l))
+        const remaining = (aiResult?.records || []).filter(l => !assignedSet.has(l))
         setAiResult(prev => ({
           ...prev,
           cleanRecordsCount: remaining.length,
@@ -332,7 +366,8 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
     if (showToast) showToast('📥 Exported leads report to Excel!', '#16a34a')
   }
 
-  const selectedEmployeeObj = employees.find(e => e.email.toLowerCase() === selectedEmployeeEmail.toLowerCase())
+  const selectedEmployeesList = employees.filter(e => selectedEmployeeEmails.includes(e.email))
+  const selectedEmployeeObj = selectedEmployeesList[0] || null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
@@ -891,9 +926,9 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
           <div className="section-card">
             <div className="section-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
               <div>
-                <h2><i className="fas fa-share-alt" style={{ color: '#2563eb', marginRight: '8px' }}></i> Distribute Leads to Team Member</h2>
+                <h2><i className="fas fa-share-alt" style={{ color: '#2563eb', marginRight: '8px' }}></i> Distribute Leads to Team Members</h2>
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
-                  Select an employee and assign clean calling data with one click. Employee will immediately see these in "My Calling List".
+                  Select single, multiple, or all employees and assign clean calling data with one click. Associates will immediately see these in "Company Assign Data".
                 </p>
               </div>
 
@@ -924,125 +959,400 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
               borderRadius: '16px',
               padding: '1.25rem',
               marginBottom: '1.5rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '16px',
-              alignItems: 'center'
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
             }}>
-              {/* Select Employee */}
+              {/* Row 1: Target Selection Toolbar & Picker */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
-                  👤 Select Target Staff / BDA <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <select
-                  value={selectedEmployeeEmail}
-                  onChange={e => setSelectedEmployeeEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    background: '#ffffff',
-                    color: '#0f172a',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  {employees.map(emp => (
-                    <option key={emp.email} value={emp.email}>
-                      {emp.name} ({emp.empId || 'EMP'}) — {emp.department || 'BDA'} [{emp.email}]
-                    </option>
-                  ))}
-                </select>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.84rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="fas fa-users-cog" style={{ color: '#2563eb' }}></i>
+                    Target Associates / Employees <span style={{ color: '#ef4444' }}>*</span>
+                    <span style={{
+                      background: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#dcfce7' : '#eff6ff',
+                      color: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#15803d' : '#1d4ed8',
+                      fontSize: '0.72rem',
+                      fontWeight: '800',
+                      padding: '2px 8px',
+                      borderRadius: '12px'
+                    }}>
+                      {selectedEmployeeEmails.length === employees.length && employees.length > 0
+                        ? `🌟 All ${employees.length} Selected`
+                        : `${selectedEmployeeEmails.length} of ${employees.length} Selected`}
+                    </span>
+                  </label>
+
+                  {/* Quick selection action buttons */}
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={handleSelectAllEmployees}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '8px',
+                        border: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                        background: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#2563eb' : '#ffffff',
+                        color: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#ffffff' : '#1e293b',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <i className="fas fa-check-double"></i> Send to All ({employees.length})
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSelectBDAEmployees}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid #a7f3d0',
+                        background: '#ecfdf5',
+                        color: '#047857',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <i className="fas fa-briefcase"></i> BDA Team Only ({employees.filter(e => (e.department || '').toUpperCase() === 'BDA').length})
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleClearSelectedEmployees}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        background: '#ffffff',
+                        color: '#64748b',
+                        fontSize: '0.78rem',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search & Department filters */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 160px', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-search" style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8', fontSize: '0.82rem' }}></i>
+                    <input
+                      type="text"
+                      placeholder="Search employee by name, ID, or email..."
+                      value={empSearchFilter}
+                      onChange={e => setEmpSearchFilter(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px 8px 30px',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.82rem',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <select
+                    value={empDeptFilter}
+                    onChange={e => setEmpDeptFilter(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.82rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="All">All Departments</option>
+                    <option value="BDA">BDA Only</option>
+                    <option value="SOFTWARE">Software Only</option>
+                    <option value="HR">HR Only</option>
+                  </select>
+                </div>
+
+                {/* Scrollable employee checkboxes grid */}
+                <div style={{
+                  maxHeight: '190px',
+                  overflowY: 'auto',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '10px',
+                  background: '#ffffff',
+                  padding: '6px'
+                }}>
+                  {employees
+                    .filter(emp => {
+                      const matchesSearch = !empSearchFilter ||
+                        (emp.name || '').toLowerCase().includes(empSearchFilter.toLowerCase()) ||
+                        (emp.email || '').toLowerCase().includes(empSearchFilter.toLowerCase()) ||
+                        (emp.empId || '').toLowerCase().includes(empSearchFilter.toLowerCase())
+                      const matchesDept = empDeptFilter === 'All' || (emp.department || '').toUpperCase() === empDeptFilter.toUpperCase()
+                      return matchesSearch && matchesDept
+                    })
+                    .map(emp => {
+                      const isSelected = selectedEmployeeEmails.includes(emp.email)
+                      return (
+                        <div
+                          key={emp.email}
+                          onClick={() => toggleSelectEmployee(emp.email)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '7px 10px',
+                            borderRadius: '8px',
+                            background: isSelected ? '#eff6ff' : 'transparent',
+                            cursor: 'pointer',
+                            transition: 'background 0.15s',
+                            borderBottom: '1px solid #f1f5f9'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {}}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <div>
+                              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: isSelected ? '#1d4ed8' : '#0f172a' }}>
+                                {emp.name}
+                              </div>
+                              <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                                {emp.email} • {emp.empId || 'EMP'}
+                              </div>
+                            </div>
+                          </div>
+
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: (emp.department || '').toUpperCase() === 'BDA' ? '#dcfce7' : '#f1f5f9',
+                            color: (emp.department || '').toUpperCase() === 'BDA' ? '#15803d' : '#475569'
+                          }}>
+                            {emp.department || 'Associate'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                </div>
+
+                {/* Selected tags chip strip */}
+                {selectedEmployeeEmails.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b' }}>Active Selected:</span>
+                    {selectedEmployeeEmails.map(email => {
+                      const emp = employees.find(e => e.email === email)
+                      return (
+                        <span
+                          key={email}
+                          style={{
+                            background: '#dbeafe',
+                            color: '#1e40af',
+                            borderRadius: '12px',
+                            padding: '2px 8px',
+                            fontSize: '0.72rem',
+                            fontWeight: '700',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          {emp?.name || email.split('@')[0]}
+                          <i
+                            className="fas fa-times"
+                            style={{ cursor: 'pointer', opacity: 0.7 }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleSelectEmployee(email)
+                            }}
+                          ></i>
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Filter by Domain */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
-                  🎯 Filter Domain (Optional)
-                </label>
-                <select
-                  value={distributeDomainFilter}
-                  onChange={e => setDistributeDomainFilter(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '0.9rem',
-                    background: '#ffffff',
-                    color: '#0f172a',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="All">All Domains ({selectedLeads.length} leads selected)</option>
-                  {PREDEFINED_DOMAINS.map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Ready Count Indicator */}
+              {/* Row 2: Distribution Strategy & Domain Filter & Calculation & Actions */}
               <div style={{
-                background: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                borderRadius: '12px',
-                padding: '10px 14px'
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '14px',
+                alignItems: 'center',
+                paddingTop: '8px',
+                borderTop: '1px solid #e2e8f0'
               }}>
-                <div style={{ fontSize: '0.72rem', color: '#1e40af', fontWeight: '800', textTransform: 'uppercase' }}>
-                  READY TO ASSIGN
-                </div>
-                <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#1d4ed8' }}>
-                  {getLeadsToDistribute().length} <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#3b82f6' }}>Leads selected</span>
-                </div>
-              </div>
+                {/* Distribution Strategy */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
+                    ⚡ Distribution Method
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setDistributionStrategy('split')}
+                      style={{
+                        flex: 1,
+                        padding: '9px 10px',
+                        borderRadius: '10px',
+                        border: distributionStrategy === 'split' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                        background: distributionStrategy === 'split' ? '#eff6ff' : '#ffffff',
+                        color: distributionStrategy === 'split' ? '#1d4ed8' : '#475569',
+                        fontWeight: '700',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <div style={{ fontWeight: '800' }}>⚡ Split Evenly</div>
+                      <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Round-robin (unique leads per employee)</div>
+                    </button>
 
-              {/* Assign Action Button */}
-              <div>
-                <button
-                  type="button"
-                  onClick={handleAssignLeads}
-                  disabled={assigning || getLeadsToDistribute().length === 0}
-                  style={{
-                    width: '100%',
-                    padding: '12px 18px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                    color: '#ffffff',
-                    fontWeight: '800',
-                    fontSize: '0.95rem',
-                    cursor: assigning || getLeadsToDistribute().length === 0 ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
-                  }}
-                >
-                  {assigning ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin"></i> Distributing...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-paper-plane"></i>
-                      Assign & Send ({getLeadsToDistribute().length})
-                    </>
-                  )}
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => setDistributionStrategy('all')}
+                      style={{
+                        flex: 1,
+                        padding: '9px 10px',
+                        borderRadius: '10px',
+                        border: distributionStrategy === 'all' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                        background: distributionStrategy === 'all' ? '#eff6ff' : '#ffffff',
+                        color: distributionStrategy === 'all' ? '#1d4ed8' : '#475569',
+                        fontWeight: '700',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <div style={{ fontWeight: '800' }}>📋 Send to All</div>
+                      <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Full batch to each selected associate</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter by Domain */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
+                    🎯 Filter Domain (Optional)
+                  </label>
+                  <select
+                    value={distributeDomainFilter}
+                    onChange={e => setDistributeDomainFilter(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '0.88rem',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="All">All Domains ({selectedLeads.length} leads selected)</option>
+                    {PREDEFINED_DOMAINS.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Calculation & Summary Box */}
+                <div style={{
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '12px',
+                  padding: '10px 14px'
+                }}>
+                  <div style={{ fontSize: '0.7rem', color: '#1e40af', fontWeight: '800', textTransform: 'uppercase' }}>
+                    READY TO DISTRIBUTE
+                  </div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#1d4ed8' }}>
+                    {getLeadsToDistribute().length} <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#3b82f6' }}>Leads</span>
+                    <span style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 6px' }}>→</span>
+                    {selectedEmployeeEmails.length} <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#3b82f6' }}>Staff</span>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#1e40af', marginTop: '3px', fontWeight: '600' }}>
+                    {selectedEmployeeEmails.length > 0 ? (
+                      distributionStrategy === 'split'
+                        ? `~${Math.ceil(getLeadsToDistribute().length / Math.max(1, selectedEmployeeEmails.length))} leads per associate`
+                        : `All ${getLeadsToDistribute().length} leads to each associate`
+                    ) : (
+                      'Please select target staff'
+                    )}
+                  </div>
+                </div>
+
+                {/* Assign Action Button */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleAssignLeads}
+                    disabled={assigning || getLeadsToDistribute().length === 0 || selectedEmployeeEmails.length === 0}
+                    style={{
+                      width: '100%',
+                      padding: '12px 18px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      color: '#ffffff',
+                      fontWeight: '800',
+                      fontSize: '0.92rem',
+                      cursor: assigning || getLeadsToDistribute().length === 0 || selectedEmployeeEmails.length === 0 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+                    }}
+                  >
+                    {assigning ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i> Distributing...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-paper-plane"></i>
+                        Assign & Send ({getLeadsToDistribute().length} Leads to {selectedEmployeeEmails.length} Staff)
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Leads Preview for Selected Employee */}
+            {/* Leads Preview for Selected Employees */}
             <div style={{ overflowX: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
                 <h4 style={{ margin: 0, fontSize: '0.88rem', color: '#1e293b' }}>
-                  Leads to be delivered to {selectedEmployeeObj?.name || 'Employee'}:
+                  Leads to be delivered to {
+                    selectedEmployeeEmails.length === 0
+                      ? 'No employee selected'
+                      : (selectedEmployeeEmails.length === 1
+                          ? (selectedEmployeesList[0]?.name || selectedEmployeeEmails[0])
+                          : (selectedEmployeeEmails.length === employees.length
+                              ? `All ${employees.length} Associates`
+                              : `${selectedEmployeeEmails.length} Selected Associates`))
+                  }:
                 </h4>
                 <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                  {getLeadsToDistribute().length} leads will be locked to this associate's calling roster
+                  {selectedEmployeeEmails.length > 0 && distributionStrategy === 'split'
+                    ? `${getLeadsToDistribute().length} leads will be split evenly across ${selectedEmployeeEmails.length} associates (~${Math.ceil(getLeadsToDistribute().length / Math.max(1, selectedEmployeeEmails.length))} each)`
+                    : `${getLeadsToDistribute().length} leads will be locked to each associate's roster`}
                 </div>
               </div>
 

@@ -710,7 +710,7 @@ function App() {
                       onClick={() => setActiveTab('callingList')}
                     >
                       <i className="fas fa-headset" style={{ width: '16px', textAlign: 'center' }}></i>
-                      My Calling List
+                      Company Assign Data
                     </button>
 
                     <button
@@ -1016,7 +1016,7 @@ function App() {
                     />
                   )}
 
-                  {/* 3.1. My Calling List (AI Distributed Calling Desk) */}
+                  {/* 3.1. Company Assign Data (AI Distributed Calling Desk) */}
                   {activeTab === 'callingList' && (
                     <MyCallingList
                       currentUser={currentUser}
@@ -1471,7 +1471,7 @@ function App() {
                           }}
                         >
                           <i className="fas fa-headset" style={{ width: '18px', textAlign: 'center' }}></i>
-                          My Calling List
+                          Company Assign Data
                         </button>
 
                         <button
@@ -1820,7 +1820,7 @@ function App() {
                     onClick={() => setActiveTab('callingList')}
                   >
                     <i className="fas fa-headset"></i>
-                    <span>Calls</span>
+                    <span>Assign Data</span>
                   </button>
 
                   <button
