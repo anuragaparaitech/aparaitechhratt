@@ -30,6 +30,8 @@ import EmployeeProfileModal from './components/EmployeeProfileModal'
 import ChangePinModal from './components/ChangePinModal'
 import NotificationBanner from './components/NotificationBanner'
 import { popNotification, requestNotificationPermission } from './services/notificationService'
+import { leadsAPI, taskAPI } from './services/api'
+import { useAutoRefresh, SYNC_EVENTS } from './utils/realtimeSync'
 
 // ── Admin sidebar nav definition (BDA / Executive) ──────────────────────────
 const ADMIN_NAV = [
@@ -183,6 +185,8 @@ function App() {
   // Admin sub-section (which section of AdminPanel to show)
   const [adminSection, setAdminSection] = useState('overview')
   const [unreadCount, setUnreadCount] = useState(0)
+  const [assignedLeadsCount, setAssignedLeadsCount] = useState(0)
+  const [assignedTasksCount, setAssignedTasksCount] = useState(0)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false)
@@ -210,10 +214,13 @@ function App() {
         setActiveTab('dashboard')
       }
       fetchUnreadCount()
+      checkAssignedData()
     }
   }, [currentUser])
 
   const prevUnreadRef = useRef(null)
+  const prevLeadsCountRef = useRef(null)
+  const prevTasksCountRef = useRef(null)
   const hasNotified7PMTodayRef = useRef(false)
 
   // 07:00 PM Daily Report Notification Checker (runs every 60s)
@@ -245,14 +252,6 @@ function App() {
     return () => clearInterval(interval)
   }, [currentUser, portalMode])
 
-  // Periodic polling for unread messages (every 30 seconds)
-  useEffect(() => {
-    if (currentUser && currentUser.role !== 'admin') {
-      const interval = setInterval(fetchUnreadCount, 30000)
-      return () => clearInterval(interval)
-    }
-  }, [currentUser])
-
   const fetchUnreadCount = async () => {
     if (currentUser && currentUser.role !== 'admin') {
       try {
@@ -275,6 +274,76 @@ function App() {
       }
     }
   }
+
+  const checkAssignedData = async () => {
+    if (!currentUser) return
+
+    // 1. Check for BDA / calling leads assignment
+    if (currentUser.role !== 'admin' && portalMode === 'bda') {
+      try {
+        const res = await leadsAPI.getMyCallingSummary()
+        if (res?.success && res.stats) {
+          const total = res.stats.totalAssigned || 0
+          const pending = res.stats.pendingCount || 0
+          if (prevLeadsCountRef.current !== null && total > prevLeadsCountRef.current) {
+            const diff = total - prevLeadsCountRef.current
+            popNotification({
+              title: '📋 New Company Leads Assigned',
+              body: `Admin assigned ${diff} new calling lead${diff > 1 ? 's' : ''} to your desk! Check Company Assign Data.`,
+              tag: 'new-leads-assigned',
+              onClick: () => setActiveTab('callingList')
+            })
+            showToast(`🚀 ${diff} new company leads assigned to your desk!`, '#0d9488')
+          }
+          prevLeadsCountRef.current = total
+          setAssignedLeadsCount(pending > 0 ? pending : total)
+        }
+      } catch (err) {
+        // Background check safe ignore
+      }
+    }
+
+    // 2. Check for Software team task assignments
+    if (portalMode === 'software' && currentUser.role !== 'admin') {
+      try {
+        const res = await taskAPI.getMyTasks()
+        if (res?.success && Array.isArray(res.data)) {
+          const count = res.data.length
+          if (prevTasksCountRef.current !== null && count > prevTasksCountRef.current) {
+            const diff = count - prevTasksCountRef.current
+            popNotification({
+              title: '💻 New Sprint Task Assigned',
+              body: `${diff} new sprint task${diff > 1 ? 's' : ''} assigned to your board!`,
+              tag: 'new-task-assigned',
+              onClick: () => setActiveTab('softwareTasks')
+            })
+            showToast(`🚀 New sprint task assigned!`, '#2563eb')
+          }
+          prevTasksCountRef.current = count
+          const pendingTasks = res.data.filter(t => t.status !== 'Done' && t.status !== 'Completed').length
+          setAssignedTasksCount(pendingTasks)
+        }
+      } catch (err) {
+        // Background check safe ignore
+      }
+    }
+  }
+
+  // Periodic and event-driven auto-refresh (leads, tasks, messages) every 5 seconds, on tab focus, and on sync events
+  useAutoRefresh(() => {
+    fetchUnreadCount()
+    checkAssignedData()
+  }, {
+    intervalMs: 5000,
+    eventTypes: [
+      SYNC_EVENTS.DATA_ASSIGNED,
+      SYNC_EVENTS.TASK_ASSIGNED,
+      SYNC_EVENTS.MESSAGE_SENT,
+      SYNC_EVENTS.LEAD_STATUS_UPDATED
+    ],
+    onFocus: true,
+    enabled: Boolean(currentUser)
+  })
 
   useEffect(() => {
     if (toast) {
@@ -543,11 +612,23 @@ function App() {
                     <button
                       key={item.id}
                       className={`sidebar-nav-btn ${activeTab === item.id ? 'active' : ''}`}
-                      style={sidebarBtnStyle(activeTab === item.id)}
+                      style={{ ...sidebarBtnStyle(activeTab === item.id), position: 'relative' }}
                       onClick={() => setActiveTab(item.id)}
                     >
                       <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
-                      {item.label}
+                      <span style={{ flex: 1 }}>{item.label}</span>
+                      {item.id === 'softwareTasks' && assignedTasksCount > 0 && (
+                        <span style={{
+                          background: '#2563eb',
+                          color: '#ffffff',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: '800'
+                        }}>
+                          {assignedTasksCount}
+                        </span>
+                      )}
                     </button>
                   ))}
 
@@ -706,11 +787,23 @@ function App() {
 
                     <button
                       className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
-                      style={sidebarBtnStyle(activeTab === 'callingList')}
+                      style={{ ...sidebarBtnStyle(activeTab === 'callingList'), position: 'relative' }}
                       onClick={() => setActiveTab('callingList')}
                     >
                       <i className="fas fa-headset" style={{ width: '16px', textAlign: 'center' }}></i>
-                      Company Assign Data
+                      <span style={{ flex: 1 }}>Company Assign Data</span>
+                      {assignedLeadsCount > 0 && (
+                        <span style={{
+                          background: '#0d9488',
+                          color: '#ffffff',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: '800'
+                        }}>
+                          {assignedLeadsCount}
+                        </span>
+                      )}
                     </button>
 
                     <button
@@ -1464,14 +1557,26 @@ function App() {
 
                         <button
                           className={`sidebar-nav-btn ${activeTab === 'callingList' ? 'active' : ''}`}
-                          style={sidebarBtnStyle(activeTab === 'callingList')}
+                          style={{ ...sidebarBtnStyle(activeTab === 'callingList'), position: 'relative' }}
                           onClick={() => {
                             setActiveTab('callingList')
                             setMobileDrawerOpen(false)
                           }}
                         >
                           <i className="fas fa-headset" style={{ width: '18px', textAlign: 'center' }}></i>
-                          Company Assign Data
+                          <span style={{ flex: 1 }}>Company Assign Data</span>
+                          {assignedLeadsCount > 0 && (
+                            <span style={{
+                              background: '#0d9488',
+                              color: '#ffffff',
+                              borderRadius: '9999px',
+                              padding: '2px 8px',
+                              fontSize: '0.7rem',
+                              fontWeight: '800'
+                            }}>
+                              {assignedLeadsCount}
+                            </span>
+                          )}
                         </button>
 
                         <button
@@ -1818,9 +1923,27 @@ function App() {
                   <button
                     className={`bottom-nav-item ${activeTab === 'callingList' ? 'active' : ''}`}
                     onClick={() => setActiveTab('callingList')}
+                    style={{ position: 'relative' }}
                   >
                     <i className="fas fa-headset"></i>
                     <span>Assign Data</span>
+                    {assignedLeadsCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: 'calc(50% - 18px)',
+                        background: '#0d9488',
+                        color: '#ffffff',
+                        borderRadius: '9999px',
+                        padding: '1px 5px',
+                        fontSize: '0.62rem',
+                        fontWeight: '800',
+                        minWidth: '15px',
+                        textAlign: 'center'
+                      }}>
+                        {assignedLeadsCount}
+                      </span>
+                    )}
                   </button>
 
                   <button

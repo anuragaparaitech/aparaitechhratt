@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import { leadsAPI, employeeAPI } from '../services/api'
 import { PREDEFINED_DOMAINS } from '../utils/domains'
+import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
 
 function AIDataDistributionCenter({ currentUser, showToast }) {
   // Navigation / active sub-view: 'entry' | 'distribution' | 'reports'
@@ -46,6 +47,13 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
     fetchEmployeesList()
     fetchReports()
   }, [])
+
+  // Auto-refresh reports metrics when on reports tab or when leads are assigned/updated
+  useAutoRefresh(fetchReports, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.DATA_ASSIGNED, SYNC_EVENTS.LEAD_STATUS_UPDATED],
+    enabled: activeSubTab === 'reports'
+  })
 
   const fetchEmployeesList = async () => {
     try {
@@ -312,6 +320,16 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
         if (showToast) {
           showToast(`🚀 ${res.message || `Successfully distributed ${res.count} clean leads!`}`, '#16a34a')
         }
+
+        // Broadcast real-time sync event to all employee portals immediately
+        emitSyncEvent(SYNC_EVENTS.DATA_ASSIGNED, {
+          targetEmails: targetEmployees.map(e => (e.email || '').toLowerCase()),
+          count: leadsToAssign.length,
+          batchId: res.batchId,
+          assignedBy: currentUser?.name || 'Administrator',
+          timestamp: Date.now()
+        })
+
         // Remove assigned leads from current AI staging results
         const assignedSet = new Set(leadsToAssign)
         const remaining = (aiResult?.records || []).filter(l => !assignedSet.has(l))
@@ -349,13 +367,14 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
       'College': l.college,
       'Domain': l.domain,
       'Priority': l.priority,
+      'Assigned Date & Time': l.assignedAt ? new Date(l.assignedAt).toLocaleString('en-IN') : (l.createdAt ? new Date(l.createdAt).toLocaleString('en-IN') : '—'),
+      'Work Status': l.status === 'Not Called' ? 'Pending (Not Worked)' : `Completed (${l.status})`,
+      'Work Done Date & Time': l.calledAt ? new Date(l.calledAt).toLocaleString('en-IN') : '—',
       'Call Status': l.status,
       'Call Notes / Remarks': l.callNotes || '—',
-      'Called Date': l.calledAt ? new Date(l.calledAt).toLocaleString('en-IN') : '—',
       'Assigned Employee': l.assignedTo?.name || '—',
       'Employee Email': l.assignedTo?.email || '—',
-      'Batch ID': l.batchId || '—',
-      'Date Distributed': new Date(l.createdAt).toLocaleDateString('en-IN')
+      'Batch ID': l.batchId || '—'
     }))
 
     const ws = XLSX.utils.json_to_sheet(exportRows)
@@ -1590,15 +1609,16 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                     <th>CONTACT</th>
                     <th>COLLEGE & DOMAIN</th>
                     <th>ASSIGNED TO</th>
-                    <th>CALL STATUS</th>
+                    <th>📅 ASSIGNED AT</th>
+                    <th>WORK STATUS</th>
+                    <th>📅 WORKED AT</th>
                     <th>CALL NOTES</th>
-                    <th>CALLED AT</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loadingReports ? (
                     <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
+                      <td colSpan="8" style={{ textAlign: 'center', padding: '24px' }}>
                         <i className="fas fa-spinner fa-spin"></i> Loading leads registry...
                       </td>
                     </tr>
@@ -1631,29 +1651,65 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                           <strong>{lead.assignedTo?.name || '—'}</strong>
                           <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{lead.assignedTo?.email}</div>
                         </td>
+                        <td style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fas fa-calendar-alt" style={{ color: '#0284c7' }}></i>
+                            <span>{(lead.assignedAt || lead.createdAt) ? new Date(lead.assignedAt || lead.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—'}</span>
+                          </div>
+                        </td>
                         <td>
-                          <span style={{
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            fontSize: '0.74rem',
-                            fontWeight: '800',
-                            background: lead.status === 'Interested' ? '#dcfce7' : (lead.status === 'Called' ? '#e0f2fe' : (lead.status === 'Not Interested' ? '#fee2e2' : '#f1f5f9')),
-                            color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#0369a1' : (lead.status === 'Not Interested' ? '#b91c1c' : '#475569'))
-                          }}>
-                            {lead.status === 'Interested' ? '🟢 Interested' : (lead.status === 'Called' ? '🔵 Called' : (lead.status === 'Not Interested' ? '🔴 Not Interested' : '⚪ Not Called'))}
-                          </span>
+                          {lead.status === 'Not Called' ? (
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.72rem',
+                              fontWeight: '800',
+                              background: '#fff7ed',
+                              color: '#c2410c',
+                              border: '1px solid #ffedd5',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              <i className="fas fa-clock"></i> ⏳ Pending (काम बाकी)
+                            </span>
+                          ) : (
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.72rem',
+                              fontWeight: '800',
+                              background: lead.status === 'Interested' ? '#dcfce7' : (lead.status === 'Called' ? '#e0f2fe' : '#fee2e2'),
+                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#0369a1' : '#b91c1c'),
+                              border: lead.status === 'Interested' ? '1px solid #86efac' : (lead.status === 'Called' ? '1px solid #bfdbfe' : '1px solid #fecaca'),
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              <i className="fas fa-check-circle"></i> ✅ Done ({lead.status})
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ fontSize: '0.75rem', color: '#334155', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                          {lead.calledAt ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#166534' }}>
+                              <i className="fas fa-history"></i>
+                              <span>{new Date(lead.calledAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                            </div>
+                          ) : (
+                            <span style={{ color: '#94a3b8' }}>— Not Done Yet</span>
+                          )}
                         </td>
                         <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {lead.callNotes || '—'}
-                        </td>
-                        <td style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap' }}>
-                          {lead.calledAt ? new Date(lead.calledAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
+                      <td colSpan="8" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
                         No leads match current registry filters.
                       </td>
                     </tr>

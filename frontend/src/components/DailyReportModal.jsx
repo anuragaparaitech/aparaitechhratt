@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { reportsAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, targetEmployee, initialReport }) {
   const isAdmin = currentUser?.role === 'admin'
@@ -174,12 +175,13 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
         res = await reportsAPI.submitDaily(payload)
       }
 
-      if (res.success) {
+        if (res.success) {
         if (showToast) {
           showToast(`✅ ${res.message || 'Daily report saved successfully!'}`, '#16a34a')
         } else {
           alert(`✅ ${res.message || 'Daily report saved successfully!'}`)
         }
+        emitSyncEvent(SYNC_EVENTS.DAILY_REPORT_SUBMITTED, { employeeEmail: activeEmployeeEmail })
         if (onSuccess) onSuccess(res.data)
         onClose()
       }

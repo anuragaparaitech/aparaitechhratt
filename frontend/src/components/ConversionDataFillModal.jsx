@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { conversionsAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
 
 const PAYMENT_OPTIONS = [
   {
@@ -137,6 +138,8 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
       } else {
         alert(data.message || 'Product conversion logged successfully!')
       }
+
+      emitSyncEvent(SYNC_EVENTS.CONVERSION_UPDATED, { candidateName: formData.candidateName })
 
       setFormData({
         candidateName: '',

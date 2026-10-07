@@ -1,11 +1,34 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { leadsAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
+import { playNotificationSound } from '../services/notificationService'
+
+// Format Date & Time cleanly: e.g. "06 Oct 2026, 04:25 PM"
+const formatDateTime = (dateVal) => {
+  if (!dateVal) return null
+  const d = new Date(dateVal)
+  if (isNaN(d.getTime())) return null
+  return d.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  })
+}
 
 function MyCallingList({ currentUser, showToast }) {
   const [leads, setLeads] = useState([])
   const [stats, setStats] = useState(null)
   const [filterOptions, setFilterOptions] = useState({ colleges: [], domains: [] })
   const [loading, setLoading] = useState(false)
+  const [isBackgroundSyncing, setIsBackgroundSyncing] = useState(false)
+  const [lastSyncTime, setLastSyncTime] = useState(null)
+  const prevLeadsCountRef = useRef(null)
+
+  // Primary Roster Sub-Tab: 'active' (Pending Work) | 'history' (Worked On) | 'all' (Complete Roster)
+  const [activeListTab, setActiveListTab] = useState('active')
 
   // Filters
   const [search, setSearch] = useState('')
@@ -21,10 +44,14 @@ function MyCallingList({ currentUser, showToast }) {
   const [activeNotes, setActiveNotes] = useState({})
   const [savingNoteId, setSavingNoteId] = useState(null)
 
-  const fetchLeads = async () => {
-    setLoading(true)
+  const fetchLeads = async (isSilent = false) => {
+    if (!isSilent) {
+      setLoading(true)
+    } else {
+      setIsBackgroundSyncing(true)
+    }
     try {
-      const params = {}
+      const params = { tab: activeListTab }
       if (statusFilter !== 'All') params.status = statusFilter
       if (collegeFilter !== 'All') params.college = collegeFilter
       if (domainFilter !== 'All') params.domain = domainFilter
@@ -33,46 +60,104 @@ function MyCallingList({ currentUser, showToast }) {
 
       const res = await leadsAPI.getMyCallingList(params)
       if (res.success) {
-        setLeads(res.leads || [])
+        const newLeads = res.leads || []
+
+        // Detect newly assigned leads during live background updates
+        if (prevLeadsCountRef.current !== null && newLeads.length > prevLeadsCountRef.current) {
+          const diff = newLeads.length - prevLeadsCountRef.current
+          playNotificationSound()
+          if (showToast) {
+            showToast(`🎉 ${diff} new company lead${diff > 1 ? 's' : ''} assigned to your desk!`, '#10b981')
+          }
+        }
+        prevLeadsCountRef.current = newLeads.length
+
+        setLeads(newLeads)
         setStats(res.stats || null)
         if (res.filters) setFilterOptions(res.filters)
+        setLastSyncTime(new Date())
 
-        // Prepopulate activeNotes
-        const notesObj = {}
-        ;(res.leads || []).forEach(l => {
-          notesObj[l._id] = l.callNotes || ''
+        // Prepopulate activeNotes safely without wiping user's unsaved in-progress typing
+        setActiveNotes(prev => {
+          const notesObj = { ...prev }
+          newLeads.forEach(l => {
+            if (notesObj[l._id] === undefined) {
+              notesObj[l._id] = l.callNotes || ''
+            }
+          })
+          return notesObj
         })
-        setActiveNotes(notesObj)
       }
     } catch (err) {
       console.error('Error fetching calling list:', err)
       const msg = err.response?.data?.message || err.message || 'Failed to load calling list'
-      if (showToast) showToast(`❌ ${msg}`, '#dc2626')
+      if (!isSilent && showToast) showToast(`❌ ${msg}`, '#dc2626')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
+      setIsBackgroundSyncing(false)
     }
   }
 
+  // Initial fetch & re-fetch on tab or filter change
   useEffect(() => {
-    fetchLeads()
-  }, [statusFilter, collegeFilter, domainFilter, priorityFilter])
+    fetchLeads(false)
+  }, [activeListTab, statusFilter, collegeFilter, domainFilter, priorityFilter])
 
-  // Handle Search on Enter or debounce
+  // Real-time synchronization: Auto-refresh every 5 seconds, on focus/visibility, & on instant sync events
+  useAutoRefresh(() => {
+    fetchLeads(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.DATA_ASSIGNED],
+    onFocus: true,
+    enabled: true
+  })
+
+  // Handle Search on Enter or submit
   const handleSearchSubmit = (e) => {
     e.preventDefault()
-    fetchLeads()
+    fetchLeads(false)
   }
 
-  // Update Status
+  // Update Status & Handle Moving to History vs Restoring to Active
   const handleStatusChange = async (leadId, newStatus) => {
+    const currentLead = leads.find(l => l._id === leadId)
     try {
       const res = await leadsAPI.updateStatus(leadId, { status: newStatus })
       if (res.success) {
-        setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
-        if (showToast) showToast(`✅ Status updated to "${newStatus}"`, '#16a34a')
-        // Refresh stats
-        const resStats = await leadsAPI.getMyCallingList({})
-        if (resStats.success) setStats(resStats.stats)
+        if (activeListTab === 'active') {
+          if (newStatus !== 'Not Called') {
+            // Card disappears from active pending list and moves into History!
+            setLeads(prev => prev.filter(l => l._id !== leadId))
+            if (showToast) {
+              showToast(`✅ "${currentLead?.name || 'Lead'}" marked as "${newStatus}" & moved to History! 📜`, '#16a34a')
+            }
+          } else {
+            setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
+          }
+        } else if (activeListTab === 'history') {
+          if (newStatus === 'Not Called') {
+            // Restored back to Active Pending list!
+            setLeads(prev => prev.filter(l => l._id !== leadId))
+            if (showToast) {
+              showToast(`🔄 "${currentLead?.name || 'Lead'}" restored back to Active Pending list!`, '#0284c7')
+            }
+          } else {
+            setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
+            if (showToast) showToast(`✅ Status updated to "${newStatus}"`, '#16a34a')
+          }
+        } else {
+          // 'all' view
+          setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
+          if (showToast) showToast(`✅ Status updated to "${newStatus}"`, '#16a34a')
+        }
+
+        // Refresh stats summary
+        const resStats = await leadsAPI.getMyCallingSummary().catch(() => null)
+        if (resStats?.success) setStats(resStats.stats)
+
+        // Broadcast event so admin reports update in real-time
+        emitSyncEvent(SYNC_EVENTS.LEAD_STATUS_UPDATED, { leadId, newStatus, userEmail: currentUser?.email })
       }
     } catch (err) {
       console.error(err)
@@ -89,6 +174,7 @@ function MyCallingList({ currentUser, showToast }) {
       if (res.success) {
         setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
         if (showToast) showToast('💾 Remarks saved successfully!', '#16a34a')
+        emitSyncEvent(SYNC_EVENTS.LEAD_STATUS_UPDATED, { leadId, userEmail: currentUser?.email })
       }
     } catch (err) {
       console.error(err)
@@ -100,17 +186,19 @@ function MyCallingList({ currentUser, showToast }) {
 
   // Handle Click to Call
   const handleCallClick = async (lead) => {
-    // If not called yet, prompt to mark as Called
     if (lead.status === 'Not Called') {
+      if (showToast) {
+        showToast(`📞 Calling ${lead.name}... moving to History as "Called"`, '#2563eb')
+      }
       setTimeout(() => {
         handleStatusChange(lead._id, 'Called')
-      }, 1000)
+      }, 900)
     }
   }
 
-  const completionPercent = stats?.totalAssigned > 0
-    ? Math.round(((stats.calledCount + stats.interestedCount + stats.notInterestedCount) / stats.totalAssigned) * 100)
-    : 0
+  const pendingDisplayCount = stats?.pendingCount ?? leads.filter(l => l.status === 'Not Called').length
+  const historyDisplayCount = stats?.historyCount ?? stats?.totalContacted ?? leads.filter(l => l.status !== 'Not Called').length
+  const totalDisplayCount = stats?.totalAssigned ?? leads.length
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
@@ -146,15 +234,15 @@ function MyCallingList({ currentUser, showToast }) {
             <i className="fas fa-headset"></i> COMPANY ASSIGN DATA
           </div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', letterSpacing: '-0.02em' }}>
-            Company Assign Data ({leads.length} Leads)
+            Company Assign Data Desk
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#cbd5e1' }}>
-            Assigned company leads with direct dialer, outcome tracking, and live conversion analytics.
+            AI-Distributed calling roster with real-time assignment timestamps, work tracking, and automated history.
           </p>
         </div>
 
-        {/* View Switcher & Refresh */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        {/* View Switcher & Live Sync Indicator */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ background: 'rgba(255, 255, 255, 0.15)', borderRadius: '10px', padding: '3px', display: 'flex', gap: '2px' }}>
             <button
               type="button"
@@ -190,21 +278,56 @@ function MyCallingList({ currentUser, showToast }) {
             </button>
           </div>
 
+          {/* Real-time live sync indicator */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+            background: 'rgba(255, 255, 255, 0.12)',
+            padding: '6px 12px',
+            borderRadius: '10px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            fontSize: '0.74rem',
+            color: '#f8fafc',
+            fontWeight: '600'
+          }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: isBackgroundSyncing ? '#38bdf8' : '#22c55e',
+              boxShadow: isBackgroundSyncing ? '0 0 10px #38bdf8' : '0 0 8px #22c55e',
+              display: 'inline-block',
+              transition: 'all 0.3s'
+            }} />
+            <span>{isBackgroundSyncing ? 'Syncing...' : 'Live Auto-Sync'}</span>
+            {lastSyncTime && (
+              <span style={{ opacity: 0.75, fontSize: '0.7rem' }}>
+                • {lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+          </div>
+
           <button
             type="button"
-            onClick={fetchLeads}
+            onClick={() => fetchLeads(false)}
+            title="Force refresh assigned leads"
             style={{
               padding: '8px 14px',
               borderRadius: '10px',
               border: '1px solid rgba(255, 255, 255, 0.25)',
-              background: 'rgba(255, 255, 255, 0.12)',
+              background: 'rgba(255, 255, 255, 0.15)',
               color: '#ffffff',
               fontWeight: '700',
               fontSize: '0.8rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s'
             }}
           >
-            <i className={`fas fa-sync-alt ${loading ? 'fa-spin' : ''}`}></i> Refresh
+            <i className={`fas fa-sync-alt ${loading || isBackgroundSyncing ? 'fa-spin' : ''}`}></i> Refresh
           </button>
         </div>
       </div>
@@ -284,6 +407,127 @@ function MyCallingList({ currentUser, showToast }) {
             <div style={{ width: `${stats?.conversionRate || 0}%`, background: '#0d9488', height: '100%' }} />
           </div>
         </div>
+      </div>
+
+      {/* ── Sub-Tab Navigation: Active (Pending) | History (Completed) | All ── */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        alignItems: 'center',
+        background: '#ffffff',
+        padding: '8px',
+        borderRadius: '16px',
+        border: '1px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+        flexWrap: 'wrap'
+      }}>
+        {/* Tab 1: Active Pending Data */}
+        <button
+          type="button"
+          onClick={() => setActiveListTab('active')}
+          style={{
+            flex: 1,
+            minWidth: '200px',
+            padding: '11px 16px',
+            borderRadius: '12px',
+            border: activeListTab === 'active' ? '2px solid #2563eb' : '1px solid transparent',
+            background: activeListTab === 'active' ? '#eff6ff' : 'transparent',
+            color: activeListTab === 'active' ? '#1d4ed8' : '#475569',
+            fontWeight: '800',
+            fontSize: '0.86rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.15s'
+          }}
+        >
+          <i className="fas fa-phone-volume" style={{ color: activeListTab === 'active' ? '#2563eb' : '#64748b' }}></i>
+          <span>⚡ चालू डेटा (Active Pending)</span>
+          <span style={{
+            background: activeListTab === 'active' ? '#2563eb' : '#cbd5e1',
+            color: '#ffffff',
+            borderRadius: '999px',
+            padding: '2px 9px',
+            fontSize: '0.74rem',
+            fontWeight: '800'
+          }}>
+            {pendingDisplayCount}
+          </span>
+        </button>
+
+        {/* Tab 2: Calling History (Completed Work) */}
+        <button
+          type="button"
+          onClick={() => setActiveListTab('history')}
+          style={{
+            flex: 1,
+            minWidth: '200px',
+            padding: '11px 16px',
+            borderRadius: '12px',
+            border: activeListTab === 'history' ? '2px solid #16a34a' : '1px solid transparent',
+            background: activeListTab === 'history' ? '#f0fdf4' : 'transparent',
+            color: activeListTab === 'history' ? '#15803d' : '#475569',
+            fontWeight: '800',
+            fontSize: '0.86rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.15s'
+          }}
+        >
+          <i className="fas fa-history" style={{ color: activeListTab === 'history' ? '#16a34a' : '#64748b' }}></i>
+          <span>📜 इतिहास (Calling History)</span>
+          <span style={{
+            background: activeListTab === 'history' ? '#16a34a' : '#cbd5e1',
+            color: '#ffffff',
+            borderRadius: '999px',
+            padding: '2px 9px',
+            fontSize: '0.74rem',
+            fontWeight: '800'
+          }}>
+            {historyDisplayCount}
+          </span>
+        </button>
+
+        {/* Tab 3: All Assigned Data */}
+        <button
+          type="button"
+          onClick={() => setActiveListTab('all')}
+          style={{
+            flex: 1,
+            minWidth: '160px',
+            padding: '11px 16px',
+            borderRadius: '12px',
+            border: activeListTab === 'all' ? '2px solid #0f172a' : '1px solid transparent',
+            background: activeListTab === 'all' ? '#f1f5f9' : 'transparent',
+            color: activeListTab === 'all' ? '#0f172a' : '#475569',
+            fontWeight: '800',
+            fontSize: '0.86rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.15s'
+          }}
+        >
+          <i className="fas fa-layer-group" style={{ color: activeListTab === 'all' ? '#0f172a' : '#64748b' }}></i>
+          <span>📑 सर्व डेटा (All Leads)</span>
+          <span style={{
+            background: activeListTab === 'all' ? '#0f172a' : '#cbd5e1',
+            color: '#ffffff',
+            borderRadius: '999px',
+            padding: '2px 9px',
+            fontSize: '0.74rem',
+            fontWeight: '800'
+          }}>
+            {totalDisplayCount}
+          </span>
+        </button>
       </div>
 
       {/* ── Interactive Filters Bar ─────────────────────────────────── */}
@@ -452,18 +696,20 @@ function MyCallingList({ currentUser, showToast }) {
       {viewMode === 'cards' && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
           gap: '14px'
         }}>
           {loading ? (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem', color: '#64748b' }}>
               <i className="fas fa-spinner fa-spin fa-2x"></i>
-              <div style={{ marginTop: '10px', fontWeight: '600' }}>Loading company assigned data...</div>
+              <div style={{ marginTop: '10px', fontWeight: '700' }}>Loading company assigned data...</div>
             </div>
           ) : leads.length > 0 ? (
             leads.map(lead => {
               const telLink = lead.cleanMobile ? `tel:+91${lead.cleanMobile}` : null
               const isSaving = savingNoteId === lead._id
+              const assignedFormatted = formatDateTime(lead.assignedAt || lead.createdAt)
+              const workedFormatted = formatDateTime(lead.calledAt || lead.updatedAt)
 
               return (
                 <div key={lead._id} style={{
@@ -471,7 +717,7 @@ function MyCallingList({ currentUser, showToast }) {
                   borderRadius: '16px',
                   border: lead.status === 'Interested'
                     ? '2px solid #86efac'
-                    : (lead.status === 'Not Called' ? '1.5px solid #fed7aa' : '1px solid #e2e8f0'),
+                    : (lead.status === 'Not Called' ? '1.5px solid #fed7aa' : (lead.status === 'Called' ? '1.5px solid #bfdbfe' : '1.5px solid #fecaca')),
                   boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
                   padding: '16px',
                   display: 'flex',
@@ -531,6 +777,81 @@ function MyCallingList({ currentUser, showToast }) {
                       </span>
                     </div>
 
+                    {/* ── Assignment Info & Work Status Timing Box ── */}
+                    <div style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '10px 12px',
+                      marginBottom: '10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '7px'
+                    }}>
+                      {/* Assigned Date & Time */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.76rem' }}>
+                        <span style={{ color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <i className="fas fa-calendar-alt" style={{ color: '#0284c7' }}></i>
+                          <span>डेटा असाइन (Assigned):</span>
+                        </span>
+                        <span style={{ fontWeight: '800', color: '#0f172a' }}>
+                          {assignedFormatted || 'Recent'}
+                        </span>
+                      </div>
+
+                      {/* Work Done Status (काम झाले का नाही) with Date & Time */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '0.76rem',
+                        paddingTop: '6px',
+                        borderTop: '1px dashed #e2e8f0'
+                      }}>
+                        <span style={{ color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <i className="fas fa-tasks" style={{ color: lead.status === 'Not Called' ? '#ea580c' : '#16a34a' }}></i>
+                          <span>काम स्थिती (Work):</span>
+                        </span>
+
+                        {lead.status === 'Not Called' ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: '#fff7ed',
+                            border: '1px solid #ffedd5',
+                            color: '#c2410c',
+                            fontWeight: '800',
+                            fontSize: '0.72rem'
+                          }}>
+                            <i className="fas fa-clock"></i> काम बाकी आहे (Not Worked)
+                          </span>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#eff6ff' : '#fef2f2'),
+                              border: lead.status === 'Interested' ? '1px solid #86efac' : (lead.status === 'Called' ? '1px solid #bfdbfe' : '1px solid #fecaca'),
+                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#1d4ed8' : '#b91c1c'),
+                              fontWeight: '800',
+                              fontSize: '0.72rem'
+                            }}>
+                              <i className="fas fa-check-circle"></i> काम झाले ({lead.status})
+                            </span>
+                            <span style={{ fontSize: '0.69rem', color: '#64748b', fontWeight: '700' }}>
+                              📅 {workedFormatted || 'Done'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Contact Channels */}
                     <div style={{
                       background: '#f8fafc',
@@ -585,9 +906,16 @@ function MyCallingList({ currentUser, showToast }) {
 
                     {/* Call Status Selector */}
                     <div style={{ marginBottom: '10px' }}>
-                      <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        Call Outcome Status:
-                      </label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase' }}>
+                          Call Outcome Status:
+                        </label>
+                        {activeListTab === 'active' && (
+                          <span style={{ fontSize: '0.67rem', color: '#0284c7', fontWeight: '700' }}>
+                            (Selecting shifts card to History)
+                          </span>
+                        )}
+                      </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
                         {[
                           { val: 'Not Called', label: '⚪ Not Called', bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' },
@@ -626,16 +954,16 @@ function MyCallingList({ currentUser, showToast }) {
                         <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase' }}>
                           Remarks & Follow-up Notes:
                         </label>
-                        {lead.calledAt && (
+                        {workedFormatted && (
                           <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>
-                            Last updated: {new Date(lead.calledAt).toLocaleDateString('en-IN')}
+                            Updated: {workedFormatted}
                           </span>
                         )}
                       </div>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <input
                           type="text"
-                          placeholder="e.g. 3rd year student, wants MERN webinar, follow up Friday"
+                          placeholder="e.g. Wants demo Friday 4pm, interested in MERN"
                           value={activeNotes[lead._id] || ''}
                           onChange={e => {
                             const val = e.target.value
@@ -679,12 +1007,97 @@ function MyCallingList({ currentUser, showToast }) {
                 </div>
               )
             })
+          ) : activeListTab === 'active' ? (
+            /* Empty State for Active (All worked leads moved to History) */
+            <div style={{
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              padding: '3.5rem 1.5rem',
+              background: '#ffffff',
+              borderRadius: '20px',
+              border: '2px dashed #86efac',
+              boxShadow: '0 4px 12px rgba(22, 163, 74, 0.05)'
+            }}>
+              <i className="fas fa-check-circle fa-3x" style={{ color: '#16a34a', marginBottom: '14px' }}></i>
+              <h3 style={{ margin: 0, color: '#15803d', fontSize: '1.25rem', fontWeight: '900' }}>
+                🎉 सर्व चालू काम पूर्ण झाले! (All Pending Calls Completed!)
+              </h3>
+              <p style={{ margin: '8px auto 16px', color: '#475569', fontSize: '0.86rem', maxWidth: '460px', lineHeight: 1.5 }}>
+                ज्या डेटा वर काम झाले आहे ते सर्व कार्ड्स इतिहास (Calling History) मध्ये सुरक्षित हलवले गेले आहेत.
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveListTab('history')}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  fontWeight: '800',
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
+                }}
+              >
+                <i className="fas fa-history"></i> Calling History पहा ({historyDisplayCount} Calls Done)
+              </button>
+            </div>
+          ) : activeListTab === 'history' ? (
+            /* Empty State for History */
+            <div style={{
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              padding: '3.5rem 1.5rem',
+              background: '#ffffff',
+              borderRadius: '20px',
+              border: '2px dashed #cbd5e1'
+            }}>
+              <i className="fas fa-history fa-3x" style={{ color: '#94a3b8', marginBottom: '14px' }}></i>
+              <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.2rem', fontWeight: '800' }}>
+                📜 अद्याप कोणताही इतिहास नाही (No Call History Yet)
+              </h3>
+              <p style={{ margin: '8px auto 16px', color: '#64748b', fontSize: '0.86rem', maxWidth: '460px', lineHeight: 1.5 }}>
+                चालू डेटा टॅबमधील लीड्सवर कॉल करून किंवा स्टेटस निवडल्यास ते येथे इतिहासामध्ये दिसतील.
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveListTab('active')}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  fontWeight: '800',
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
+                }}
+              >
+                <i className="fas fa-phone-volume"></i> चालू डेटा वर जा ({pendingDisplayCount} Pending Calls)
+              </button>
+            </div>
           ) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+            /* General Empty State */
+            <div style={{
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              padding: '3.5rem',
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0'
+            }}>
               <i className="fas fa-clipboard-check fa-3x" style={{ color: '#cbd5e1', marginBottom: '12px' }}></i>
               <h3 style={{ margin: 0, color: '#1e293b' }}>No Company Assigned Data Found</h3>
               <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '0.85rem' }}>
-                You have no leads assigned under the selected filters. Check with your administrator to assign company data.
+                You have no leads assigned under the selected filters.
               </p>
             </div>
           )}
@@ -700,11 +1113,11 @@ function MyCallingList({ currentUser, showToast }) {
                 <tr>
                   <th>CANDIDATE</th>
                   <th>MOBILE</th>
-                  <th>EMAIL</th>
-                  <th>COLLEGE</th>
-                  <th>DOMAIN</th>
-                  <th>PRIORITY</th>
-                  <th>STATUS</th>
+                  <th>COLLEGE & DOMAIN</th>
+                  <th>📅 ASSIGNED AT</th>
+                  <th>WORK STATUS</th>
+                  <th>📅 WORKED AT</th>
+                  <th>OUTCOME</th>
                   <th>NOTES</th>
                   <th>ACTION</th>
                 </tr>
@@ -713,29 +1126,85 @@ function MyCallingList({ currentUser, showToast }) {
                 {leads.length > 0 ? (
                   leads.map(lead => {
                     const isSaving = savingNoteId === lead._id
+                    const assignedFormatted = formatDateTime(lead.assignedAt || lead.createdAt)
+                    const workedFormatted = formatDateTime(lead.calledAt || lead.updatedAt)
+
                     return (
                       <tr key={lead._id}>
-                        <td><strong>{lead.name}</strong></td>
+                        <td>
+                          <strong>{lead.name}</strong>
+                          <div>
+                            <span style={{
+                              background: lead.priority === 'Hot' ? '#fee2e2' : (lead.priority === 'Warm' ? '#fef3c7' : '#f1f5f9'),
+                              color: lead.priority === 'Hot' ? '#b91c1c' : (lead.priority === 'Warm' ? '#b45309' : '#475569'),
+                              padding: '1px 5px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: '800'
+                            }}>
+                              {lead.priority}
+                            </span>
+                          </div>
+                        </td>
                         <td>
                           <span style={{ fontFamily: 'monospace', fontWeight: '800', color: '#0f172a' }}>
                             {lead.mobile || '—'}
                           </span>
+                          {lead.email && <div style={{ fontSize: '0.72rem', color: '#2563eb' }}>{lead.email}</div>}
                         </td>
-                        <td>{lead.email || '—'}</td>
-                        <td>{lead.college}</td>
                         <td>
-                          <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '700' }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lead.college}</div>
+                          <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
                             {lead.domain}
                           </span>
                         </td>
+                        <td style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fas fa-calendar-alt" style={{ color: '#0284c7' }}></i>
+                            <span>{assignedFormatted || '—'}</span>
+                          </div>
+                        </td>
                         <td>
-                          <span style={{
-                            background: lead.priority === 'Hot' ? '#fee2e2' : (lead.priority === 'Warm' ? '#fef3c7' : '#f1f5f9'),
-                            color: lead.priority === 'Hot' ? '#b91c1c' : (lead.priority === 'Warm' ? '#b45309' : '#475569'),
-                            padding: '2px 7px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '800'
-                          }}>
-                            {lead.priority}
-                          </span>
+                          {lead.status === 'Not Called' ? (
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.72rem',
+                              fontWeight: '800',
+                              background: '#fff7ed',
+                              color: '#c2410c',
+                              border: '1px solid #ffedd5',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              <i className="fas fa-clock"></i> ⏳ Pending (काम बाकी)
+                            </span>
+                          ) : (
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.72rem',
+                              fontWeight: '800',
+                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#eff6ff' : '#fef2f2'),
+                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#1d4ed8' : '#b91c1c'),
+                              border: lead.status === 'Interested' ? '1px solid #86efac' : (lead.status === 'Called' ? '1px solid #bfdbfe' : '1px solid #fecaca'),
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              <i className="fas fa-check-circle"></i> ✅ Done ({lead.status})
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ fontSize: '0.75rem', color: '#334155', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                          {lead.calledAt ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#166534' }}>
+                              <i className="fas fa-history"></i>
+                              <span>{workedFormatted}</span>
+                            </div>
+                          ) : (
+                            <span style={{ color: '#94a3b8' }}>— Not Done Yet</span>
+                          )}
                         </td>
                         <td>
                           <select
@@ -803,7 +1272,11 @@ function MyCallingList({ currentUser, showToast }) {
                 ) : (
                   <tr>
                     <td colSpan="9" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
-                      No calling leads match current filters.
+                      {activeListTab === 'active'
+                        ? '🎉 No pending leads! All worked leads have moved to Calling History.'
+                        : (activeListTab === 'history'
+                            ? '📜 No call history yet.'
+                            : 'No calling leads match current filters.')}
                     </td>
                   </tr>
                 )}

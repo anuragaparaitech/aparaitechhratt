@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { analyticsAPI, reportsAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 import DailyReportModal from './DailyReportModal'
 import MailBlastModal from './MailBlastModal'
 
@@ -14,8 +15,8 @@ function PerformanceDashboard({ currentUser, showToast }) {
 
   const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr'
 
-  const fetchPerformance = async () => {
-    setLoading(true)
+  const fetchPerformance = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const pRes = await analyticsAPI.getMyPerformance()
       if (pRes?.success) setPerfData(pRes.data)
@@ -27,15 +28,25 @@ function PerformanceDashboard({ currentUser, showToast }) {
       if (mRes?.success) setMailHistory(mRes.data || [])
     } catch (err) {
       console.error('Performance fetch error:', err)
-      showToast('❌ Failed to load performance data', '#dc2626')
+      if (!isSilent) showToast('❌ Failed to load performance data', '#dc2626')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchPerformance()
+    fetchPerformance(false)
   }, [])
+
+  // Auto-refresh performance data every 5 seconds, on focus, and on reports/conversions events
+  useAutoRefresh(() => {
+    fetchPerformance(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.DAILY_REPORT_SUBMITTED, SYNC_EVENTS.CONVERSION_UPDATED],
+    onFocus: true,
+    enabled: true
+  })
 
   // Export Daily Reports to CSV
   const exportDailyToCSV = () => {

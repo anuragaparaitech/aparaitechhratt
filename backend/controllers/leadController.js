@@ -330,13 +330,26 @@ export const getAdminStatsAndLeads = async (req, res) => {
 export const getMyCallingList = async (req, res) => {
   try {
     const userEmail = req.user.email.toLowerCase()
-    const { status, college, domain, priority, search } = req.query
+    const { status, college, domain, priority, search, tab = 'active' } = req.query
 
     const filter = { 'assignedTo.email': userEmail }
 
-    if (status && status !== 'All') {
+    // Tab scoping:
+    // 'active' / 'pending' -> leads where work is NOT done yet (Not Called)
+    // 'history' -> leads where work HAS been done (Called, Interested, Not Interested)
+    // 'all' -> all assigned leads
+    if (tab === 'active' || tab === 'pending') {
+      filter.status = 'Not Called'
+    } else if (tab === 'history') {
+      if (status && status !== 'All') {
+        filter.status = status
+      } else {
+        filter.status = { $in: ['Called', 'Interested', 'Not Interested'] }
+      }
+    } else if (status && status !== 'All') {
       filter.status = status
     }
+
     if (college && college !== 'All') {
       filter.college = college
     }
@@ -369,13 +382,36 @@ export const getMyCallingList = async (req, res) => {
     const totalContacted = calledCount + interestedCount + notInterestedCount
     const conversionRate = totalContacted > 0 ? Math.round((interestedCount / totalContacted) * 100) : 0
 
-    const leads = await Lead.find(filter).sort({ priorityScore: -1, createdAt: -1 })
+    if (req.query.summaryOnly === 'true' || req.query.summaryOnly === true) {
+      return res.status(200).json({
+        success: true,
+        stats: {
+          totalAssigned,
+          pendingCount,
+          calledCount,
+          interestedCount,
+          notInterestedCount,
+          totalContacted,
+          historyCount: totalContacted,
+          conversionRate
+        },
+        count: totalAssigned
+      })
+    }
+
+    // Tab-sensitive sorting: history shows newest calls first; active shows highest priority first
+    const sortOrder = tab === 'history'
+      ? { calledAt: -1, updatedAt: -1, createdAt: -1 }
+      : { priorityScore: -1, createdAt: -1 }
+
+    const leads = await Lead.find(filter).sort(sortOrder)
 
     const uniqueColleges = await Lead.distinct('college', { 'assignedTo.email': userEmail })
     const uniqueDomains = await Lead.distinct('domain', { 'assignedTo.email': userEmail })
 
     return res.status(200).json({
       success: true,
+      currentTab: tab,
       stats: {
         totalAssigned,
         pendingCount,
@@ -383,6 +419,7 @@ export const getMyCallingList = async (req, res) => {
         interestedCount,
         notInterestedCount,
         totalContacted,
+        historyCount: totalContacted,
         conversionRate
       },
       filters: {
@@ -426,11 +463,17 @@ export const updateLeadStatusAndNotes = async (req, res) => {
       lead.status = status
       if (status !== 'Not Called') {
         lead.calledAt = new Date()
+      } else {
+        lead.calledAt = null
       }
     }
 
     if (callNotes !== undefined) {
       lead.callNotes = callNotes
+    }
+
+    if (!lead.assignedAt) {
+      lead.assignedAt = lead.createdAt || new Date()
     }
 
     await lead.save()

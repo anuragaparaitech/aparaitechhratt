@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { taskAPI, employeeAPI, projectAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
 
 const STATUS_COLUMNS = [
   { id: 'To Do', label: 'To Do', color: '#64748b', bg: '#f1f5f9', icon: 'fa-clipboard-list' },
@@ -20,6 +21,8 @@ function SoftwareTaskManager({ currentUser, showToast }) {
   const [employees, setEmployees] = useState([])
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isBackgroundSyncing, setIsBackgroundSyncing] = useState(false)
+  const [lastSyncTime, setLastSyncTime] = useState(null)
   const [viewMode, setViewMode] = useState('kanban') // 'kanban' or 'list'
 
   // Filter states
@@ -74,22 +77,38 @@ function SoftwareTaskManager({ currentUser, showToast }) {
   )
 
   useEffect(() => {
-    fetchTasks()
+    fetchTasks(false)
     fetchAuxiliaryData()
   }, [])
 
-  const fetchTasks = async () => {
-    setLoading(true)
+  // Auto-refresh tasks every 5 seconds, on tab focus, and on instant TASK_ASSIGNED/UPDATED events
+  useAutoRefresh(() => {
+    fetchTasks(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.TASK_ASSIGNED, SYNC_EVENTS.TASK_UPDATED],
+    onFocus: true,
+    enabled: true
+  })
+
+  const fetchTasks = async (isSilent = false) => {
+    if (!isSilent) {
+      setLoading(true)
+    } else {
+      setIsBackgroundSyncing(true)
+    }
     try {
       const res = await taskAPI.getAllTasks()
       if (res.success) {
         setTasks(res.data || [])
+        setLastSyncTime(new Date())
       }
     } catch (err) {
       console.error('Error fetching tasks:', err)
-      showToast('⚠️ Could not load sprint tasks', '#f59e0b')
+      if (!isSilent) showToast('⚠️ Could not load sprint tasks', '#f59e0b')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
+      setIsBackgroundSyncing(false)
     }
   }
 
@@ -119,6 +138,8 @@ function SoftwareTaskManager({ currentUser, showToast }) {
         if (selectedTask && selectedTask._id === taskId) {
           setSelectedTask(res.data)
         }
+        // Emit task updated event
+        emitSyncEvent(SYNC_EVENTS.TASK_UPDATED, { taskId, status: newStatus, userEmail: currentUser?.email })
       }
     } catch (err) {
       console.error('Error updating status:', err)
@@ -160,6 +181,13 @@ function SoftwareTaskManager({ currentUser, showToast }) {
         // Reset
         setNewTitle('')
         setNewDesc('')
+        // Broadcast task assigned event to developers immediately
+        emitSyncEvent(SYNC_EVENTS.TASK_ASSIGNED, {
+          taskId: res.data?._id,
+          assignedToEmail: newAssignee?.toLowerCase(),
+          title: newTitle.trim(),
+          userEmail: currentUser?.email
+        })
       } else {
         showToast(`❌ ${res.message || 'Failed to create task'}`, '#ef4444')
       }
@@ -308,6 +336,58 @@ function SoftwareTaskManager({ currentUser, showToast }) {
               <i className="fas fa-list"></i> List
             </button>
           </div>
+
+          {/* Live Auto-Sync Indicator */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+            background: 'rgba(255, 255, 255, 0.12)',
+            padding: '6px 12px',
+            borderRadius: '10px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            fontSize: '0.74rem',
+            color: '#f8fafc',
+            fontWeight: '600'
+          }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: isBackgroundSyncing ? '#38bdf8' : '#22c55e',
+              boxShadow: isBackgroundSyncing ? '0 0 10px #38bdf8' : '0 0 8px #22c55e',
+              display: 'inline-block',
+              transition: 'all 0.3s'
+            }} />
+            <span>{isBackgroundSyncing ? 'Syncing...' : 'Live Auto-Sync'}</span>
+            {lastSyncTime && (
+              <span style={{ opacity: 0.75, fontSize: '0.7rem' }}>
+                • {lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => fetchTasks(false)}
+            title="Force refresh sprint board"
+            style={{
+              padding: '8px 14px',
+              borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              background: 'rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              fontWeight: '700',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <i className={`fas fa-sync-alt ${loading || isBackgroundSyncing ? 'fa-spin' : ''}`}></i> Refresh
+          </button>
 
           {isAnuragOrAdmin && (
             <button

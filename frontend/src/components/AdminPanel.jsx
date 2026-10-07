@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
 import { employeeAPI, attendanceAPI, holidayAPI, faceAPI, reportsAPI, analyticsAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 import { API_URL } from '../services/api'
 import AddEmployeeModal from './AddEmployeeModal'
 import MarkAttendanceModal from './MarkAttendanceModal'
@@ -142,8 +143,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   const chartInstance = useRef(null)
 
   // Fetch initial data
-  const fetchData = async () => {
-    setLoadingLogs(true)
+  const fetchData = async (isSilent = false) => {
+    if (!isSilent) setLoadingLogs(true)
     setLogsError(false)
     try {
       const [empsData, attsData, holsData, missingData, dailyData, mailData, teamData, revData, targetRes, bdaRes] = await Promise.all([
@@ -178,28 +179,31 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
       console.error(err)
       setLogsError(true)
       const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch database logs'
-      showToast(`❌ ${errorMsg}`, '#dc2626')
+      if (!isSilent) showToast(`❌ ${errorMsg}`, '#dc2626')
     } finally {
-      setLoadingLogs(false)
+      if (!isSilent) setLoadingLogs(false)
     }
   }
 
   useEffect(() => {
-    fetchData()
-
-    // Polling interval (every 15 seconds)
-    const interval = setInterval(async () => {
-      try {
-        const attsData = await attendanceAPI.getAll()
-        setLiveSessions(Array.isArray(attsData) ? [] : (attsData.liveSessions || []))
-        setLastLiveUpdate(new Date())
-      } catch (err) {
-        console.error('Polling error', err)
-      }
-    }, 15000)
-
-    return () => clearInterval(interval)
+    fetchData(false)
   }, [])
+
+  // Auto-refresh admin logs every 5 seconds, on window focus, and on any workforce events
+  useAutoRefresh(() => {
+    fetchData(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [
+      SYNC_EVENTS.ATTENDANCE_UPDATED,
+      SYNC_EVENTS.DAILY_REPORT_SUBMITTED,
+      SYNC_EVENTS.LEAVE_UPDATED,
+      SYNC_EVENTS.CONVERSION_UPDATED,
+      SYNC_EVENTS.DATA_ASSIGNED
+    ],
+    onFocus: true,
+    enabled: true
+  })
 
   // Render & Update Chart.js Monthly Overview
   useEffect(() => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { reportsAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function SoftwareDailyReportModal({ isOpen, onClose, currentUser, showToast, onReportSubmitted }) {
   const [loading, setLoading] = useState(false)
@@ -67,6 +68,7 @@ function SoftwareDailyReportModal({ isOpen, onClose, currentUser, showToast, onR
       const res = await reportsAPI.submitDaily(payload)
       if (res.success) {
         showToast(isExisting ? '✅ Software Daily Report updated successfully!' : '🚀 Software Daily Report submitted successfully!', '#10b981')
+        emitSyncEvent(SYNC_EVENTS.DAILY_REPORT_SUBMITTED, { employeeEmail: currentUser.email })
         if (onReportSubmitted) onReportSubmitted(res.data)
         onClose()
       } else {

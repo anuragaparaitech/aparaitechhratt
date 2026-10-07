@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { attendanceAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function MarkAttendanceModal({ isOpen, onClose, employee, onAttendanceMarked, showToast }) {
   const getTodayStr = () => new Date().toISOString().split('T')[0]
@@ -32,6 +33,7 @@ function MarkAttendanceModal({ isOpen, onClose, employee, onAttendanceMarked, sh
       })
 
       showToast(`✅ Attendance saved for ${employee.name}`, '#22c55e')
+      emitSyncEvent(SYNC_EVENTS.ATTENDANCE_UPDATED, { employeeEmail: employee.email })
       onAttendanceMarked()
       onClose()
     } catch (err) {

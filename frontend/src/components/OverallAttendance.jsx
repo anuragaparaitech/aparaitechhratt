@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
+import { subscribeSyncEvents, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function OverallAttendance({ employees, attendance, liveSessions, holidays, onRefresh }) {
   // ── Date Range Helper ──────────────────────────────────────────────────────
@@ -25,7 +26,7 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
   const [rowsPerPage, setRowsPerPage] = useState(10)
   
   // Auto refresh
-  const [countdown, setCountdown] = useState(30)
+  const [countdown, setCountdown] = useState(5)
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
 
   // Chart refs
@@ -37,18 +38,27 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
   const deptChartInstance = useRef(null)
   const pieChartInstance = useRef(null)
 
-  // ── Trigger auto refresh every 30s ──────────────────────────────────────────
+  // ── Trigger auto refresh every 5s & on live attendance sync event ────────────
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
           handleRefresh()
-          return 30
+          return 5
         }
         return prev - 1
       })
     }, 1000)
-    return () => clearInterval(timer)
+
+    const unsubscribe = subscribeSyncEvents(() => {
+      handleRefresh()
+      setCountdown(5)
+    }, [SYNC_EVENTS.ATTENDANCE_UPDATED])
+
+    return () => {
+      clearInterval(timer)
+      unsubscribe()
+    }
   }, [])
 
   const handleRefresh = async () => {

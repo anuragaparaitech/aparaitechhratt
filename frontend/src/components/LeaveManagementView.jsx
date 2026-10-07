@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { leaveAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
 
 // Company Leave Policy Annual Quotas
 const LEAVE_CATEGORIES = [
@@ -40,11 +41,21 @@ function LeaveManagementView({ currentUser, showToast }) {
   )
 
   useEffect(() => {
-    fetchLeaves()
+    fetchLeaves(false)
   }, [])
 
-  const fetchLeaves = async () => {
-    setLoading(true)
+  // Auto-refresh leave statuses every 5 seconds, on tab focus, and on instant LEAVE_UPDATED events
+  useAutoRefresh(() => {
+    fetchLeaves(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.LEAVE_UPDATED],
+    onFocus: true,
+    enabled: true
+  })
+
+  const fetchLeaves = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const myRes = await leaveAPI.getMyLeaves()
       if (myRes?.success) setMyLeaves(myRes.data || [])
@@ -55,9 +66,9 @@ function LeaveManagementView({ currentUser, showToast }) {
       }
     } catch (err) {
       console.error('Error fetching leaves:', err)
-      if (showToast) showToast('⚠️ Could not load leave records', '#f59e0b')
+      if (!isSilent && showToast) showToast('⚠️ Could not load leave records', '#f59e0b')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 
@@ -100,6 +111,7 @@ function LeaveManagementView({ currentUser, showToast }) {
         setStartDate('')
         setEndDate('')
         setReason('')
+        emitSyncEvent(SYNC_EVENTS.LEAVE_UPDATED, { leaveId: res.data?._id, action: 'applied', userEmail: currentUser?.email })
       } else {
         if (showToast) showToast(`❌ ${res?.message || 'Failed to submit application'}`, '#ef4444')
       }
@@ -121,6 +133,7 @@ function LeaveManagementView({ currentUser, showToast }) {
         if (showToast) showToast('✓ Leave application cancelled successfully', '#10b981')
         setMyLeaves(prev => prev.filter(l => l._id !== leaveId))
         setAllLeaves(prev => prev.filter(l => l._id !== leaveId))
+        emitSyncEvent(SYNC_EVENTS.LEAVE_UPDATED, { leaveId, action: 'cancelled', userEmail: currentUser?.email })
       } else {
         if (showToast) showToast(`❌ ${res?.message || 'Could not cancel leave'}`, '#ef4444')
       }
@@ -143,6 +156,7 @@ function LeaveManagementView({ currentUser, showToast }) {
         if (showToast) showToast(`✓ Leave application marked as ${status}`, '#10b981')
         setAllLeaves(prev => prev.map(l => l._id === leaveId ? res.data : l))
         setMyLeaves(prev => prev.map(l => l._id === leaveId ? res.data : l))
+        emitSyncEvent(SYNC_EVENTS.LEAVE_UPDATED, { leaveId, status, userEmail: currentUser?.email })
       }
     } catch (err) {
       console.error('Error updating leave status:', err)

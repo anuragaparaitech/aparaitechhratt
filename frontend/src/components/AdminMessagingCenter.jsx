@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { employeeAPI, messageAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function AdminMessagingCenter({ currentUser, showToast }) {
   const [employees, setEmployees] = useState([])
@@ -134,6 +135,7 @@ function AdminMessagingCenter({ currentUser, showToast }) {
         } else {
           showToast('⚠️ Message(s) saved in-app, but email delivery failed.', '#eab308')
         }
+        emitSyncEvent(SYNC_EVENTS.MESSAGE_SENT, { employeeIds: selectedEmpIds })
         setSubject('')
         setMessage('')
         setAttachment(null)
@@ -178,6 +180,7 @@ function AdminMessagingCenter({ currentUser, showToast }) {
 
       if (res.success) {
         showToast('📢 Broadcast completed successfully!', '#22c55e')
+        emitSyncEvent(SYNC_EVENTS.MESSAGE_SENT, { broadcast: true, team: broadcastTeam })
         setBroadcastResult({
           total: res.totalEmployees,
           sent: res.sentCount,

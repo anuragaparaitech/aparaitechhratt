@@ -539,6 +539,11 @@ export const leadsAPI = {
     const response = await api.get('/api/leads/my-calling-list', { params })
     return response.data
   },
+  // Employee: Get lightweight calling summary (counts only for fast auto-refresh)
+  getMyCallingSummary: async () => {
+    const response = await api.get('/api/leads/my-calling-list', { params: { summaryOnly: true } })
+    return response.data
+  },
   // Employee / Admin: Update call status and notes
   updateStatus: async (id, data) => {
     const response = await api.patch(`/api/leads/${id}/status`, data)

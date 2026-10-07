@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { conversionsAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
 
 export default function ConversionPipelineView({ currentUser, showToast, onOpenAddModal }) {
   const [conversions, setConversions] = useState([])
@@ -23,9 +24,9 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
   // Receipt Preview Modal State
   const [viewingReceipt, setViewingReceipt] = useState(null)
 
-  const fetchConversions = async () => {
+  const fetchConversions = async (isSilent = false) => {
     try {
-      setLoading(true)
+      if (!isSilent) setLoading(true)
       const result = await conversionsAPI.getAll({ search })
       if (result.success) {
         setConversions(result.data || [])
@@ -34,13 +35,23 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
     } catch (err) {
       console.error('Error fetching conversions:', err)
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchConversions()
+    fetchConversions(false)
   }, [search])
+
+  // Live Auto-Refresh every 5 seconds, on window focus, and on CONVERSION_UPDATED events
+  useAutoRefresh(() => {
+    fetchConversions(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.CONVERSION_UPDATED],
+    onFocus: true,
+    enabled: true
+  })
 
   const handleOpenFinalize = (candidate) => {
     setActiveCandidate(candidate)
@@ -96,6 +107,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
 
       setFinalizeModalOpen(false)
       setActiveCandidate(null)
+      emitSyncEvent(SYNC_EVENTS.CONVERSION_UPDATED, { candidateId: activeCandidate._id })
       fetchConversions()
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Error recording finalize payment'

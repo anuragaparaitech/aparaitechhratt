@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { reportsAPI, analyticsAPI, attendanceAPI } from '../services/api'
+import { reportsAPI, analyticsAPI, attendanceAPI, leadsAPI } from '../services/api'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 import DailyReportModal from './DailyReportModal'
 import MailBlastModal from './MailBlastModal'
 import ConversionDataFillModal from './ConversionDataFillModal'
@@ -14,6 +15,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
   const [todayAttendance, setTodayAttendance] = useState(null)
   const [activeSession, setActiveSession] = useState(null)
   const [teamOverview, setTeamOverview] = useState(null)
+  const [callingStats, setCallingStats] = useState(null)
 
   // Modals
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
@@ -24,8 +26,8 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
 
   const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'hr'
 
-  const fetchData = async () => {
-    setLoading(true)
+  const fetchData = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const todayStr = new Date().toISOString().split('T')[0]
 
@@ -51,6 +53,12 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
         setActiveSession(userSession || null)
       }
 
+      // 4. Fetch Calling List / Assigned Leads Summary
+      const leadsRes = await leadsAPI.getMyCallingSummary().catch(() => null)
+      if (leadsRes?.success && leadsRes.stats) {
+        setCallingStats(leadsRes.stats)
+      }
+
       // 5. If manager/admin, fetch team overview
       if (isManagerOrAdmin) {
         const teamRes = await analyticsAPI.getTeamOverview().catch(() => null)
@@ -61,15 +69,29 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
     } catch (err) {
       console.error('Dashboard load error:', err)
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 45000)
-    return () => clearInterval(interval)
+    fetchData(false)
   }, [currentUser?.email])
+
+  // Live Auto-Refresh every 5 seconds, on tab focus, and on any real-time system events
+  useAutoRefresh(() => {
+    fetchData(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [
+      SYNC_EVENTS.DATA_ASSIGNED,
+      SYNC_EVENTS.ATTENDANCE_UPDATED,
+      SYNC_EVENTS.CONVERSION_UPDATED,
+      SYNC_EVENTS.DAILY_REPORT_SUBMITTED,
+      SYNC_EVENTS.LEAD_STATUS_UPDATED
+    ],
+    onFocus: true,
+    enabled: true
+  })
 
   // Check 7 PM Reminder condition
   const now = new Date()
@@ -547,14 +569,34 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                   transition: 'all 0.2s',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '4px'
+                  gap: '4px',
+                  position: 'relative'
                 }}
               >
-                <div style={{ color: '#0d9488', fontSize: '1.25rem' }}>
-                  <i className="fas fa-headset"></i>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ color: '#0d9488', fontSize: '1.25rem' }}>
+                    <i className="fas fa-headset"></i>
+                  </div>
+                  {callingStats?.totalAssigned > 0 && (
+                    <span style={{
+                      background: '#0d9488',
+                      color: '#ffffff',
+                      fontSize: '0.7rem',
+                      fontWeight: '800',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      boxShadow: '0 2px 5px rgba(13,148,136,0.2)'
+                    }}>
+                      {callingStats.pendingCount > 0 ? `${callingStats.pendingCount} Pending` : `${callingStats.totalAssigned} Leads`}
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#134e4a' }}>Company Assign Data</div>
-                <div style={{ fontSize: '0.72rem', color: '#0f766e' }}>AI-Distributed Calling Desk</div>
+                <div style={{ fontSize: '0.72rem', color: '#0f766e' }}>
+                  {callingStats?.totalAssigned > 0
+                    ? `${callingStats.totalAssigned} Total Leads • ${callingStats.calledCount || 0} Called`
+                    : 'AI-Distributed Calling Desk'}
+                </div>
               </button>
 
               {/* Leave Management Button */}

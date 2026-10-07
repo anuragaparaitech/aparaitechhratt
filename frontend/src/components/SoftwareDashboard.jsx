@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { taskAPI, projectAPI, reportsAPI, attendanceAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 import SoftwareDailyReportModal from './SoftwareDailyReportModal'
 import MarkAttendanceModal from './MarkAttendanceModal'
 
@@ -17,11 +18,26 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
   const isAfter7PM = currentHour >= 19
 
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    loadDashboardData(false)
+  }, [currentUser?.email])
 
-  const loadDashboardData = async () => {
-    setLoading(true)
+  // Live Auto-Refresh every 5 seconds, on tab focus, and on any sprint/attendance events
+  useAutoRefresh(() => {
+    loadDashboardData(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [
+      SYNC_EVENTS.TASK_ASSIGNED,
+      SYNC_EVENTS.TASK_UPDATED,
+      SYNC_EVENTS.ATTENDANCE_UPDATED,
+      SYNC_EVENTS.DAILY_REPORT_SUBMITTED
+    ],
+    onFocus: true,
+    enabled: true
+  })
+
+  const loadDashboardData = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const [tRes, pRes, rRes, aRes] = await Promise.allSettled([
         taskAPI.getMyTasks(),
@@ -37,7 +53,7 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
     } catch (err) {
       console.error('SoftwareDashboard load error:', err)
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 

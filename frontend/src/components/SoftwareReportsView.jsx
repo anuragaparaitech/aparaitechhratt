@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { reportsAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 import * as XLSX from 'xlsx'
 import SoftwareDailyReportModal from './SoftwareDailyReportModal'
 
@@ -14,12 +15,8 @@ function SoftwareReportsView({ currentUser, showToast }) {
 
   const isManagerOrAdmin = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.email === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7017'
 
-  useEffect(() => {
-    fetchReports()
-  }, [dateFilter, devFilter])
-
-  const fetchReports = async () => {
-    setLoading(true)
+  const fetchReports = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const params = {
         reportType: 'software'
@@ -33,11 +30,25 @@ function SoftwareReportsView({ currentUser, showToast }) {
       }
     } catch (err) {
       console.error('Error fetching software reports:', err)
-      showToast('⚠️ Could not load reports history', '#f59e0b')
+      if (!isSilent) showToast('⚠️ Could not load reports history', '#f59e0b')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchReports(false)
+  }, [dateFilter, devFilter])
+
+  // Live Auto-Refresh every 5 seconds, on window focus, and on DAILY_REPORT_SUBMITTED
+  useAutoRefresh(() => {
+    fetchReports(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
+    onFocus: true,
+    enabled: true
+  })
 
   // Compute analytics
   const totalHours = reports.reduce((acc, r) => acc + (Number(r.hoursWorked) || 0), 0)

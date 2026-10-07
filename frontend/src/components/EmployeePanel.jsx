@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { attendanceAPI, holidayAPI, faceAPI, reportsAPI } from '../services/api'
+import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
 import { API_URL } from '../services/api'
 import ChangePwdModal from './ChangePwdModal'
 import ChangePinModal from './ChangePinModal'
@@ -78,14 +79,17 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
     faceAPI.get(currentUser.email).then(d => {
       if (d.success && d.enrolled) setEnrolledFaceUrl(d.faceImageUrl)
     }).catch(() => {})
-
-    // Poll to refresh UI state every 30 seconds
-    const interval = setInterval(() => {
-      fetchEmployeeData()
-    }, 30000)
-
-    return () => clearInterval(interval)
   }, [currentUser.email])
+
+  // Auto-refresh employee data every 5 seconds, on tab focus, and on attendance events
+  useAutoRefresh(() => {
+    fetchEmployeeData()
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.ATTENDANCE_UPDATED],
+    onFocus: true,
+    enabled: true
+  })
 
   // ── Triggered by FaceVerificationModal after successful verification ──────────
   const handleVerifiedCheckIn = async (capturedImageDataUrl, faceScore, coords, biometricsMeta = {}) => {
@@ -96,6 +100,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
       const today = new Date().toISOString().split('T')[0]
       await attendanceAPI.checkIn(currentUser.email, time, coords, selectedShift)
       showToast(`✅ Checked in at ${time}`, '#22c55e')
+      emitSyncEvent(SYNC_EVENTS.ATTENDANCE_UPDATED, { employeeEmail: currentUser.email, type: 'checkin' })
       // Save photo + verification result asynchronously (non-blocking)
       if (capturedImageDataUrl) {
         faceAPI.saveAttendancePhoto(
@@ -142,6 +147,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
       const today = new Date().toISOString().split('T')[0]
       await attendanceAPI.checkOut(currentUser.email, time, coords)
       showToast(`✅ Checked out at ${time}`, '#22c55e')
+      emitSyncEvent(SYNC_EVENTS.ATTENDANCE_UPDATED, { employeeEmail: currentUser.email, type: 'checkout' })
       // Save photo + verification result asynchronously (non-blocking)
       if (capturedImageDataUrl) {
         faceAPI.saveAttendancePhoto(

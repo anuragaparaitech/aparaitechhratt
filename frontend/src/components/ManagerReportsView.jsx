@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { analyticsAPI, reportsAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function ManagerReportsView({ currentUser, showToast }) {
   const [loading, setLoading] = useState(true)
@@ -10,8 +11,8 @@ function ManagerReportsView({ currentUser, showToast }) {
   const [filterDate, setFilterDate] = useState(() => new Date().toISOString().split('T')[0])
   const [search, setSearch] = useState('')
 
-  const fetchReports = async () => {
-    setLoading(true)
+  const fetchReports = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const overviewRes = await analyticsAPI.getTeamOverview()
       if (overviewRes?.success) setTeamOverview(overviewRes.data)
@@ -23,15 +24,25 @@ function ManagerReportsView({ currentUser, showToast }) {
       if (mailRes?.success) setMailBlastReports(mailRes.data || [])
     } catch (err) {
       console.error('Manager reports error:', err)
-      showToast('❌ Failed to fetch manager overview data', '#dc2626')
+      if (!isSilent) showToast('❌ Failed to fetch manager overview data', '#dc2626')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchReports()
+    fetchReports(false)
   }, [filterDate])
+
+  // Live Auto-Refresh every 5 seconds, on window focus, and on DAILY_REPORT_SUBMITTED
+  useAutoRefresh(() => {
+    fetchReports(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
+    onFocus: true,
+    enabled: true
+  })
 
   const exportDailyCSV = () => {
     if (dailyReports.length === 0) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { API_URL, messageAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
   const [messages, setMessages] = useState([])
@@ -10,12 +11,8 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('all') // 'all' | 'urgent' | 'important' | 'normal'
 
-  useEffect(() => {
-    fetchMessages()
-  }, [])
-
-  const fetchMessages = async () => {
-    setLoading(true)
+  const fetchMessages = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const res = await messageAPI.getEmployeeMessages()
       if (res.success) {
@@ -26,11 +23,25 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
       }
     } catch (err) {
       console.error(err)
-      showToast('❌ Failed to fetch inbox messages', '#dc2626')
+      if (!isSilent) showToast('❌ Failed to fetch inbox messages', '#dc2626')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchMessages(false)
+  }, [])
+
+  // Live Auto-Refresh every 5 seconds, on tab focus, and on MESSAGE_SENT events
+  useAutoRefresh(() => {
+    fetchMessages(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.MESSAGE_SENT],
+    onFocus: true,
+    enabled: true
+  })
 
   const handleReadMessage = async (msg) => {
     setSelectedMessage(msg)

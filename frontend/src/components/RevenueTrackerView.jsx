@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { analyticsAPI } from '../services/api'
+import { useAutoRefresh, SYNC_EVENTS } from '../utils/realtimeSync'
 
 function RevenueTrackerView({ currentUser, showToast }) {
   const [loading, setLoading] = useState(true)
   const [revenueData, setRevenueData] = useState(null)
   const [filterTeam, setFilterTeam] = useState('all')
 
-  const fetchRevenue = async () => {
-    setLoading(true)
+  const fetchRevenue = async (isSilent = false) => {
+    if (!isSilent) setLoading(true)
     try {
       const res = await analyticsAPI.getRevenueTracker()
       if (res?.success) {
@@ -15,15 +16,25 @@ function RevenueTrackerView({ currentUser, showToast }) {
       }
     } catch (err) {
       console.error('Revenue tracker error:', err)
-      showToast('❌ Failed to load revenue tracking data', '#dc2626')
+      if (!isSilent) showToast('❌ Failed to load revenue tracking data', '#dc2626')
     } finally {
-      setLoading(false)
+      if (!isSilent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchRevenue()
+    fetchRevenue(false)
   }, [])
+
+  // Live Auto-Refresh every 5 seconds, on window focus, and on CONVERSION_UPDATED / DAILY_REPORT_SUBMITTED events
+  useAutoRefresh(() => {
+    fetchRevenue(true)
+  }, {
+    intervalMs: 5000,
+    eventTypes: [SYNC_EVENTS.CONVERSION_UPDATED, SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
+    onFocus: true,
+    enabled: true
+  })
 
   const summary = revenueData?.summary || {}
   const employeeBreakdown = revenueData?.employeeBreakdown || []
