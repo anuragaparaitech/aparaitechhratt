@@ -390,104 +390,227 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
 
       {/* Message Viewer Modal */}
       {selectedMessage && (
-        <div className="modal-overlay" style={{ display: 'flex', zIndex: 1100 }}>
-          <div className="modal-content" style={{ maxWidth: '620px', width: '100%', borderRadius: '24px', overflow: 'hidden' }}>
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedMessage(null)}
+          style={{
+            display: 'flex',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(6px)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 10000,
+            padding: '16px'
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '640px',
+              width: '100%',
+              maxHeight: 'min(90vh, 720px)',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 0,
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.4)',
+              border: '1px solid #e2e8f0',
+              background: '#ffffff'
+            }}
+          >
+            {/* Modal Header */}
             <div style={{
               background: (selectedMessage.priority || '').toLowerCase() === 'urgent' 
                 ? 'linear-gradient(135deg, #b91c1c, #7f1d1d)' 
                 : 'linear-gradient(135deg, #0a192f, #1e3a8a)',
-              padding: '1.5rem',
+              padding: '1.25rem 1.5rem',
               color: 'white',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              flexShrink: 0
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0 }}>✉️ View Message</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800' }}>✉️ View Message</h3>
                 {renderPriorityBadge(selectedMessage.priority)}
               </div>
               <button 
                 onClick={() => setSelectedMessage(null)}
-                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: 'none',
+                  color: 'white',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s'
+                }}
+                title="Close"
               >
                 &times;
               </button>
             </div>
             
-            <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {/* Modal Scrollable Body */}
+            <div style={{
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.1rem',
+              overflowY: 'auto',
+              flex: '1 1 auto',
+              WebkitOverflowScrolling: 'touch'
+            }}>
+              {/* Meta Grid: From, Date, Priority */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '12px',
+                background: '#f8fafc',
+                padding: '12px 14px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
+              }}>
                 <div>
-                  <strong style={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase' }}>From:</strong>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 'bold' }}>
-                    {selectedMessage.sender} {selectedMessage.isBroadcast && <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>Broadcast</span>}
+                  <strong style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase' }}>From:</strong>
+                  <p style={{ margin: '3px 0 0 0', fontWeight: '800', color: '#0f172a', fontSize: '0.92rem' }}>
+                    {selectedMessage.sender} {selectedMessage.isBroadcast && <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '4px', marginLeft: '6px', fontWeight: '700' }}>Broadcast</span>}
                   </p>
                 </div>
 
                 <div>
-                  <strong style={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase' }}>Date & Time:</strong>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-                    {new Date(selectedMessage.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })}
+                  <strong style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase' }}>Date & Time:</strong>
+                  <p style={{ margin: '3px 0 0 0', fontSize: '0.88rem', color: '#334155', fontWeight: '600' }}>
+                    {new Date(selectedMessage.createdAt).toLocaleString('en-IN', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
                   </p>
                 </div>
               </div>
 
+              {/* Subject */}
               <div>
-                <strong style={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase' }}>Subject:</strong>
-                <p style={{ margin: '4px 0 0 0', fontWeight: 'bold', fontSize: '1.15rem', color: '#0a192f' }}>
+                <strong style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase' }}>Subject:</strong>
+                <p style={{ margin: '4px 0 0 0', fontWeight: '800', fontSize: '1.1rem', color: '#0a192f', lineHeight: '1.4' }}>
                   {selectedMessage.subject}
                 </p>
               </div>
 
+              {/* Full Message Body */}
               <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-                <strong style={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase' }}>Message Body:</strong>
-                <p style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap', lineHeight: '1.6', color: '#334155', fontSize: '0.95rem' }}>
+                <strong style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase' }}>Message Body:</strong>
+                <div style={{
+                  margin: '8px 0 0 0',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '14px 16px',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  lineHeight: '1.65',
+                  color: '#1e293b',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit'
+                }}>
                   {selectedMessage.message}
-                </p>
+                </div>
               </div>
 
+              {/* Attachment if present */}
               {selectedMessage.attachmentUrl && (
-                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                  <div>
-                    <strong style={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase' }}>Attached File:</strong>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#16a34a', fontWeight: 'bold' }}>
-                      📎 File Attached
-                    </p>
+                <div style={{
+                  borderTop: '1px solid #e2e8f0',
+                  paddingTop: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                  background: '#f0fdf4',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid #bbf7d0'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>📎</span>
+                    <div>
+                      <strong style={{ fontSize: '0.74rem', color: '#166534', textTransform: 'uppercase' }}>Attached File:</strong>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '0.88rem', color: '#15803d', fontWeight: '700' }}>
+                        Document / Image Attachment Available
+                      </p>
+                    </div>
                   </div>
                   <a 
                     href={selectedMessage.attachmentUrl} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="g-button success"
-                    style={{ textDecoration: 'none', padding: '8px 16px', fontSize: '0.85rem' }}
+                    style={{ textDecoration: 'none', padding: '8px 16px', fontSize: '0.82rem', fontWeight: '700' }}
                   >
-                    <i className="fas fa-download"></i> View / Download File
+                    <i className="fas fa-download"></i> View / Download
                   </a>
                 </div>
               )}
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0' }}>
+            {/* Modal Footer (Sticky at bottom of modal) */}
+            <div style={{
+              background: '#f8fafc',
+              padding: '1rem 1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderTop: '1px solid #e2e8f0',
+              flexShrink: 0
+            }}>
               <button
                 onClick={(e) => handleToggleArchive(e, selectedMessage._id)}
                 style={{
-                  background: 'transparent',
+                  background: '#ffffff',
                   border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  padding: '8px 14px',
+                  borderRadius: '10px',
+                  padding: '8px 16px',
                   color: '#475569',
                   fontSize: '0.84rem',
-                  fontWeight: '600',
-                  cursor: 'pointer'
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                <i className={selectedMessage.isArchived ? 'fas fa-box-open' : 'fas fa-archive'} style={{ marginRight: '6px' }}></i>
+                <i className={selectedMessage.isArchived ? 'fas fa-box-open' : 'fas fa-archive'}></i>
                 {selectedMessage.isArchived ? 'Unarchive Message' : 'Archive Message'}
               </button>
 
               <button
                 className="g-button"
                 onClick={() => setSelectedMessage(null)}
-                style={{ background: '#0a192f', padding: '8px 20px' }}
+                style={{
+                  background: 'linear-gradient(135deg, #0a192f, #1e3a8a)',
+                  color: '#ffffff',
+                  padding: '8px 24px',
+                  fontWeight: '700',
+                  borderRadius: '10px',
+                  fontSize: '0.86rem'
+                }}
               >
                 Close
               </button>
