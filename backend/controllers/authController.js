@@ -124,8 +124,15 @@ export const login = async (req, res) => {
         name: employee.name,
         email: employee.email,
         department: employee.department,
+        designation: employee.designation || '',
+        phone: employee.phone || '',
+        dob: employee.dob || '',
+        shift: employee.shift || 'shift_1',
+        profileImageUrl: employee.profileImageUrl || '',
         role: employee.role,
-        status: employee.status
+        status: employee.status,
+        passcode: employee.passcode || '1234',
+        plainPassword: employee.plainPassword || ''
       }
     })
   } catch (error) {
@@ -243,8 +250,15 @@ export const passcodeLogin = async (req, res) => {
         name: employee.name,
         email: employee.email,
         department: employee.department,
+        designation: employee.designation || '',
+        phone: employee.phone || '',
+        dob: employee.dob || '',
+        shift: employee.shift || 'shift_1',
+        profileImageUrl: employee.profileImageUrl || '',
         role: employee.role,
-        status: employee.status
+        status: employee.status,
+        passcode: employee.passcode || '1234',
+        plainPassword: employee.plainPassword || ''
       }
     })
   } catch (error) {
@@ -371,7 +385,11 @@ export const updateProfile = async (req, res) => {
     if (phone !== undefined) employee.phone = phone
     if (address !== undefined) employee.address = address
     if (emergencyContact !== undefined) employee.emergencyContact = emergencyContact
-    if (profileImageUrl !== undefined) employee.profileImageUrl = profileImageUrl
+    if (req.body.profileImageBase64) {
+      employee.profileImageUrl = req.body.profileImageBase64
+    } else if (profileImageUrl !== undefined) {
+      employee.profileImageUrl = profileImageUrl
+    }
     if (passcode !== undefined && passcode.length === 4) employee.passcode = passcode
 
     await employee.save()
