@@ -18,6 +18,27 @@ try {
   console.warn('Filesystem notice (face-uploads):', e.message)
 }
 
+const findEmployeeByIdentifier = async (rawIdentifier) => {
+  const idStr = (rawIdentifier || '').trim()
+  if (!idStr) return null
+  const normalizedEmail = idStr.toLowerCase()
+  const upperEmpId = idStr.toUpperCase()
+
+  const emailAliases = [normalizedEmail]
+  if (normalizedEmail === 'sanikapanaskar19@gmail.com') {
+    emailAliases.push('sanikapanskar19@gmail.com')
+  } else if (normalizedEmail === 'sanikapanskar19@gmail.com') {
+    emailAliases.push('sanikapanaskar19@gmail.com')
+  }
+
+  return await Employee.findOne({
+    $or: [
+      { email: { $in: emailAliases } },
+      { empId: upperEmpId }
+    ]
+  })
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // POST /api/face/enroll
 // Body: { email, imageDataUrl, enrolledBy }
@@ -47,13 +68,7 @@ export const enrollFace = async (req, res) => {
   }
 
   try {
-    const rawId = (email || '').trim()
-    const employee = await Employee.findOne({
-      $or: [
-        { email: rawId.toLowerCase() },
-        { empId: rawId.toUpperCase() }
-      ]
-    })
+    const employee = await findEmployeeByIdentifier(email)
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }
@@ -121,12 +136,7 @@ export const getEnrolledFace = async (req, res) => {
 
   try {
     const rawTarget = decodeURIComponent(email).trim()
-    const employee = await Employee.findOne({
-      $or: [
-        { email: rawTarget.toLowerCase() },
-        { empId: rawTarget.toUpperCase() }
-      ]
-    })
+    const employee = await findEmployeeByIdentifier(rawTarget)
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }
@@ -167,12 +177,7 @@ export const resetFace = async (req, res) => {
 
   try {
     const rawTarget = decodeURIComponent(email).trim()
-    const employee = await Employee.findOne({
-      $or: [
-        { email: rawTarget.toLowerCase() },
-        { empId: rawTarget.toUpperCase() }
-      ]
-    })
+    const employee = await findEmployeeByIdentifier(rawTarget)
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }
@@ -269,8 +274,9 @@ export const saveAttendancePhoto = async (req, res) => {
       }
     } catch (e) {}
 
-    const employee = await Employee.findOne({ email: email.toLowerCase() })
-    const safeEmail = email.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_')
+    const employee = await findEmployeeByIdentifier(email)
+    const empEmail = employee ? employee.email : email.toLowerCase()
+    const safeEmail = empEmail.replace(/[^a-zA-Z0-9]/g, '_')
     const timestamp = Date.now()
     const filename = `${photoType}_${safeEmail}_${timestamp}.jpg`
     const filePath = path.join(attendancePhotosDir, filename)
@@ -282,7 +288,12 @@ export const saveAttendancePhoto = async (req, res) => {
     const photoUrl = `/attendance-photos/${filename}`
 
     // Update attendance record
-    const record = await Attendance.findOne({ employeeEmail: email.toLowerCase(), date })
+    const record = await Attendance.findOne({ 
+      $or: [
+        { employeeEmail: empEmail, date },
+        { employeeEmail: email.toLowerCase(), date }
+      ]
+    })
     if (record) {
       if (photoType === 'checkin') {
         record.checkInPhoto = photoUrl

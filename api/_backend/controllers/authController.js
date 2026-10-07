@@ -2,6 +2,28 @@ import Employee from '../models/Employee.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
+// Helper to resolve employee by email or empId, supporting common email aliases/spelling variants
+export const findEmployeeByIdentifier = async (rawIdentifier) => {
+  const idStr = (rawIdentifier || '').trim()
+  if (!idStr) return null
+  const normalizedEmail = idStr.toLowerCase()
+  const upperEmpId = idStr.toUpperCase()
+
+  const emailAliases = [normalizedEmail]
+  if (normalizedEmail === 'sanikapanaskar19@gmail.com') {
+    emailAliases.push('sanikapanskar19@gmail.com')
+  } else if (normalizedEmail === 'sanikapanskar19@gmail.com') {
+    emailAliases.push('sanikapanaskar19@gmail.com')
+  }
+
+  return await Employee.findOne({
+    $or: [
+      { email: { $in: emailAliases } },
+      { empId: upperEmpId }
+    ]
+  })
+}
+
 export const login = async (req, res) => {
   const { email, password } = req.body
   const rawIdentifier = (email || '').trim()
@@ -12,12 +34,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email or Employee ID is required' })
     }
 
-    const employee = await Employee.findOne({
-      $or: [
-        { email: rawIdentifier.toLowerCase() },
-        { empId: rawIdentifier.toUpperCase() }
-      ]
-    })
+    const employee = await findEmployeeByIdentifier(rawIdentifier)
     
     if (!employee) {
       console.warn(`❌ Login failed: User not found for ${rawIdentifier}`)
@@ -147,12 +164,7 @@ export const changePassword = async (req, res) => {
   console.log(`🔒 Change password request received for: ${rawIdentifier}`)
   
   try {
-    const employee = await Employee.findOne({
-      $or: [
-        { email: rawIdentifier.toLowerCase() },
-        { empId: rawIdentifier.toUpperCase() }
-      ]
-    })
+    const employee = await findEmployeeByIdentifier(rawIdentifier)
     
     if (!employee) {
       console.warn(`❌ Change password failed: User not found for ${rawIdentifier}`)
@@ -201,12 +213,7 @@ export const passcodeLogin = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email or Employee ID is required' })
     }
 
-    const employee = await Employee.findOne({
-      $or: [
-        { email: rawIdentifier.toLowerCase() },
-        { empId: rawIdentifier.toUpperCase() }
-      ]
-    })
+    const employee = await findEmployeeByIdentifier(rawIdentifier)
 
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee account not found' })
@@ -271,7 +278,7 @@ export const passcodeLogin = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   const { email } = req.body
   try {
-    const employee = await Employee.findOne({ email: (email || '').toLowerCase() })
+    const employee = await findEmployeeByIdentifier(email)
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee with this email does not exist' })
     }
@@ -301,7 +308,7 @@ export const forgotPassword = async (req, res) => {
 export const verifyOtpAndReset = async (req, res) => {
   const { email, otp, newPassword } = req.body
   try {
-    const employee = await Employee.findOne({ email: (email || '').toLowerCase() })
+    const employee = await findEmployeeByIdentifier(email)
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }
@@ -347,7 +354,7 @@ export const changePasscode = async (req, res) => {
   }
 
   try {
-    const employee = await Employee.findOne({ email: targetEmail })
+    const employee = await findEmployeeByIdentifier(targetEmail)
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' })
     }

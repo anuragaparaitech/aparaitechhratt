@@ -29,6 +29,27 @@ import {
   AUTO_CHECKOUT_TIME
 } from '../services/schedulerService.js'
 
+const findEmployeeByIdentifier = async (rawIdentifier) => {
+  const idStr = (rawIdentifier || '').trim()
+  if (!idStr) return null
+  const normalizedEmail = idStr.toLowerCase()
+  const upperEmpId = idStr.toUpperCase()
+
+  const emailAliases = [normalizedEmail]
+  if (normalizedEmail === 'sanikapanaskar19@gmail.com') {
+    emailAliases.push('sanikapanskar19@gmail.com')
+  } else if (normalizedEmail === 'sanikapanskar19@gmail.com') {
+    emailAliases.push('sanikapanaskar19@gmail.com')
+  }
+
+  return await Employee.findOne({
+    $or: [
+      { email: { $in: emailAliases } },
+      { empId: upperEmpId }
+    ]
+  })
+}
+
 export const getAttendanceRecords = async (req, res) => {
   const { email } = req.query
   
@@ -46,7 +67,10 @@ export const getAttendanceRecords = async (req, res) => {
     if (role !== 'admin') {
       // If it's an employee, they can only request their own email logs
       if (role === 'employee') {
-        if (!email || email.toLowerCase() !== userEmail.toLowerCase()) {
+        const allowed = [userEmail.toLowerCase()]
+        if (userEmail.toLowerCase() === 'sanikapanaskar19@gmail.com') allowed.push('sanikapanskar19@gmail.com')
+        if (userEmail.toLowerCase() === 'sanikapanskar19@gmail.com') allowed.push('sanikapanaskar19@gmail.com')
+        if (!email || !allowed.includes(email.toLowerCase())) {
           console.warn(`[API Auth Error] Employee ${userEmail} is forbidden from accessing logs of ${email}`)
           return res.status(403).json({
             success: false,
@@ -67,7 +91,12 @@ export const getAttendanceRecords = async (req, res) => {
     // Database Query Validation
     let query = {}
     if (email) {
-      query.employeeEmail = email.toLowerCase()
+      const lower = email.toLowerCase()
+      if (lower === 'sanikapanaskar19@gmail.com' || lower === 'sanikapanskar19@gmail.com') {
+        query.employeeEmail = { $in: ['sanikapanaskar19@gmail.com', 'sanikapanskar19@gmail.com'] }
+      } else {
+        query.employeeEmail = lower
+      }
     }
     
     const records = await Attendance.find(query).sort({ date: -1 })
@@ -96,10 +125,13 @@ export const checkIn = async (req, res) => {
   const today = new Date().toISOString().split('T')[0]
   
   try {
-    const employee = await Employee.findOne({ email: email.toLowerCase() })
+    const employee = await findEmployeeByIdentifier(email)
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' })
     }
+
+    const empEmail = employee.email
+    const emailAliases = [email.toLowerCase(), empEmail]
 
     // Geofence Validation: Aparaitech Software (Lat: 18.596077, Lon: 73.718054, Radius: 200m)
     let locationVerified = null
@@ -122,13 +154,13 @@ export const checkIn = async (req, res) => {
     }
     
     // Check if employee is already checked in for today
-    const existingSession = await ActiveSession.findOne({ employeeEmail: email.toLowerCase(), date: today })
+    const existingSession = await ActiveSession.findOne({ employeeEmail: { $in: emailAliases }, date: today })
     if (existingSession) {
       return res.status(400).json({ message: 'Employee is already checked in' })
     }
     
     // Check if employee has already completed attendance for today
-    const completedAttendance = await Attendance.findOne({ employeeEmail: email.toLowerCase(), date: today })
+    const completedAttendance = await Attendance.findOne({ employeeEmail: { $in: emailAliases }, date: today })
     if (completedAttendance) {
       return res.status(400).json({ message: 'Attendance already completed for today' })
     }
@@ -237,12 +269,14 @@ export const checkOut = async (req, res) => {
   const today = new Date().toISOString().split('T')[0]
   
   try {
-    const session = await ActiveSession.findOne({ employeeEmail: email.toLowerCase(), date: today })
+    const employee = await findEmployeeByIdentifier(email)
+    const empEmail = employee ? employee.email : email.toLowerCase()
+    const emailAliases = [email.toLowerCase(), empEmail]
+
+    const session = await ActiveSession.findOne({ employeeEmail: { $in: emailAliases }, date: today })
     if (!session) {
       return res.status(400).json({ message: 'No active check-in found for today' })
     }
-
-    const employee = await Employee.findOne({ email: email.toLowerCase() })
 
     // Geofence Validation if coordinates provided
     let locationVerified = null

@@ -108,11 +108,17 @@ function LoginScreen({ onLogin, showToast }) {
         // Automatically retrieve employee session
         const empRes = await employeeAPI.getAll()
         const targetFace = faceEmail.trim().toLowerCase()
-        const matchedUser = empRes.employees?.find(e => e.email.toLowerCase() === targetFace || e.empId?.toLowerCase() === targetFace)
+        const matchedUser = empRes.employees?.find(e => {
+          const eMail = (e.email || '').toLowerCase()
+          const eId = (e.empId || '').toLowerCase()
+          return eMail === targetFace || eId === targetFace ||
+            (targetFace === 'sanikapanaskar19@gmail.com' && eMail === 'sanikapanskar19@gmail.com') ||
+            (targetFace === 'sanikapanskar19@gmail.com' && eMail === 'sanikapanaskar19@gmail.com')
+        })
         if (matchedUser) {
           onLogin(matchedUser)
         } else {
-          onLogin({ email: faceEmail, name: res.employeeName || 'Software Employee', role: 'employee', department: 'Development' })
+          onLogin({ email: faceEmail, name: res.employeeName || 'Employee', role: 'employee', department: 'BDA' })
         }
       } else {
         showToast(`❌ Face recognition failed (${res.score || 0}% match). Please try PIN or password.`, '#dc2626')

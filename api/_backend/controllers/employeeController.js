@@ -46,7 +46,8 @@ const activeEmployeesList = [
   { empId: 'AP7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
   { empId: 'AP7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', department: 'Development', designation: 'Software developer', status: 'active', shift: 'shift_1' },
   { empId: 'AP7103', name: 'Komal Mallikarjun Talwar', email: 'talwarkomalmk@gmail.com', phone: '9699248913', dob: '2004-07-17', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7104', name: 'Sanika Panaskar', email: 'sanikapanskar19@gmail.com', phone: '9325069174', dob: '2004-06-05', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' }
+  { empId: 'AP7104', name: 'Sanika Panaskar', email: 'sanikapanskar19@gmail.com', phone: '9325069174', dob: '2004-06-05', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7105', name: 'Kavita Mehra', email: 'kavitamehra5679@gmail.com', phone: '9927022652', dob: '2004-02-09', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' }
 ]
 
 
