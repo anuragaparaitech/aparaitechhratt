@@ -261,7 +261,8 @@ export const updateEmployee = async (req, res) => {
     designation, 
     department, 
     status, 
-    profileImageBase64, 
+    profileImageBase64,
+    profileImageUrl: incomingProfileImageUrl,
     dob, 
     shift, 
     password, 
@@ -269,13 +270,22 @@ export const updateEmployee = async (req, res) => {
   } = req.body
 
   try {
-    const target = (email || '').trim().toLowerCase()
-    const employee = await Employee.findOne({
-      $or: [
-        { email: target },
-        { empId: target.toUpperCase() }
-      ]
-    })
+    const rawTarget = decodeURIComponent(email || '').trim().toLowerCase()
+    const orQuery = [
+      { email: rawTarget },
+      { empId: rawTarget.toUpperCase() }
+    ]
+    if (req.body._id && req.body._id.match(/^[0-9a-fA-F]{24}$/)) {
+      orQuery.push({ _id: req.body._id })
+    }
+    if (rawTarget.match(/^[0-9a-fA-F]{24}$/)) {
+      orQuery.push({ _id: rawTarget })
+    }
+    if (req.body.empId) {
+      orQuery.push({ empId: req.body.empId.trim().toUpperCase() })
+    }
+
+    const employee = await Employee.findOne({ $or: orQuery })
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' })
     }
@@ -299,7 +309,7 @@ export const updateEmployee = async (req, res) => {
       try {
         await Attendance.updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } })
         await ActiveSession.updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } })
-        const db = employee.db
+        const db = Employee.db
         if (db) {
           await db.collection('dailyreports').updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } }).catch(() => {})
           await db.collection('leaves').updateMany({ employeeEmail: oldEmail }, { $set: { employeeEmail: normalizedNewEmail } }).catch(() => {})
@@ -355,7 +365,8 @@ export const updateEmployee = async (req, res) => {
       employee.passcode = String(passcode).trim()
     }
 
-    // Handle base64 profile image if provided
+    // 3. 100% PERSISTENT PROFILE IMAGE STORAGE
+    // If a base64 image data URL is uploaded, save it directly to MongoDB so it is permanently preserved!
     if (profileImageBase64) {
       if (!profileImageBase64.startsWith('data:image/')) {
         return res.status(400).json({ message: 'Invalid profile image format. Must be a valid image data URL.' })
@@ -372,38 +383,25 @@ export const updateEmployee = async (req, res) => {
         return res.status(400).json({ message: 'Only JPEG, PNG, and WebP profile images are allowed' })
       }
 
-      const base64Data = profileImageBase64.replace(/^data:image\/[a-zA-Z+]+;base64,/, '')
-      const imageBuffer = Buffer.from(base64Data, 'base64')
+      // Store directly in MongoDB document - permanent across all serverless containers & restarts!
+      employee.profileImageUrl = profileImageBase64
 
-      if (imageBuffer.length > 5 * 1024 * 1024) {
-        return res.status(400).json({ message: 'Profile image size must be under 5MB' })
-      }
-
-      // Sanitize filename using empId
-      const safeEmpId = employee.empId.replace(/[^a-zA-Z0-9_-]/g, '_')
-      const ext = mimeType === 'image/png' ? 'png' : 'jpg'
-      const filename = `profile_${safeEmpId}_${Date.now()}.${ext}`
-      const filePath = path.join(PROFILE_UPLOADS_DIR, filename)
-
-      // Delete old profile image if it exists and is on disk
-      if (employee.profileImageUrl) {
-        const oldFilename = path.basename(employee.profileImageUrl)
-        const oldPath = path.join(PROFILE_UPLOADS_DIR, oldFilename)
-        if (fs.existsSync(oldPath)) {
-          try {
-            fs.unlinkSync(oldPath)
-          } catch (err) {
-            console.error('Failed to delete old profile image:', err.message)
-          }
+      // Optional disk cache for persistent local environments
+      if (!isServerless) {
+        try {
+          const base64Data = profileImageBase64.replace(/^data:image\/[a-zA-Z+]+;base64,/, '')
+          const imageBuffer = Buffer.from(base64Data, 'base64')
+          const safeEmpId = employee.empId.replace(/[^a-zA-Z0-9_-]/g, '_')
+          const ext = mimeType === 'image/png' ? 'png' : 'jpg'
+          const filename = `profile_${safeEmpId}_${Date.now()}.${ext}`
+          const filePath = path.join(PROFILE_UPLOADS_DIR, filename)
+          fs.writeFileSync(filePath, imageBuffer)
+        } catch (diskErr) {
+          console.warn('Optional disk backup skipped:', diskErr.message)
         }
       }
-
-      try {
-        fs.writeFileSync(filePath, imageBuffer)
-        employee.profileImageUrl = `/profile-uploads/${filename}`
-      } catch (writeErr) {
-        console.warn('Notice: profile image disk write skipped:', writeErr.message)
-      }
+    } else if (incomingProfileImageUrl !== undefined) {
+      employee.profileImageUrl = incomingProfileImageUrl
     }
 
     await employee.save()

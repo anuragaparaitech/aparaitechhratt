@@ -16,9 +16,50 @@ const MODELS_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@ma
 const MIN_FACE_SCORE = 0.60
 const FACE_MIN_SIZE = 80
 
-function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, showToast, onUpdated, initialTab = 'details' }) {
+// Helper to safely resolve image URLs (base64 Data URL, external URL, or server path)
+export const getDisplayImageUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
+// Client-side avatar compression to ensure fast uploads & permanent lightweight MongoDB storage (~25KB-40KB)
+export const compressAvatarImage = (dataUrl, maxWidth = 400, quality = 0.82) => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      let width = img.width
+      let height = img.height
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width)
+          width = maxWidth
+        }
+      } else {
+        if (height > maxWidth) {
+          width = Math.round((width * maxWidth) / height)
+          height = maxWidth
+        }
+      }
+
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
+}
+
+function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, showToast, onUpdated, initialTab = 'details', initialEditMode = false }) {
   const [activeTab, setActiveTab] = useState(initialTab) // 'details' | 'face'
-  const [editMode, setEditMode] = useState(false)
+  const [editMode, setEditMode] = useState(initialEditMode || false)
 
   useEffect(() => {
     if (isOpen && initialTab) {
@@ -79,7 +120,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       setShift(employee.shift || (employee.department === 'Development' || employee.department === 'Software Development' ? 'shift_1' : 'shift_2'))
       setStatus(employee.status || 'active')
       setProfileImage(employee.profileImageUrl || '')
-      setProfilePreview(employee.profileImageUrl ? `${API_URL}${employee.profileImageUrl}` : '')
+      setProfilePreview(getDisplayImageUrl(employee.profileImageUrl))
       
       setEditPassword('')
       setEditPasscode(employee.passcode || '1234')
@@ -88,13 +129,13 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       setFaceDescriptor(null)
       setFaceQualityMsg('')
       setFaceQualityType('info')
-      setEditMode(false)
-      setActiveTab('details')
+      setEditMode(initialEditMode || false)
+      setActiveTab(initialTab || 'details')
 
       // Fetch latest face enrollment info
       fetchFaceInfo()
     }
-  }, [isOpen, employee]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, employee, initialEditMode, initialTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchFaceInfo = async () => {
     if (!employee) return
@@ -161,9 +202,15 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
     if (!validateImageFile(file)) return
 
     const reader = new FileReader()
-    reader.onload = (event) => {
-      setProfilePreview(event.target.result)
-      setProfileImage(event.target.result) // Will send base64 to server
+    reader.onload = async (event) => {
+      try {
+        const compressed = await compressAvatarImage(event.target.result)
+        setProfilePreview(compressed)
+        setProfileImage(compressed) // Will send base64 to server
+      } catch (err) {
+        setProfilePreview(event.target.result)
+        setProfileImage(event.target.result)
+      }
     }
     reader.readAsDataURL(file)
     e.target.value = ''
@@ -173,8 +220,14 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
   const handleWebcamCapture = async (imageDataUrl) => {
     setIsWebcamOpen(false)
     if (webcamTarget === 'profile') {
-      setProfilePreview(imageDataUrl)
-      setProfileImage(imageDataUrl)
+      try {
+        const compressed = await compressAvatarImage(imageDataUrl)
+        setProfilePreview(compressed)
+        setProfileImage(compressed)
+      } catch (err) {
+        setProfilePreview(imageDataUrl)
+        setProfileImage(imageDataUrl)
+      }
     } else if (webcamTarget === 'face') {
       setFacePreview(imageDataUrl)
       await runFaceValidation(imageDataUrl)
@@ -310,22 +363,24 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       const res = await employeeAPI.update(employee.email, updateData)
       showToast('✅ Employee details updated successfully!', '#22c55e')
       setEditMode(false)
-      if (onUpdated) onUpdated()
+      
+      const updatedEmp = res.employee || { ...employee, ...updateData }
+      if (onUpdated) onUpdated(updatedEmp)
       
       // Update local state details to display
-      employee.name = res.employee.name
-      employee.email = res.employee.email
-      employee.empId = res.employee.empId
-      employee.phone = res.employee.phone
-      employee.dob = res.employee.dob
-      employee.designation = res.employee.designation
-      employee.department = res.employee.department
-      employee.shift = res.employee.shift
-      employee.status = res.employee.status
-      employee.profileImageUrl = res.employee.profileImageUrl
-      if (res.employee.plainPassword) employee.plainPassword = res.employee.plainPassword
-      if (res.employee.passcode) employee.passcode = res.employee.passcode
-      setProfilePreview(res.employee.profileImageUrl ? `${API_URL}${res.employee.profileImageUrl}` : '')
+      employee.name = updatedEmp.name
+      employee.email = updatedEmp.email
+      employee.empId = updatedEmp.empId
+      employee.phone = updatedEmp.phone
+      employee.dob = updatedEmp.dob
+      employee.designation = updatedEmp.designation
+      employee.department = updatedEmp.department
+      employee.shift = updatedEmp.shift
+      employee.status = updatedEmp.status
+      employee.profileImageUrl = updatedEmp.profileImageUrl
+      if (updatedEmp.plainPassword) employee.plainPassword = updatedEmp.plainPassword
+      if (updatedEmp.passcode) employee.passcode = updatedEmp.passcode
+      setProfilePreview(getDisplayImageUrl(updatedEmp.profileImageUrl))
     } catch (err) {
       console.error(err)
       const errorMsg = err.response?.data?.message || 'Failed to update details'
@@ -861,7 +916,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                 <div style={{ display: 'flex', gap: '1.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.2rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                   <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden', background: '#e2e8f0', border: '2px solid #cbd5e1', flexShrink: 0 }}>
                     {faceImageUrl ? (
-                      <img src={`${API_URL}${faceImageUrl}`} alt="Enrolled Face" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={getDisplayImageUrl(faceImageUrl)} alt="Enrolled Face" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '0.8rem', textAlign: 'center', padding: '4px' }}>
                         <span>❌ No Enrolled Face</span>

@@ -178,6 +178,13 @@ export const checkIn = async (req, res) => {
     })
     await session.save()
 
+    const cutoffMin = shiftInfo.startMin + (shiftInfo.graceMinutes !== undefined ? shiftInfo.graceMinutes : 15)
+    const inMin = timeToMinutes(checkInTime)
+    const isLateCheckIn = inMin > cutoffMin
+    const cutoffHours = Math.floor(cutoffMin / 60)
+    const cutoffMins = cutoffMin % 60
+    const cutoffTimeFormatted = `${cutoffHours.toString().padStart(2, '0')}:${cutoffMins.toString().padStart(2, '0')}`
+
     // Create a pending attendance record in the database immediately on check-in
     const attendanceRecord = new Attendance({
       employeeId: employee.empId,
@@ -189,7 +196,9 @@ export const checkIn = async (req, res) => {
       checkOut: '',
       workingHours: '—',
       status: 'pending',
-      statusReason: `Active check-in [${shiftInfo.name}]`,
+      statusReason: isLateCheckIn
+        ? `Active check-in [${shiftInfo.name}] • Late Login after ${cutoffTimeFormatted} (Half Day)`
+        : `Active check-in [${shiftInfo.name}]`,
       shift: assignedShift,
       latitude: latitude || null,
       longitude: longitude || null,
@@ -203,8 +212,13 @@ export const checkIn = async (req, res) => {
       console.error('Non-blocking check-in email error:', err.message)
     })
     
+    const clientMessage = isLateCheckIn
+      ? `Checked in successfully at ${checkInTime}. (Login cutoff is ${cutoffTimeFormatted} AM — attendance will be marked as Half Day)`
+      : 'Checked in successfully'
+
     res.status(201).json({
-      message: 'Checked in successfully',
+      message: clientMessage,
+      isLateCheckIn,
       session,
       shift: shiftInfo,
       geofence: locationDistanceMeters !== null ? {
@@ -582,8 +596,9 @@ export const performManualCheckout = async (req, res) => {
     const limitMin = timeToMinutes('19:30')
     const isAfter730PM = currentMin > limitMin
 
-    let status = getAttendanceStatus(session.checkInTime, checkOutTime)
-    let statusReason = 'Manually checked out by Admin (Forgot to check out)'
+    const assignedShift = session.shift || (employee && employee.shift) || (session.department === 'Development' ? 'shift_1' : 'shift_2')
+    let status = getAttendanceStatus(session.checkInTime, checkOutTime, assignedShift)
+    let statusReason = getStatusReason(session.checkInTime, checkOutTime, assignedShift)
     let finalLogoutType = 'Normal'
 
     if (isAfter730PM) {

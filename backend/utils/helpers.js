@@ -15,29 +15,31 @@ export const SHIFTS = {
   },
   shift_2: {
     id: 'shift_2',
-    name: 'Shift 2: BDA Phase 1',
+    name: 'Shift 2: BDA Phase 2',
     shortName: 'Shift 2',
-    roleLabel: 'BDA / Sales Phase 1',
+    roleLabel: 'BDA / Sales Phase 2',
     department: 'BDA',
     startTime: '11:00',
     endTime: '17:00',
     startMin: 11 * 60,        // 660 (11:00 AM)
     endMin: 17 * 60,          // 1020 (05:00 PM)
     durationHours: 6,
-    graceMinutes: 15
+    graceMinutes: 10,         // Grace until 11:10 AM (login after 11:10 AM is marked as Half Day)
+    lateLoginLimit: '11:10'
   },
   shift_3: {
     id: 'shift_3',
-    name: 'Shift 3: BDA Phase 2',
+    name: 'Shift 3: BDA Phase 2 (Evening)',
     shortName: 'Shift 3',
-    roleLabel: 'BDA / Sales Phase 2',
+    roleLabel: 'BDA / Sales Evening',
     department: 'BDA',
     startTime: '17:00',
     endTime: '23:00',
     startMin: 17 * 60,        // 1020 (05:00 PM)
     endMin: 23 * 60,          // 1380 (11:00 PM)
     durationHours: 6,
-    graceMinutes: 15
+    graceMinutes: 10,         // Grace until 17:10 (05:10 PM)
+    lateLoginLimit: '17:10'
   }
 }
 
@@ -145,7 +147,19 @@ export const getAttendanceStatus = (checkIn, checkOut, shiftId = 'shift_1') => {
   const requiredMinutes = shift.durationHours * 60
   const ratio = workedMinutes / requiredMinutes
 
-  // Full day: worked at least 75% of shift duration and checked in near start time
+  const cutoffMin = shift.startMin + (shift.graceMinutes !== undefined ? shift.graceMinutes : 15)
+  const isLateLogin = inMin > cutoffMin
+
+  // If checked in after the grace cutoff (e.g. after 11:10 AM for BDA Phase 2):
+  // Rule: "bda phase 2 ka attendance login time 11.10 am tk hai uske baad half day"
+  if (isLateLogin) {
+    if (ratio >= 0.45) {
+      return 'half-day'
+    }
+    return 'quarter-day'
+  }
+
+  // Full day: worked at least 75% of shift duration and checked in on time
   if (ratio >= 0.75) {
     return 'full-day'
   }
@@ -168,8 +182,9 @@ export const getStatusReason = (checkIn, checkOut, shiftId = 'shift_1') => {
 
   const inMin = timeToMinutes(checkIn)
   const outMin = timeToMinutes(checkOut)
-  const isLate = inMin > (shift.startMin + shift.graceMinutes)
-  const isEarlyOut = outMin < (shift.endMin - shift.graceMinutes)
+  const cutoffMin = shift.startMin + (shift.graceMinutes !== undefined ? shift.graceMinutes : 15)
+  const isLate = inMin > cutoffMin
+  const isEarlyOut = outMin < (shift.endMin - (shift.graceMinutes !== undefined ? shift.graceMinutes : 15))
 
   const lateMinutes = isLate ? inMin - shift.startMin : 0
   const earlyMinutes = isEarlyOut ? shift.endMin - outMin : 0
@@ -179,7 +194,14 @@ export const getStatusReason = (checkIn, checkOut, shiftId = 'shift_1') => {
   }
   if (status === 'half-day') {
     const notes = []
-    if (lateMinutes > 0) notes.push(`Late by ${lateMinutes}m`)
+    if (isLate) {
+      const h = Math.floor(cutoffMin / 60)
+      const m = cutoffMin % 60
+      const cutoffStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+      notes.push(`Late Login after ${cutoffStr} (${lateMinutes}m late)`)
+    } else if (lateMinutes > 0) {
+      notes.push(`Late by ${lateMinutes}m`)
+    }
     if (earlyMinutes > 0) notes.push(`Left early by ${earlyMinutes}m`)
     return `Half Day (${shift.name} | Total: ${worked}${notes.length ? ' - ' + notes.join(', ') : ''})`
   }

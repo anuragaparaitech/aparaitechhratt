@@ -134,6 +134,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // Employee Profile States
   const [profileEmp, setProfileEmp] = useState(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [profileEditMode, setProfileEditMode] = useState(false)
 
   // Product Conversion Modal State
   const [isConversionModalOpen, setIsConversionModalOpen] = useState(false)
@@ -680,6 +681,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     mailBlast:    { icon: 'fa-mail-bulk',           label: 'Mail Blast Outreach Campaigns' },
     revenue:      { icon: 'fa-rupee-sign',          label: 'Commercial Revenue & Conversions' },
     bdaSalary:    { icon: 'fa-briefcase',           label: 'BDA Revenue-Based Salary Criteria & Payout' },
+    internTarget: { icon: 'fa-bullseye',            label: 'Intern Monthly Benchmark Targets' },
     employees:    { icon: 'fa-users',               label: 'Employee Directory & Access Control' },
     attendance:   { icon: 'fa-calendar-check',      label: 'Master Attendance Logs & History' },
     overall:      { icon: 'fa-chart-line',          label: 'Overall Attendance Analytics' },
@@ -867,8 +869,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null, badgeColor: '#ef4444' },
           { id: 'mailBlast', icon: 'fa-mail-bulk', label: 'Mail Blasts' },
           { id: 'revenue', icon: 'fa-rupee-sign', label: 'Revenue' },
-          { id: 'bdaSalary', icon: 'fa-briefcase', label: 'BDA Salary & Targets', badge: 'Payout', badgeColor: '#059669' },
-          { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Targets', badge: 'Goal', badgeColor: '#2563eb' },
+          { id: 'bdaSalary', icon: 'fa-briefcase', label: 'Monthly Criteria & BDA Salary', badge: 'Criteria', badgeColor: '#059669' },
+          { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Monthly Targets', badge: 'Goal', badgeColor: '#2563eb' },
           { id: 'employees', icon: 'fa-users', label: 'Employees' },
           { id: 'attendance', icon: 'fa-calendar-check', label: 'Attendance Logs' },
           { id: 'missing', icon: 'fa-exclamation-triangle', label: 'Missing Checkouts', badge: missingCheckouts.length ? `${missingCheckouts.length}` : null, badgeColor: '#ea580c' },
@@ -1055,6 +1057,180 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           <button className="g-button excel" onClick={handleExportAllAttendance} style={{ padding: '8px 16px', fontSize: '0.82rem' }}>
             <i className="fas fa-file-excel"></i> Export Attendance
           </button>
+        </div>
+
+        {/* ── Executive Monthly Criteria & Revenue Benchmarks Glance ── */}
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '20px',
+          border: '1.5px solid #a7f3d0',
+          boxShadow: '0 4px 20px rgba(5, 150, 105, 0.08)',
+          padding: '1.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.2rem'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                background: 'linear-gradient(135deg, #065f46, #059669)',
+                color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.3rem', boxShadow: '0 4px 10px rgba(5, 150, 105, 0.25)'
+              }}>
+                <i className="fas fa-briefcase"></i>
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.18rem', fontWeight: '800', color: '#064e3b', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  Active Monthly Targets & BDA Salary Criteria
+                  <span style={{
+                    background: '#dcfce7', color: '#166534', fontSize: '0.72rem',
+                    fontWeight: '800', padding: '3px 9px', borderRadius: '12px', border: '1px solid #86efac'
+                  }}>
+                    ● ADMIN PERSISTED
+                  </span>
+                </h3>
+                <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                  Official tenure-based revenue milestones and intern monthly targets active across Aparaitech systems.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setSection('bdaSalary')}
+                style={{
+                  background: 'linear-gradient(135deg, #065f46, #059669)',
+                  color: '#ffffff', border: 'none', borderRadius: '10px',
+                  padding: '8px 16px', fontSize: '0.82rem', fontWeight: '800',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                  boxShadow: '0 4px 12px rgba(5, 150, 105, 0.2)'
+                }}
+              >
+                <i className="fas fa-sliders-h"></i> Manage Criteria & Live Payout Sheet ↗
+              </button>
+              <button
+                onClick={() => setSection('internTarget')}
+                style={{
+                  background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
+                  borderRadius: '10px', padding: '8px 16px', fontSize: '0.82rem',
+                  fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
+                }}
+              >
+                <i className="fas fa-bullseye"></i> Intern Targets ↗
+              </button>
+            </div>
+          </div>
+
+          {/* 4-Month Tenure Criteria Cards Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+            gap: '12px'
+          }}>
+            {[1, 2, 3, 4].map(m => {
+              const rule = bdaCriteriaData[m] || {
+                month: m,
+                target: m === 1 ? 42000 : m === 2 ? 54000 : m === 3 ? 72000 : 90000,
+                targetConversions: m === 1 ? 7 : m === 2 ? 9 : m === 3 ? 12 : 15,
+                belowTargetPercent: m === 1 ? 26 : 25,
+                onTargetPercent: m === 1 ? 36 : 35,
+                excessPercent: 8,
+                label: m === 4 ? 'Month 4+' : `Month ${m}`
+              }
+              const targetRev = Number(rule.target) || 0
+              const onPct = Number(rule.onTargetPercent) || 0
+              const baseSalary = Math.round((targetRev * onPct) / 100)
+
+              return (
+                <div
+                  key={m}
+                  style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '14px',
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{
+                      fontWeight: '800', fontSize: '0.85rem', color: '#064e3b',
+                      background: '#ecfdf5', padding: '3px 8px', borderRadius: '8px', border: '1px solid #a7f3d0'
+                    }}>
+                      {rule.label || (m === 4 ? 'Month 4+' : `Month ${m}`)}
+                    </span>
+                    <span style={{ fontSize: '0.74rem', color: '#2563eb', fontWeight: '800' }}>
+                      {rule.targetConversions} Convs
+                    </span>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>
+                      Target Revenue
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0f172a' }}>
+                      ₹{targetRev.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#ffffff',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    border: '1px solid #f1f5f9',
+                    fontSize: '0.74rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#059669', fontWeight: '700' }}>On Target:</span>
+                      <strong style={{ color: '#065f46' }}>{rule.onTargetPercent}% (₹{baseSalary.toLocaleString('en-IN')})</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#dc2626', fontWeight: '700' }}>Below Target:</span>
+                      <strong style={{ color: '#991b1b' }}>{rule.belowTargetPercent}%</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#d97706', fontWeight: '700' }}>Excess Bonus:</span>
+                      <strong style={{ color: '#b45309' }}>+{rule.excessPercent}%</strong>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Intern Monthly Benchmark Glance Bar */}
+          <div style={{
+            background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
+            border: '1px dashed #93c5fd',
+            borderRadius: '12px',
+            padding: '10px 16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.1rem' }}>🎯</span>
+              <div>
+                <span style={{ fontWeight: '800', fontSize: '0.82rem', color: '#1e3a8a' }}>
+                  Intern Monthly Benchmark Goal:
+                </span>
+                <span style={{ marginLeft: '8px', fontSize: '0.82rem', color: '#334155' }}>
+                  <strong>{internTargetData.targetConversions || 10} Conversions</strong> • <strong>₹{(internTargetData.targetRevenue || 60000).toLocaleString('en-IN')} Revenue</strong> • <strong>{internTargetData.targetCalls || 500} Calls</strong>
+                </span>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.74rem', color: '#64748b', fontStyle: 'italic' }}>
+              {internTargetData.note || 'Benchmark decided for active month'}
+            </span>
+          </div>
         </div>
 
         {/* Stats Grid: Attendance Totals */}
@@ -2666,7 +2842,36 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 filteredEmployees.slice(0, empLimit).map(emp => (
                   <tr key={emp.email}>
                     <td><strong>{emp.empId}</strong></td>
-                    <td>{emp.name}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          overflow: 'hidden',
+                          background: '#e2e8f0',
+                          border: '1.5px solid #cbd5e1',
+                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {emp.profileImageUrl ? (
+                            <img
+                              src={emp.profileImageUrl.startsWith('data:') || emp.profileImageUrl.startsWith('http') ? emp.profileImageUrl : `${API_URL}${emp.profileImageUrl.startsWith('/') ? '' : '/'}${emp.profileImageUrl}`}
+                              alt={emp.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>
+                              {emp.name ? emp.name.charAt(0).toUpperCase() : 'E'}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontWeight: 600 }}>{emp.name}</span>
+                      </div>
+                    </td>
                     <td>{emp.email}</td>
                     {/* Password column with show/hide toggle */}
                     <td>
@@ -2773,9 +2978,23 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                         className="mark-btn" 
                         onClick={() => {
                           setProfileEmp(emp)
+                          setProfileEditMode(true)
+                          setIsProfileOpen(true)
+                        }}
+                        style={{ background: '#059669', marginRight: '6px' }}
+                        title="Edit Employee Information, Credentials & Profile Photo"
+                      >
+                        <i className="fas fa-edit" style={{ marginRight: '4px' }}></i> Edit
+                      </button>
+                      <button 
+                        className="mark-btn" 
+                        onClick={() => {
+                          setProfileEmp(emp)
+                          setProfileEditMode(false)
                           setIsProfileOpen(true)
                         }}
                         style={{ background: '#2563eb', marginRight: '6px' }}
+                        title="View Profile Details & Face ID Enrollment"
                       >
                         <i className="fas fa-user-cog" style={{ marginRight: '4px' }}></i> Profile
                       </button>
@@ -3299,11 +3518,13 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         onClose={() => {
           setIsProfileOpen(false)
           setProfileEmp(null)
+          setProfileEditMode(false)
         }}
         employee={profileEmp}
         isAdmin={true}
         showToast={showToast}
         onUpdated={fetchData}
+        initialEditMode={profileEditMode}
       />
 
       {isConversionModalOpen && (

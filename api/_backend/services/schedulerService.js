@@ -6,7 +6,7 @@ import Holiday from '../models/Holiday.js'
 import EmailLog from '../models/EmailLog.js'
 import AuditLog from '../models/AuditLog.js'
 import { sendCheckInReminder, sendCheckOutReminder, sendAutoCheckoutEmail } from './emailService.js'
-import { getAttendanceStatus, calcHours } from '../utils/helpers.js'
+import { getAttendanceStatus, getStatusReason, calcHours } from '../utils/helpers.js'
 
 // Hardcoded Attendance Timings (Asia/Kolkata timezone, 24-hour format)
 export const REMINDER_CHECKIN_TIME = "10:00"
@@ -165,11 +165,10 @@ export const runSystemAutoCheckout = async (triggeredBy = 'SYSTEM') => {
     const autoCheckoutTime = AUTO_CHECKOUT_TIME
 
     for (const session of sessions) {
-      const employee = await Employee.findOne({ email: session.employeeEmail.toLowerCase() })
-      
-      const status = getAttendanceStatus(session.checkInTime, autoCheckoutTime)
+      const assignedShift = session.shift || (employee && employee.shift) || (session.department === 'Development' ? 'shift_1' : 'shift_2')
+      const status = getAttendanceStatus(session.checkInTime, autoCheckoutTime, assignedShift)
       const workingHours = calcHours(session.checkInTime, autoCheckoutTime)
-      const statusReason = 'System Auto Checkout'
+      const statusReason = `System Auto Checkout (${getStatusReason(session.checkInTime, autoCheckoutTime, assignedShift)})`
 
       // Update or create Attendance
       let record = await Attendance.findOne({ employeeEmail: session.employeeEmail.toLowerCase(), date: session.date })

@@ -43,6 +43,8 @@ const ADMIN_NAV = [
   { id: 'mailBlast',          icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
   { id: 'pipeline',           icon: 'fa-funnel-dollar',       label: 'Onboarding & Pipeline (7-Day)', section: true,  group: 'Command Center' },
   { id: 'revenue',            icon: 'fa-rupee-sign',          label: 'Revenue & Conversions',   section: true,  group: 'Command Center' },
+  { id: 'bdaSalary',          icon: 'fa-briefcase',           label: 'BDA Salary & Monthly Criteria', section: true, group: 'Command Center' },
+  { id: 'internTarget',       icon: 'fa-bullseye',            label: 'Intern Monthly Targets',  section: true,  group: 'Command Center' },
   { id: 'messaging',          icon: 'fa-envelope',            label: 'Messaging Center',        section: false, tab: 'messaging', group: 'Command Center' },
   // 2. Workforce & Attendance Logs
   { id: 'employees',          icon: 'fa-users',               label: 'Employee Directory',      section: true,  group: 'Workforce & Logs' },
@@ -87,6 +89,8 @@ const HR_NAV = [
   { id: 'employees',    icon: 'fa-users',           label: 'Workforce Directory',       group: 'HR Command Center', section: true },
   { id: 'leaves',       icon: 'fa-calendar-alt',    label: 'Leave Approvals Desk',      group: 'HR Command Center', section: false, tab: 'leave' },
   { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'All Daily Work Reports',    group: 'HR Command Center', section: true },
+  { id: 'bdaSalary',    icon: 'fa-briefcase',       label: 'BDA Salary & Monthly Criteria', group: 'HR Command Center', section: true },
+  { id: 'internTarget', icon: 'fa-bullseye',        label: 'Intern Monthly Targets',    group: 'HR Command Center', section: true },
 
   // 2. Attendance & Workforce Logs
   { id: 'live',         icon: 'fa-eye',             label: 'Live Check-Ins',            group: 'Attendance & Workforce', section: true },

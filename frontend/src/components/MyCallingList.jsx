@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { leadsAPI } from '../services/api'
+import { leadsAPI, reportsAPI } from '../services/api'
 import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
 import { playNotificationSound } from '../services/notificationService'
 
@@ -43,6 +43,90 @@ function MyCallingList({ currentUser, showToast }) {
   // Inline note editing state { [leadId]: noteText }
   const [activeNotes, setActiveNotes] = useState({})
   const [savingNoteId, setSavingNoteId] = useState(null)
+
+  // Daily Calling Report Submission State
+  const [dailyReportModalOpen, setDailyReportModalOpen] = useState(false)
+  const [dailyReportConnected, setDailyReportConnected] = useState(0)
+  const [dailyReportConversions, setDailyReportConversions] = useState(0)
+  const [dailyReportCallsAbove3, setDailyReportCallsAbove3] = useState(0)
+  const [dailyReportHours, setDailyReportHours] = useState(8)
+  const [dailyReportRemarks, setDailyReportRemarks] = useState('')
+  const [submittingReport, setSubmittingReport] = useState(false)
+  const [todayReportStatus, setTodayReportStatus] = useState(null)
+
+  const getTodayDateStr = () => {
+    const d = new Date()
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const checkTodayReportStatus = async () => {
+    try {
+      const todayStr = getTodayDateStr()
+      const res = await reportsAPI.getTodayStatus(todayStr, currentUser?.email)
+      if (res?.success) {
+        setTodayReportStatus(res)
+        if (res.hasSubmitted && res.report) {
+          setDailyReportConnected(res.report.connectedCalls || 0)
+          setDailyReportConversions(res.report.todayConversions || 0)
+          setDailyReportCallsAbove3(res.report.callsAbove3Min || 0)
+          setDailyReportHours(res.report.hoursWorked || 8)
+          setDailyReportRemarks(res.report.remarks || '')
+        }
+      }
+    } catch (err) {
+      console.warn('Error checking today daily report status:', err)
+    }
+  }
+
+  const handleOpenDailyReportModal = () => {
+    if (!todayReportStatus?.hasSubmitted) {
+      setDailyReportConnected(stats?.todayCompleted ?? stats?.calledCount ?? 0)
+      setDailyReportConversions(stats?.interestedCount ?? 0)
+      setDailyReportCallsAbove3(0)
+      setDailyReportHours(8)
+      setDailyReportRemarks('')
+    }
+    setDailyReportModalOpen(true)
+  }
+
+  const handleSubmitDailyReport = async (e) => {
+    e.preventDefault()
+    setSubmittingReport(true)
+    try {
+      const todayStr = getTodayDateStr()
+      const payload = {
+        reportType: 'bda',
+        reportDate: todayStr,
+        connectedCalls: Number(dailyReportConnected) || 0,
+        todayConversions: Number(dailyReportConversions) || 0,
+        callsAbove3Min: Number(dailyReportCallsAbove3) || 0,
+        hoursWorked: Number(dailyReportHours) || 8,
+        remarks: dailyReportRemarks.trim()
+      }
+      const res = await reportsAPI.submitDaily(payload)
+      if (res?.success || res?.data) {
+        if (showToast) {
+          showToast('🎉 आजचा दैनिक कॉलिंग रिपोर्ट ॲडमिनकडे यशस्वीरित्या सादर करण्यात आला!', '#16a34a')
+        }
+        emitSyncEvent(SYNC_EVENTS.DAILY_REPORT_SUBMITTED, {
+          userEmail: currentUser?.email,
+          reportDate: todayStr
+        })
+        setDailyReportModalOpen(false)
+        await checkTodayReportStatus()
+        fetchLeads(true)
+      }
+    } catch (err) {
+      console.error('Error submitting daily report:', err)
+      const msg = err.response?.data?.message || err.message || 'Failed to submit report'
+      if (showToast) showToast(`❌ ${msg}`, '#dc2626')
+    } finally {
+      setSubmittingReport(false)
+    }
+  }
 
   const fetchLeads = async (isSilent = false) => {
     if (!isSilent) {
@@ -98,17 +182,19 @@ function MyCallingList({ currentUser, showToast }) {
     }
   }
 
-  // Initial fetch & re-fetch on tab or filter change
+  // Initial fetch & check today report status
   useEffect(() => {
     fetchLeads(false)
+    checkTodayReportStatus()
   }, [activeListTab, statusFilter, collegeFilter, domainFilter, priorityFilter])
 
   // Real-time synchronization: Auto-refresh every 5 seconds, on focus/visibility, & on instant sync events
   useAutoRefresh(() => {
     fetchLeads(true)
+    checkTodayReportStatus()
   }, {
     intervalMs: 5000,
-    eventTypes: [SYNC_EVENTS.DATA_ASSIGNED],
+    eventTypes: [SYNC_EVENTS.DATA_ASSIGNED, SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
     onFocus: true,
     enabled: true
   })
@@ -122,15 +208,16 @@ function MyCallingList({ currentUser, showToast }) {
   // Update Status & Handle Moving to History vs Restoring to Active
   const handleStatusChange = async (leadId, newStatus) => {
     const currentLead = leads.find(l => l._id === leadId)
+    const noteText = activeNotes[leadId] || currentLead?.callNotes || ''
     try {
-      const res = await leadsAPI.updateStatus(leadId, { status: newStatus })
+      const res = await leadsAPI.updateStatus(leadId, { status: newStatus, callNotes: noteText })
       if (res.success) {
         if (activeListTab === 'active') {
           if (newStatus !== 'Not Called') {
             // Card disappears from active pending list and moves into History!
             setLeads(prev => prev.filter(l => l._id !== leadId))
             if (showToast) {
-              showToast(`✅ "${currentLead?.name || 'Lead'}" marked as "${newStatus}" & moved to History! 📜`, '#16a34a')
+              showToast(`✅ "${currentLead?.name || 'Lead'}" वर काम पूर्ण झाले ("${newStatus}") आणि History मध्ये सुरक्षित हलवले गेले! 📜`, '#16a34a')
             }
           } else {
             setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
@@ -140,7 +227,7 @@ function MyCallingList({ currentUser, showToast }) {
             // Restored back to Active Pending list!
             setLeads(prev => prev.filter(l => l._id !== leadId))
             if (showToast) {
-              showToast(`🔄 "${currentLead?.name || 'Lead'}" restored back to Active Pending list!`, '#0284c7')
+              showToast(`🔄 "${currentLead?.name || 'Lead'}" चालू लिस्ट (Active Pending) मध्ये परत हलवले!`, '#0284c7')
             }
           } else {
             setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
@@ -163,6 +250,11 @@ function MyCallingList({ currentUser, showToast }) {
       console.error(err)
       if (showToast) showToast('❌ Failed to update status', '#dc2626')
     }
+  }
+
+  // Quick action: Complete work and move directly to History
+  const handleQuickComplete = (leadId, outcome = 'Called') => {
+    return handleStatusChange(leadId, outcome)
   }
 
   // Save Inline Notes
@@ -331,6 +423,384 @@ function MyCallingList({ currentUser, showToast }) {
           </button>
         </div>
       </div>
+
+      {/* ── Today's Calling Target & Shift Report Banner ─────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+        borderRadius: '16px',
+        padding: '16px 20px',
+        border: '1px solid #334155',
+        color: '#f8fafc',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                background: '#f59e0b',
+                color: '#000000',
+                fontWeight: '900',
+                fontSize: '0.72rem',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                letterSpacing: '0.04em'
+              }}>
+                SHIFT TARGET
+              </span>
+              <span style={{ fontSize: '1.05rem', fontWeight: '800' }}>
+                🎯 आजचे कॉलिंग टार्गेट व दैनिक शिफ्ट प्रोग्रेस
+              </span>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '3px' }}>
+              दिलेले दैनंदिन कॉलिंग टार्गेट वेळेत पूर्ण करून दिवसाच्या अखेरीस ॲडमिनकडे दैनिक रिपोर्ट सादर करा.
+            </div>
+          </div>
+
+          {/* Action Button: Submit Daily Calling Report */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {todayReportStatus?.hasSubmitted ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{
+                  background: '#065f46',
+                  color: '#6ee7b7',
+                  border: '1px solid #10b981',
+                  borderRadius: '10px',
+                  padding: '6px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: '800',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <i className="fas fa-check-double"></i> आजचा रिपोर्ट सादर केला आहे (Submitted)
+                </span>
+                <button
+                  type="button"
+                  onClick={handleOpenDailyReportModal}
+                  style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                    color: '#ffffff',
+                    padding: '7px 14px',
+                    borderRadius: '10px',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <i className="fas fa-edit"></i> रिपोर्ट अपडेट करा
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenDailyReportModal}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '10px 18px',
+                  fontSize: '0.84rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)'
+                }}
+              >
+                <i className="fas fa-file-invoice"></i>
+                <span>📋 दैनिक कॉलिंग रिपोर्ट सादर करा (Submit Report)</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Target Progress Bar & Counter Pills */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '10px',
+          paddingTop: '6px',
+          borderTop: '1px solid rgba(255,255,255,0.08)'
+        }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
+            <div style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: '700' }}>🎯 आजचे टार्गेट</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#f8fafc' }}>
+              {stats?.todayTarget ?? stats?.totalAssigned ?? 0}
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
+            <div style={{ fontSize: '0.68rem', color: '#86efac', fontWeight: '700' }}>✅ पूर्ण झालेले (In History)</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#4ade80' }}>
+              {stats?.todayCompleted ?? stats?.calledCount ?? 0}
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
+            <div style={{ fontSize: '0.68rem', color: '#fdba74', fontWeight: '700' }}>⏳ बाकी कॉल्स (Pending Cards)</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fb923c' }}>
+              {stats?.todayPending ?? stats?.pendingCount ?? 0}
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
+            <div style={{ fontSize: '0.68rem', color: '#7dd3fc', fontWeight: '700' }}>📈 शिफ्ट प्रोग्रेस</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#38bdf8' }}>
+              {stats?.todayRate ?? 0}%
+            </div>
+            <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '4px', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
+              <div style={{ width: `${stats?.todayRate ?? 0}%`, background: '#38bdf8', height: '100%' }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Daily Calling Report Submission Modal ───────────────────── */}
+      {dailyReportModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '560px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid #e2e8f0',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+              padding: '18px 22px',
+              color: '#ffffff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800' }}>
+                  📋 दैनिक कॉलिंग रिपोर्ट (Daily Calling Report)
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
+                  दिनांक: {formatDateTime(new Date()) || 'Today'} • {currentUser?.name} ({currentUser?.department || 'BDA'})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDailyReportModalOpen(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  color: '#ffffff',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmitDailyReport} style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Notice */}
+              <div style={{
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '10px',
+                padding: '10px 14px',
+                fontSize: '0.8rem',
+                color: '#1e40af',
+                lineHeight: 1.4
+              }}>
+                <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
+                हा रिपोर्ट थेट <strong>Admin AIDataDistributionCenter</strong> आणि लीडरशिप डॅशबोर्डवर त्वरित नोंदवला जाईल.
+              </div>
+
+              {/* Numerical Inputs Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
+                    📞 एकूण कनेक्टेड कॉल्स (Connected Calls) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={dailyReportConnected}
+                    onChange={e => setDailyReportConnected(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '0.9rem',
+                      fontWeight: '700',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
+                    🌟 इच्छुक / कन्वर्शन्स (Interested Conversions)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={dailyReportConversions}
+                    onChange={e => setDailyReportConversions(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '0.9rem',
+                      fontWeight: '700',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
+                    ⏱️ 3 मिनिटांपेक्षा जास्त कॉल्स (&gt;3 Min Calls)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={dailyReportCallsAbove3}
+                    onChange={e => setDailyReportCallsAbove3(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '0.9rem',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
+                    🕒 कामाचे तास (Hours Worked)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="16"
+                    value={dailyReportHours}
+                    onChange={e => setDailyReportHours(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '0.9rem',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Remarks Textarea */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
+                  📝 आजचे कॉलिंग सारांश व रिमार्क (Work Remarks & Follow-ups) *
+                </label>
+                <textarea
+                  rows="3"
+                  required
+                  placeholder="उदा. आज 30 विद्यार्थ्यांना कॉल केले. 4 विद्यार्थी Web Dev साठी इच्छुक असून उद्या Demo साठी येणार आहेत. 3 विद्यार्थ्यांनी फी सवलतीबाबत विचारणा केली..."
+                  value={dailyReportRemarks}
+                  onChange={e => setDailyReportRemarks(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.85rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setDailyReportModalOpen(false)}
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: '10px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#475569',
+                    fontWeight: '700',
+                    fontSize: '0.84rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  रद्द करा (Cancel)
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingReport}
+                  style={{
+                    padding: '10px 22px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                    color: '#ffffff',
+                    fontWeight: '800',
+                    fontSize: '0.84rem',
+                    cursor: submittingReport ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)'
+                  }}
+                >
+                  {submittingReport ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i>
+                      <span>सादर करत आहे...</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-paper-plane"></i>
+                      <span>🚀 ॲडमिनला रिपोर्ट पाठवा (Submit Report)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── My Progress KPI Cards ───────────────────────────────────── */}
       <div style={{
@@ -749,7 +1219,7 @@ function MyCallingList({ currentUser, showToast }) {
                       {lead.name}
                     </div>
 
-                    {/* College & Domain Badges */}
+                    {/* College & Domain Badges + Batch ID */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
                       <span style={{
                         background: '#f8fafc',
@@ -775,6 +1245,20 @@ function MyCallingList({ currentUser, showToast }) {
                         <i className="fas fa-laptop-code" style={{ marginRight: '4px' }}></i>
                         {lead.domain}
                       </span>
+                      {lead.batchId && (
+                        <span style={{
+                          background: '#f0f9ff',
+                          border: '1px solid #bae6fd',
+                          color: '#0369a1',
+                          fontSize: '0.72rem',
+                          fontWeight: '800',
+                          padding: '2px 8px',
+                          borderRadius: '6px'
+                        }}>
+                          <i className="fas fa-layer-group" style={{ marginRight: '4px' }}></i>
+                          {lead.batchId}
+                        </span>
+                      )}
                     </div>
 
                     {/* ── Assignment Info & Work Status Timing Box ── */}
@@ -792,7 +1276,7 @@ function MyCallingList({ currentUser, showToast }) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.76rem' }}>
                         <span style={{ color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <i className="fas fa-calendar-alt" style={{ color: '#0284c7' }}></i>
-                          <span>डेटा असाइन (Assigned):</span>
+                          <span>डेटा असाइन वेळ व तारीख (Assigned At):</span>
                         </span>
                         <span style={{ fontWeight: '800', color: '#0f172a' }}>
                           {assignedFormatted || 'Recent'}
@@ -810,7 +1294,7 @@ function MyCallingList({ currentUser, showToast }) {
                       }}>
                         <span style={{ color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <i className="fas fa-tasks" style={{ color: lead.status === 'Not Called' ? '#ea580c' : '#16a34a' }}></i>
-                          <span>काम स्थिती (Work):</span>
+                          <span>कामाची स्थिती (Work Status):</span>
                         </span>
 
                         {lead.status === 'Not Called' ? (
@@ -818,7 +1302,7 @@ function MyCallingList({ currentUser, showToast }) {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            padding: '2px 8px',
+                            padding: '3px 8px',
                             borderRadius: '6px',
                             background: '#fff7ed',
                             border: '1px solid #ffedd5',
@@ -826,7 +1310,7 @@ function MyCallingList({ currentUser, showToast }) {
                             fontWeight: '800',
                             fontSize: '0.72rem'
                           }}>
-                            <i className="fas fa-clock"></i> काम बाकी आहे (Not Worked)
+                            <i className="fas fa-clock"></i> ⏳ काम बाकी आहे (Pending)
                           </span>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
@@ -842,10 +1326,10 @@ function MyCallingList({ currentUser, showToast }) {
                               fontWeight: '800',
                               fontSize: '0.72rem'
                             }}>
-                              <i className="fas fa-check-circle"></i> काम झाले ({lead.status})
+                              <i className="fas fa-check-circle"></i> ✅ काम झाले ({lead.status})
                             </span>
-                            <span style={{ fontSize: '0.69rem', color: '#64748b', fontWeight: '700' }}>
-                              📅 {workedFormatted || 'Done'}
+                            <span style={{ fontSize: '0.69rem', color: '#166534', fontWeight: '700' }}>
+                              🕒 {workedFormatted || 'Done'}
                             </span>
                           </div>
                         )}
@@ -1003,6 +1487,129 @@ function MyCallingList({ currentUser, showToast }) {
                         </button>
                       </div>
                     </div>
+
+                    {/* Quick Complete / History Action Box */}
+                    {activeListTab === 'active' ? (
+                      <div style={{
+                        marginTop: '10px',
+                        padding: '10px 12px',
+                        background: '#eff6ff',
+                        borderRadius: '12px',
+                        border: '1.5px dashed #93c5fd',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.74rem', fontWeight: '800', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fas fa-check-circle" style={{ color: '#2563eb' }}></i>
+                            <span>काम पूर्ण करा • थेट History मध्ये पाठवा:</span>
+                          </span>
+                          <span style={{ fontSize: '0.67rem', color: '#2563eb', fontWeight: '700' }}>
+                            (कार्ड गायब होईल)
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickComplete(lead._id, 'Called')}
+                            style={{
+                              padding: '7px 4px',
+                              borderRadius: '8px',
+                              border: '1px solid #bfdbfe',
+                              background: '#ffffff',
+                              color: '#1d4ed8',
+                              fontSize: '0.74rem',
+                              fontWeight: '800',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                            }}
+                          >
+                            <i className="fas fa-phone-alt"></i> कॉल झाला
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickComplete(lead._id, 'Interested')}
+                            style={{
+                              padding: '7px 4px',
+                              borderRadius: '8px',
+                              border: '1px solid #86efac',
+                              background: '#ffffff',
+                              color: '#15803d',
+                              fontSize: '0.74rem',
+                              fontWeight: '800',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                            }}
+                          >
+                            <i className="fas fa-check-circle"></i> इच्छुक
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickComplete(lead._id, 'Not Interested')}
+                            style={{
+                              padding: '7px 4px',
+                              borderRadius: '8px',
+                              border: '1px solid #fecaca',
+                              background: '#ffffff',
+                              color: '#b91c1c',
+                              fontSize: '0.74rem',
+                              fontWeight: '800',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                            }}
+                          >
+                            <i className="fas fa-times-circle"></i> नाही
+                          </button>
+                        </div>
+                      </div>
+                    ) : activeListTab === 'history' ? (
+                      <div style={{
+                        marginTop: '10px',
+                        padding: '8px 12px',
+                        background: '#f0fdf4',
+                        borderRadius: '10px',
+                        border: '1px solid #bbf7d0',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#15803d', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fas fa-archive"></i>
+                          <span>History मध्ये सुरक्षित (काम पूर्ण)</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleStatusChange(lead._id, 'Not Called')}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #cbd5e1',
+                            background: '#ffffff',
+                            color: '#475569',
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }}
+                          title="Restore back to Active Pending list"
+                        >
+                          <i className="fas fa-undo"></i> चालू लिस्टमध्ये परत आणा
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )
@@ -1114,6 +1721,7 @@ function MyCallingList({ currentUser, showToast }) {
                   <th>CANDIDATE</th>
                   <th>MOBILE</th>
                   <th>COLLEGE & DOMAIN</th>
+                  <th>BATCH ID</th>
                   <th>📅 ASSIGNED AT</th>
                   <th>WORK STATUS</th>
                   <th>📅 WORKED AT</th>
@@ -1154,6 +1762,23 @@ function MyCallingList({ currentUser, showToast }) {
                           <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
                             {lead.domain}
                           </span>
+                        </td>
+                        <td>
+                          {lead.batchId ? (
+                            <span style={{
+                              background: '#f0f9ff',
+                              color: '#0369a1',
+                              border: '1px solid #bae6fd',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '0.68rem',
+                              fontWeight: '800'
+                            }}>
+                              {lead.batchId}
+                            </span>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>—</span>
+                          )}
                         </td>
                         <td style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: '700', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -1271,7 +1896,7 @@ function MyCallingList({ currentUser, showToast }) {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="9" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
+                    <td colSpan="10" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
                       {activeListTab === 'active'
                         ? '🎉 No pending leads! All worked leads have moved to Calling History.'
                         : (activeListTab === 'history'

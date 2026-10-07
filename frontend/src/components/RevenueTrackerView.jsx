@@ -224,6 +224,56 @@ function RevenueTrackerView({ currentUser, showToast }) {
         )}
       </div>
 
+      {/* Official Monthly Revenue Benchmarks & Criteria */}
+      <div style={{
+        background: '#ffffff',
+        borderRadius: '20px',
+        padding: '1.5rem',
+        border: '1.5px solid #a7f3d0',
+        boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.03)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#064e3b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <i className="fas fa-bullseye" style={{ color: '#059669' }}></i>
+              Official Monthly Revenue & Salary Criteria Benchmarks
+            </h3>
+            <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+              Tenure-based monthly targets for revenue achievement and associate evaluation
+            </p>
+          </div>
+          <span style={{ fontSize: '0.74rem', background: '#ecfdf5', color: '#065f46', padding: '4px 12px', borderRadius: '12px', fontWeight: '800', border: '1px solid #a7f3d0' }}>
+            ● ADMIN CRITERIA PERSISTED
+          </span>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '12px'
+        }}>
+          {[
+            { label: 'Month 1', target: '₹42,000', convs: '7 Convs', onTarget: '36%', below: '26%', excess: '+8%' },
+            { label: 'Month 2', target: '₹54,000', convs: '9 Convs', onTarget: '35%', below: '25%', excess: '+8%' },
+            { label: 'Month 3', target: '₹72,000', convs: '12 Convs', onTarget: '35%', below: '25%', excess: '+8%' },
+            { label: 'Month 4+', target: '₹90,000', convs: '15 Convs', onTarget: '35%', below: '25%', excess: '+8%' }
+          ].map((item, idx) => (
+            <div key={idx} style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <strong style={{ color: '#064e3b', fontSize: '0.85rem' }}>{item.label}</strong>
+                <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '800' }}>{item.convs}</span>
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0a192f', marginBottom: '6px' }}>
+                {item.target}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                On-target: <strong style={{ color: '#059669' }}>{item.onTarget}</strong> • Below: <strong style={{ color: '#dc2626' }}>{item.below}</strong> • Excess: <strong style={{ color: '#d97706' }}>{item.excess}</strong>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Team Breakdown & Employee Breakdown */}
       <div style={{
         display: 'grid',

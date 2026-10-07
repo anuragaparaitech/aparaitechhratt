@@ -1,5 +1,6 @@
 import React from 'react'
 import { Capacitor } from '@capacitor/core'
+import { API_URL } from '../services/api'
 
 function Navbar({
   currentUser,
@@ -340,7 +341,25 @@ function Navbar({
             transition: 'background 0.2s ease'
           }}
         >
-          <i className="fas fa-user-circle" style={{ fontSize: '1.35rem', color: '#38bdf8', flexShrink: 0 }}></i>
+          {currentUser.profileImageUrl ? (
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '1.5px solid #38bdf8',
+              flexShrink: 0
+            }}>
+              <img
+                src={currentUser.profileImageUrl.startsWith('data:') || currentUser.profileImageUrl.startsWith('http') ? currentUser.profileImageUrl : `${API_URL}${currentUser.profileImageUrl.startsWith('/') ? '' : '/'}${currentUser.profileImageUrl}`}
+                alt={currentUser.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
+          ) : (
+            <i className="fas fa-user-circle" style={{ fontSize: '1.35rem', color: '#38bdf8', flexShrink: 0 }}></i>
+          )}
           <div className="navbar-user-text">
             <div style={{ fontWeight: '700', color: '#ffffff', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
               {currentUser.name}
