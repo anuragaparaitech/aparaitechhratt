@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Aparaitech HRMS | Enterprise Attendance Portal</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="manifest" href="/manifest.json">
@@ -15,6 +18,38 @@
     <meta name="msapplication-tap-highlight" content="no">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+      // Self-healing recovery for stale browser caches or outdated script hashes
+      window.addEventListener('error', function(e) {
+        var isChunkError = e.message && (
+          e.message.indexOf('Loading chunk') !== -1 ||
+          e.message.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+          e.message.indexOf('Importing a module script failed') !== -1
+        );
+        var isScriptLoadError = e.target && e.target.tagName === 'SCRIPT';
+        if (isChunkError || isScriptLoadError) {
+          if (!sessionStorage.getItem('aparaitech_reloaded_for_chunk')) {
+            sessionStorage.setItem('aparaitech_reloaded_for_chunk', 'true');
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var i = 0; i < regs.length; i++) regs[i].unregister();
+              });
+            }
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                for (var i = 0; i < names.length; i++) caches.delete(names[i]);
+              });
+            }
+            window.location.reload(true);
+          }
+        }
+      }, true);
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          sessionStorage.removeItem('aparaitech_reloaded_for_chunk');
+        }, 3000);
+      });
+    </script>
 </head>
 <body>
     <div id="root"></div>
@@ -22,7 +57,9 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js').catch(function(err) {
+          navigator.serviceWorker.register('/sw.js').then(function(reg) {
+            reg.update();
+          }).catch(function(err) {
             console.log('SW registration error:', err);
           });
         });

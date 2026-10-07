@@ -1,8 +1,6 @@
 // Aparaitech Work Portal Service Worker
-const CACHE_NAME = 'aparaitech-cache-v1';
+const CACHE_NAME = 'aparaitech-cache-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json',
   '/favicon.png',
   '/icon-192.png',
@@ -37,6 +35,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Let API requests go directly to network
   if (event.request.url.includes('/api/')) {
+    return;
+  }
+
+  // Navigation requests (HTML pages): Network-first to always load the latest bundle
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
     return;
   }
 
