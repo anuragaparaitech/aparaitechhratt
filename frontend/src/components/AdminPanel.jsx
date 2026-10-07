@@ -80,7 +80,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // BDA Revenue-Based Salary Criteria & Payout States
   const [bdaCriteriaData, setBdaCriteriaData] = useState({
     1: { month: 1, target: 42000, targetConversions: 7, belowTargetPercent: 26, onTargetPercent: 36, excessPercent: 8, label: 'Month 1' },
-    2: { month: 2, target: 54000, targetConversions: 9, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 2' },
+    2: { month: 2, target: 60000, targetConversions: 10, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 2' },
     3: { month: 3, target: 72000, targetConversions: 12, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 3' },
     4: { month: 4, target: 90000, targetConversions: 15, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 4+' }
   })
@@ -1132,8 +1132,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             {[1, 2, 3, 4].map(m => {
               const rule = bdaCriteriaData[m] || {
                 month: m,
-                target: m === 1 ? 42000 : m === 2 ? 54000 : m === 3 ? 72000 : 90000,
-                targetConversions: m === 1 ? 7 : m === 2 ? 9 : m === 3 ? 12 : 15,
+                target: m === 1 ? 42000 : m === 2 ? 60000 : m === 3 ? 72000 : 90000,
+                targetConversions: m === 1 ? 7 : m === 2 ? 10 : m === 3 ? 12 : 15,
                 belowTargetPercent: m === 1 ? 26 : 25,
                 onTargetPercent: m === 1 ? 36 : 30,
                 excessPercent: 8,
@@ -1959,7 +1959,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                     style={{ width: '100%', marginTop: '4px', fontWeight: '700', padding: '8px 12px' }}
                   >
                     <option value="1">Month 1 (Target: ₹42,000 / 7 Convs)</option>
-                    <option value="2">Month 2 (Target: ₹54,000 / 9 Convs)</option>
+                    <option value="2">Month 2 (Target: ₹60,000 / 10 Convs)</option>
                     <option value="3">Month 3 (Target: ₹72,000 / 12 Convs)</option>
                     <option value="4">Month 4+ (Target: ₹90,000 / 15 Convs)</option>
                   </select>

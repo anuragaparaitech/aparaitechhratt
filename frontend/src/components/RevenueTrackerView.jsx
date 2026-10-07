@@ -254,7 +254,7 @@ function RevenueTrackerView({ currentUser, showToast }) {
         }}>
           {[
             { label: 'Month 1', target: '₹42,000', convs: '7 Convs', onTarget: '36%', below: '26%', excess: '+8%' },
-            { label: 'Month 2', target: '₹54,000', convs: '9 Convs', onTarget: '30%', below: '25%', excess: '+8%' },
+            { label: 'Month 2', target: '₹60,000', convs: '10 Convs', onTarget: '30%', below: '25%', excess: '+8%' },
             { label: 'Month 3', target: '₹72,000', convs: '12 Convs', onTarget: '30%', below: '25%', excess: '+8%' },
             { label: 'Month 4+', target: '₹90,000', convs: '15 Convs', onTarget: '30%', below: '25%', excess: '+8%' }
           ].map((item, idx) => (

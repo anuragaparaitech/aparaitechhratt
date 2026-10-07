@@ -30,8 +30,8 @@ export const DEFAULT_BDA_CRITERIA = {
   },
   2: {
     month: 2,
-    target: 54000,
-    targetConversions: 9,
+    target: 60000,
+    targetConversions: 10,
     belowTargetPercent: 25,
     onTargetPercent: 30,
     excessPercent: 8,
