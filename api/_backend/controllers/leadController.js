@@ -212,14 +212,23 @@ export const getAdminStatsAndLeads = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Administrator privileges required.' })
     }
 
-    const { employeeEmail, status, college, domain, priority, search, limit = 50, page = 1 } = req.query
+    const { employeeEmail, status, college, domain, priority, search, batchId, date, limit = 50, page = 1 } = req.query
 
     const filter = {}
+    if (batchId && batchId !== 'All') filter.batchId = batchId
     if (employeeEmail) filter['assignedTo.email'] = employeeEmail.toLowerCase()
     if (status && status !== 'All') filter.status = status
     if (college && college !== 'All') filter.college = college
     if (domain && domain !== 'All') filter.domain = domain
     if (priority && priority !== 'All') filter.priority = priority
+
+    if (date) {
+      const startDate = new Date(date)
+      startDate.setHours(0, 0, 0, 0)
+      const endDate = new Date(date)
+      endDate.setHours(23, 59, 59, 999)
+      filter.assignedAt = { $gte: startDate, $lte: endDate }
+    }
 
     if (search) {
       const searchRegex = { $regex: search, $options: 'i' }
@@ -229,7 +238,8 @@ export const getAdminStatsAndLeads = async (req, res) => {
         { email: searchRegex },
         { college: searchRegex },
         { domain: searchRegex },
-        { 'assignedTo.name': searchRegex }
+        { 'assignedTo.name': searchRegex },
+        { batchId: searchRegex }
       ]
     }
 
@@ -241,6 +251,7 @@ export const getAdminStatsAndLeads = async (req, res) => {
     const completedCalls = calledCount + interestedCount + notInterestedCount
     const overallConversionRate = completedCalls > 0 ? Math.round((interestedCount / completedCalls) * 100) : 0
 
+    // Employee-wise Breakdown
     const employeeAggregation = await Lead.aggregate([
       {
         $group: {
@@ -260,7 +271,9 @@ export const getAdminStatsAndLeads = async (req, res) => {
           },
           notInterestedCount: {
             $sum: { $cond: [{ $eq: ['$status', 'Not Interested'] }, 1, 0] }
-          }
+          },
+          lastCalledAt: { $max: '$calledAt' },
+          lastAssignedAt: { $max: '$assignedAt' }
         }
       },
       { $sort: { totalAssigned: -1 } }
@@ -280,7 +293,61 @@ export const getAdminStatsAndLeads = async (req, res) => {
         interestedCount: emp.interestedCount,
         notInterestedCount: emp.notInterestedCount,
         completedCount: finished,
-        conversionRate: rate
+        conversionRate: rate,
+        lastCalledAt: emp.lastCalledAt,
+        lastAssignedAt: emp.lastAssignedAt
+      }
+    })
+
+    // Batch-wise Distribution History Aggregation
+    const batchAggregation = await Lead.aggregate([
+      {
+        $group: {
+          _id: '$batchId',
+          assignedAt: { $min: '$assignedAt' },
+          assignedBy: { $first: '$assignedBy' },
+          totalLeads: { $sum: 1 },
+          notCalledCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'Not Called'] }, 1, 0] }
+          },
+          calledCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'Called'] }, 1, 0] }
+          },
+          interestedCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'Interested'] }, 1, 0] }
+          },
+          notInterestedCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'Not Interested'] }, 1, 0] }
+          },
+          lastCalledAt: { $max: '$calledAt' },
+          assignedEmployees: { $addToSet: '$assignedTo.name' },
+          assignedEmails: { $addToSet: '$assignedTo.email' },
+          assignedDepartments: { $addToSet: '$assignedTo.department' }
+        }
+      },
+      { $sort: { assignedAt: -1 } },
+      { $limit: 40 }
+    ])
+
+    const distributionBatches = batchAggregation.map(b => {
+      const completed = b.calledCount + b.interestedCount + b.notInterestedCount
+      const rate = completed > 0 ? Math.round((b.interestedCount / completed) * 100) : 0
+      return {
+        batchId: b._id || 'MANUAL-BATCH',
+        assignedAt: b.assignedAt,
+        assignedByName: b.assignedBy?.name || 'Administrator',
+        assignedByEmail: b.assignedBy?.email || 'admin@aparaitech.com',
+        totalLeads: b.totalLeads,
+        pendingCount: b.notCalledCount,
+        completedCount: completed,
+        calledCount: b.calledCount,
+        interestedCount: b.interestedCount,
+        notInterestedCount: b.notInterestedCount,
+        conversionRate: rate,
+        lastCalledAt: b.lastCalledAt,
+        assignedEmployees: (b.assignedEmployees || []).filter(Boolean),
+        assignedEmails: (b.assignedEmails || []).filter(Boolean),
+        assignedDepartments: (b.assignedDepartments || []).filter(Boolean)
       }
     })
 
@@ -305,6 +372,7 @@ export const getAdminStatsAndLeads = async (req, res) => {
         conversionRate: overallConversionRate
       },
       employeeBreakdown,
+      distributionBatches,
       domains: PREDEFINED_DOMAINS,
       leads,
       pagination: {
@@ -371,16 +439,33 @@ export const getMyCallingList = async (req, res) => {
       ]
     }
 
-    const [totalAssigned, pendingCount, calledCount, interestedCount, notInterestedCount] = await Promise.all([
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const [
+      totalAssigned,
+      pendingCount,
+      calledCount,
+      interestedCount,
+      notInterestedCount,
+      todayAssignedCount,
+      todayCompletedCount
+    ] = await Promise.all([
       Lead.countDocuments({ 'assignedTo.email': userEmail }),
       Lead.countDocuments({ 'assignedTo.email': userEmail, status: 'Not Called' }),
       Lead.countDocuments({ 'assignedTo.email': userEmail, status: 'Called' }),
       Lead.countDocuments({ 'assignedTo.email': userEmail, status: 'Interested' }),
-      Lead.countDocuments({ 'assignedTo.email': userEmail, status: 'Not Interested' })
+      Lead.countDocuments({ 'assignedTo.email': userEmail, status: 'Not Interested' }),
+      Lead.countDocuments({ 'assignedTo.email': userEmail, assignedAt: { $gte: startOfToday } }),
+      Lead.countDocuments({ 'assignedTo.email': userEmail, calledAt: { $gte: startOfToday } })
     ])
 
     const totalContacted = calledCount + interestedCount + notInterestedCount
     const conversionRate = totalContacted > 0 ? Math.round((interestedCount / totalContacted) * 100) : 0
+
+    const todayTarget = todayAssignedCount > 0 ? todayAssignedCount : totalAssigned
+    const todayPending = Math.max(0, todayTarget - todayCompletedCount)
+    const todayRate = todayTarget > 0 ? Math.round((todayCompletedCount / todayTarget) * 100) : 0
 
     if (req.query.summaryOnly === 'true' || req.query.summaryOnly === true) {
       return res.status(200).json({
@@ -393,7 +478,12 @@ export const getMyCallingList = async (req, res) => {
           notInterestedCount,
           totalContacted,
           historyCount: totalContacted,
-          conversionRate
+          conversionRate,
+          todayTarget,
+          todayAssigned: todayAssignedCount,
+          todayCompleted: todayCompletedCount,
+          todayPending,
+          todayRate
         },
         count: totalAssigned
       })
@@ -420,7 +510,12 @@ export const getMyCallingList = async (req, res) => {
         notInterestedCount,
         totalContacted,
         historyCount: totalContacted,
-        conversionRate
+        conversionRate,
+        todayTarget,
+        todayAssigned: todayAssignedCount,
+        todayCompleted: todayCompletedCount,
+        todayPending,
+        todayRate
       },
       filters: {
         colleges: uniqueColleges.filter(Boolean),

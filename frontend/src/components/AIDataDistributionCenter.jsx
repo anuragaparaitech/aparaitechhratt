@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
-import { leadsAPI, employeeAPI } from '../services/api'
+import { leadsAPI, employeeAPI, reportsAPI } from '../services/api'
 import { PREDEFINED_DOMAINS } from '../utils/domains'
 import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSync'
+
+// Format Date & Time cleanly: e.g. "07 Oct 2026, 09:30 AM"
+const formatDateTime = (dateVal) => {
+  if (!dateVal) return '—'
+  const d = new Date(dateVal)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  })
+}
 
 function AIDataDistributionCenter({ currentUser, showToast }) {
   // Navigation / active sub-view: 'entry' | 'distribution' | 'reports'
@@ -39,8 +54,13 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
   const [loadingReports, setLoadingReports] = useState(false)
   const [reportFilterEmployee, setReportFilterEmployee] = useState('')
   const [reportFilterStatus, setReportFilterStatus] = useState('All')
+  const [reportFilterBatch, setReportFilterBatch] = useState('All')
+  const [reportFilterDate, setReportFilterDate] = useState('')
   const [reportSearch, setReportSearch] = useState('')
   const [reportPage, setReportPage] = useState(1)
+
+  // Daily Employee Work Reports State
+  const [dailyReportsList, setDailyReportsList] = useState([])
 
   // Fetch employees for dropdown & reports
   useEffect(() => {
@@ -48,10 +68,14 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
     fetchReports()
   }, [])
 
-  // Auto-refresh reports metrics when on reports tab or when leads are assigned/updated
+  // Auto-refresh reports metrics when on reports tab or when leads/reports are updated
   useAutoRefresh(fetchReports, {
     intervalMs: 5000,
-    eventTypes: [SYNC_EVENTS.DATA_ASSIGNED, SYNC_EVENTS.LEAD_STATUS_UPDATED],
+    eventTypes: [
+      SYNC_EVENTS.DATA_ASSIGNED,
+      SYNC_EVENTS.LEAD_STATUS_UPDATED,
+      SYNC_EVENTS.DAILY_REPORT_SUBMITTED
+    ],
     enabled: activeSubTab === 'reports'
   })
 
@@ -107,11 +131,20 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
       }
       if (reportFilterEmployee) params.employeeEmail = reportFilterEmployee
       if (reportFilterStatus !== 'All') params.status = reportFilterStatus
+      if (reportFilterBatch !== 'All') params.batchId = reportFilterBatch
+      if (reportFilterDate) params.date = reportFilterDate
       if (reportSearch) params.search = reportSearch
 
       const res = await leadsAPI.getAdminStats(params)
       if (res.success) {
         setReportsData(res)
+      }
+
+      // Also fetch today's daily calling work reports submitted by staff
+      const todayStr = new Date().toISOString().slice(0, 10)
+      const dailyRes = await reportsAPI.getDaily({ date: reportFilterDate || todayStr }).catch(() => null)
+      if (dailyRes?.success || dailyRes?.data) {
+        setDailyReportsList(dailyRes.reports || dailyRes.data || [])
       }
     } catch (err) {
       console.error('Error fetching lead reports:', err)
@@ -124,7 +157,7 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
     if (activeSubTab === 'reports') {
       fetchReports()
     }
-  }, [activeSubTab, reportFilterEmployee, reportFilterStatus, reportSearch, reportPage])
+  }, [activeSubTab, reportFilterEmployee, reportFilterStatus, reportFilterBatch, reportFilterDate, reportSearch, reportPage])
 
   // Sample Raw Data for Quick Testing
   const sampleData = `Rahul Sharma 9876543210 rahul.sharma@gmail.com COEP Pune Web Dev immediate joining
@@ -1475,7 +1508,235 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
             </div>
           </div>
 
-          {/* Employee-wise Distribution Roster */}
+          {/* ── 1. BATCH-WISE DISTRIBUTION & ALLOCATION TRACKER ────────── */}
+          <div className="section-card">
+            <div className="section-header" style={{ flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h2>
+                  <i className="fas fa-boxes" style={{ color: '#2563eb', marginRight: '8px' }}></i>
+                  Company Data Distribution Batches & Allocation Tracker
+                </h2>
+                <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                  Live tracking of which company data was assigned to which employee, exact distribution date & time, and current completion status
+                </p>
+              </div>
+
+              {reportFilterBatch !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => setReportFilterBatch('All')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#f8fafc',
+                    color: '#475569',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <i className="fas fa-times"></i> Clear Batch Filter ({reportFilterBatch})
+                </button>
+              )}
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>BATCH ID</th>
+                    <th>📅 DISTRIBUTED AT</th>
+                    <th>ASSIGNED BY</th>
+                    <th>TARGET ASSOCIATES</th>
+                    <th>TOTAL LEADS</th>
+                    <th>COMPLETION PROGRESS</th>
+                    <th>LAST ACTIVITY</th>
+                    <th>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportsData?.distributionBatches?.length > 0 ? (
+                    reportsData.distributionBatches.map(batch => {
+                      const isFilteringThis = reportFilterBatch === batch.batchId
+                      const percent = batch.totalLeads > 0 ? Math.round((batch.completedCount / batch.totalLeads) * 100) : 0
+                      return (
+                        <tr key={batch.batchId} style={{ background: isFilteringThis ? '#f0fdf4' : 'transparent' }}>
+                          <td>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '800', color: '#1e3a8a', fontSize: '0.82rem' }}>
+                              {batch.batchId}
+                            </span>
+                            {isFilteringThis && (
+                              <div style={{ fontSize: '0.68rem', color: '#16a34a', fontWeight: '800' }}>
+                                (Filtered in Registry below)
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0f172a', whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fas fa-calendar-alt" style={{ color: '#0284c7' }}></i>
+                              <span>{formatDateTime(batch.assignedAt)}</span>
+                            </div>
+                          </td>
+                          <td style={{ fontSize: '0.75rem', color: '#475569' }}>
+                            <strong>{batch.assignedByName || 'Administrator'}</strong>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxWidth: '240px' }}>
+                              {batch.assignedEmployees?.slice(0, 3).map((name, idx) => (
+                                <span key={idx} style={{
+                                  background: '#eff6ff',
+                                  color: '#1d4ed8',
+                                  padding: '2px 7px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.7rem',
+                                  fontWeight: '700'
+                                }}>
+                                  {name}
+                                </span>
+                              ))}
+                              {batch.assignedEmployees?.length > 3 && (
+                                <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '700' }}>
+                                  +{batch.assignedEmployees.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{batch.totalLeads}</strong>
+                          </td>
+                          <td style={{ minWidth: '160px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: '700', marginBottom: '3px' }}>
+                              <span style={{ color: '#16a34a' }}>{batch.completedCount} Done</span>
+                              <span style={{ color: '#ea580c' }}>{batch.pendingCount} Pending</span>
+                            </div>
+                            <div style={{ width: '100%', background: '#e2e8f0', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div style={{ width: `${percent}%`, background: percent === 100 ? '#16a34a' : '#2563eb', height: '100%' }} />
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '2px' }}>
+                              {percent}% Complete • {batch.interestedCount} Interested
+                            </div>
+                          </td>
+                          <td style={{ fontSize: '0.75rem', color: '#475569', whiteSpace: 'nowrap' }}>
+                            {batch.lastCalledAt ? (
+                              <span style={{ color: '#166534', fontWeight: '700' }}>
+                                <i className="fas fa-check-circle" style={{ marginRight: '4px' }}></i>
+                                {formatDateTime(batch.lastCalledAt)}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#ea580c', fontWeight: '700' }}>
+                                <i className="fas fa-clock" style={{ marginRight: '4px' }}></i>
+                                Not Started Yet
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReportFilterBatch(isFilteringThis ? 'All' : batch.batchId)
+                              }}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: isFilteringThis ? '#0f172a' : '#2563eb',
+                                color: '#ffffff',
+                                fontWeight: '700',
+                                fontSize: '0.72rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <i className="fas fa-filter"></i>
+                              <span>{isFilteringThis ? 'Showing Leads' : 'Inspect Leads'}</span>
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                        No distributed batches found yet. Distribute leads in Tab 2 to populate live batches.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── 2. DAILY EMPLOYEE CALLING WORK REPORTS ────────────────── */}
+          {dailyReportsList.length > 0 && (
+            <div className="section-card">
+              <div className="section-header">
+                <div>
+                  <h2><i className="fas fa-file-alt" style={{ color: '#16a34a', marginRight: '8px' }}></i> Submitted Daily Employee Calling Reports</h2>
+                  <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                    Shift reports submitted by associates after finishing their daily calling assignments
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>EMPLOYEE</th>
+                      <th>TEAM / DEPT</th>
+                      <th>DATE & TIME</th>
+                      <th>CONNECTED CALLS</th>
+                      <th>CONVERSIONS</th>
+                      <th>SHIFT REMARKS / WORK SUMMARY</th>
+                      <th>STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyReportsList.map((dr, idx) => (
+                      <tr key={dr._id || idx}>
+                        <td>
+                          <strong>{dr.employeeName}</strong>
+                          <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{dr.employeeEmail} ({dr.employeeId})</div>
+                        </td>
+                        <td>
+                          <span style={{ background: '#f1f5f9', color: '#334155', padding: '2px 7px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '700' }}>
+                            {dr.teamName || 'BDA'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#0f172a' }}>{dr.reportDate}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{dr.reportTime}</div>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#2563eb' }}>
+                            {dr.connectedCalls || dr.callsAbove3Min || 0}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#16a34a' }}>
+                            {dr.todayConversions || dr.fullConversions || 0}
+                          </span>
+                        </td>
+                        <td style={{ maxWidth: '300px', fontSize: '0.8rem', color: '#334155' }}>
+                          {dr.remarks || '—'}
+                        </td>
+                        <td>
+                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '800' }}>
+                            <i className="fas fa-check-circle" style={{ marginRight: '4px' }}></i> Submitted
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── 3. EMPLOYEE-WISE DISTRIBUTION ROSTER ─────────────────── */}
           <div className="section-card">
             <div className="section-header">
               <h2><i className="fas fa-users-cog" style={{ color: '#2563eb', marginRight: '8px' }}></i> Employee-wise Calling Distribution Breakdown</h2>
@@ -1537,13 +1798,14 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
             </div>
           </div>
 
-          {/* Master Leads Table with Filter Controls */}
+          {/* ── 4. MASTER LEADS CALLING REGISTRY ────────────────────────── */}
           <div className="section-card">
             <div className="section-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2><i className="fas fa-list-ul" style={{ color: '#0f766e', marginRight: '8px' }}></i> Master Leads Calling Registry</h2>
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                   Search and inspect live lead statuses, employee call remarks, and outcomes
+                  {reportFilterBatch !== 'All' && <strong style={{ color: '#2563eb', marginLeft: '6px' }}>(Filtered by {reportFilterBatch})</strong>}
                 </p>
               </div>
 
@@ -1553,7 +1815,30 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                   placeholder="🔍 Search name / mobile / college"
                   value={reportSearch}
                   onChange={e => setReportSearch(e.target.value)}
-                  style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.82rem', width: '200px' }}
+                  style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.82rem', width: '180px' }}
+                />
+
+                {/* Filter by Batch ID */}
+                <select
+                  value={reportFilterBatch}
+                  onChange={e => setReportFilterBatch(e.target.value)}
+                  style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.82rem', maxWidth: '170px' }}
+                >
+                  <option value="All">All Batches</option>
+                  {reportsData?.distributionBatches?.map(b => (
+                    <option key={b.batchId} value={b.batchId}>
+                      {b.batchId}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Filter by Assignment Date */}
+                <input
+                  type="date"
+                  value={reportFilterDate}
+                  onChange={e => setReportFilterDate(e.target.value)}
+                  title="Filter by assignment date"
+                  style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.82rem' }}
                 />
 
                 <select
@@ -1578,6 +1863,31 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                     <option key={e.email} value={e.email}>{e.name}</option>
                   ))}
                 </select>
+
+                {(reportSearch || reportFilterStatus !== 'All' || reportFilterEmployee || reportFilterBatch !== 'All' || reportFilterDate) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReportSearch('')
+                      setReportFilterStatus('All')
+                      setReportFilterEmployee('')
+                      setReportFilterBatch('All')
+                      setReportFilterDate('')
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #cbd5e1',
+                      background: '#f8fafc',
+                      color: '#475569',
+                      fontSize: '0.8rem',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reset
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -1612,13 +1922,14 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                     <th>📅 ASSIGNED AT</th>
                     <th>WORK STATUS</th>
                     <th>📅 WORKED AT</th>
+                    <th>BATCH ID</th>
                     <th>CALL NOTES</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loadingReports ? (
                     <tr>
-                      <td colSpan="8" style={{ textAlign: 'center', padding: '24px' }}>
+                      <td colSpan="9" style={{ textAlign: 'center', padding: '24px' }}>
                         <i className="fas fa-spinner fa-spin"></i> Loading leads registry...
                       </td>
                     </tr>
@@ -1702,6 +2013,11 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                             <span style={{ color: '#94a3b8' }}>— Not Done Yet</span>
                           )}
                         </td>
+                        <td>
+                          <span style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: '#475569', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
+                            {lead.batchId || '—'}
+                          </span>
+                        </td>
                         <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {lead.callNotes || '—'}
                         </td>
@@ -1709,7 +2025,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
+                      <td colSpan="9" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
                         No leads match current registry filters.
                       </td>
                     </tr>
