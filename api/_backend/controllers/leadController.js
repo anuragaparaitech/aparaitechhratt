@@ -489,10 +489,10 @@ export const getMyCallingList = async (req, res) => {
       })
     }
 
-    // Tab-sensitive sorting: history shows newest calls first; active shows highest priority first
+    // Tab-sensitive sorting: history shows newest calls first; active shows newest assigned leads first then priority
     const sortOrder = tab === 'history'
       ? { calledAt: -1, updatedAt: -1, createdAt: -1 }
-      : { priorityScore: -1, createdAt: -1 }
+      : { assignedAt: -1, priorityScore: -1, createdAt: -1 }
 
     const leads = await Lead.find(filter).sort(sortOrder)
 

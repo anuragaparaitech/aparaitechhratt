@@ -191,11 +191,11 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     fetchData(false)
   }, [])
 
-  // Auto-refresh admin logs every 5 seconds, on window focus, and on any workforce events
+  // Auto-refresh admin logs every 15 seconds, on window focus, and on any workforce events
   useAutoRefresh(() => {
     fetchData(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [
       SYNC_EVENTS.ATTENDANCE_UPDATED,
       SYNC_EVENTS.DAILY_REPORT_SUBMITTED,
@@ -207,7 +207,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     enabled: true
   })
 
-  // Render & Update Chart.js Monthly Overview
+  // Render & Update Chart.js Monthly Overview (Smooth in-place updates)
   useEffect(() => {
     if (!chartRef.current) return
 
@@ -218,43 +218,47 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     const quarter = monthRecords.filter(r => r.status === 'quarter-day').length
 
     if (chartInstance.current) {
-      chartInstance.current.destroy()
-    }
-
-    const ctx = chartRef.current.getContext('2d')
-    chartInstance.current = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Full Day', 'Half Day', 'Quarter Day'],
-        datasets: [{
-          data: [full, half, quarter],
-          backgroundColor: ['#22c55e', '#f59e0b', '#a855f7'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#475569',
-              font: {
-                family: 'Inter',
-                size: 11
+      chartInstance.current.data.datasets[0].data = [full, half, quarter]
+      chartInstance.current.update('none')
+    } else {
+      const ctx = chartRef.current.getContext('2d')
+      chartInstance.current = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Full Day', 'Half Day', 'Quarter Day'],
+          datasets: [{
+            data: [full, half, quarter],
+            backgroundColor: ['#22c55e', '#f59e0b', '#a855f7'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#475569',
+                font: {
+                  family: 'Inter',
+                  size: 11
+                }
               }
             }
           }
         }
-      }
-    })
+      })
+    }
+  }, [attendance, activeSection])
 
+  useEffect(() => {
     return () => {
       if (chartInstance.current) {
         chartInstance.current.destroy()
+        chartInstance.current = null
       }
     }
-  }, [attendance, activeSection])
+  }, [activeSection])
 
   // Stat Counters
   const totalRecords = attendance.length

@@ -33,11 +33,11 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
     fetchMessages(false)
   }, [])
 
-  // Live Auto-Refresh every 5 seconds, on tab focus, and on MESSAGE_SENT events
+  // Live Auto-Refresh every 15 seconds, on tab focus, and on MESSAGE_SENT events
   useAutoRefresh(() => {
     fetchMessages(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.MESSAGE_SENT],
     onFocus: true,
     enabled: true

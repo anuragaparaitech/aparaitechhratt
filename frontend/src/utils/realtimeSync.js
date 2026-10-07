@@ -136,14 +136,14 @@ export const subscribeSyncEvents = (callback, eventTypes = null) => {
  * React Hook for automatic data refresh (Polling + Focus/Visibility + Sync Events)
  * @param {Function} callback - Async/sync function to reload data
  * @param {object} options
- * @param {number} [options.intervalMs=5000] - Polling interval in ms (0 to disable interval)
+ * @param {number} [options.intervalMs=15000] - Polling interval in ms (0 to disable interval, default 15s)
  * @param {Array<string>} [options.eventTypes=[]] - Sync events that trigger immediate reload
  * @param {boolean} [options.onFocus=true] - Reload immediately when window regains focus
  * @param {boolean} [options.enabled=true] - Whether auto-refresh is active
  * @param {number} [options.minThrottleMs=1000] - Minimum delay between consecutive reloads
  */
 export const useAutoRefresh = (callback, {
-  intervalMs = 5000,
+  intervalMs = 15000,
   eventTypes = [],
   onFocus = true,
   enabled = true,

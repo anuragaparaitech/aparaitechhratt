@@ -21,11 +21,11 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
     loadDashboardData(false)
   }, [currentUser?.email])
 
-  // Live Auto-Refresh every 5 seconds, on tab focus, and on any sprint/attendance events
+  // Live Auto-Refresh every 15 seconds, on tab focus, and on any sprint/attendance events
   useAutoRefresh(() => {
     loadDashboardData(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [
       SYNC_EVENTS.TASK_ASSIGNED,
       SYNC_EVENTS.TASK_UPDATED,

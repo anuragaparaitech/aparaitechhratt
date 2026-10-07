@@ -34,11 +34,11 @@ function ManagerReportsView({ currentUser, showToast }) {
     fetchReports(false)
   }, [filterDate])
 
-  // Live Auto-Refresh every 5 seconds, on window focus, and on DAILY_REPORT_SUBMITTED
+  // Live Auto-Refresh every 15 seconds, on window focus, and on DAILY_REPORT_SUBMITTED
   useAutoRefresh(() => {
     fetchReports(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
     onFocus: true,
     enabled: true

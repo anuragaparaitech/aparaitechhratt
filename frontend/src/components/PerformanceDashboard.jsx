@@ -38,11 +38,11 @@ function PerformanceDashboard({ currentUser, showToast }) {
     fetchPerformance(false)
   }, [])
 
-  // Auto-refresh performance data every 5 seconds, on focus, and on reports/conversions events
+  // Auto-refresh performance data every 15 seconds, on focus, and on reports/conversions events
   useAutoRefresh(() => {
     fetchPerformance(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.DAILY_REPORT_SUBMITTED, SYNC_EVENTS.CONVERSION_UPDATED],
     onFocus: true,
     enabled: true

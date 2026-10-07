@@ -48,7 +48,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
     return `${n.getHours().toString().padStart(2, '0')}:${n.getMinutes().toString().padStart(2, '0')}`
   }
 
-  const fetchEmployeeData = async () => {
+  const fetchEmployeeData = async (isSilent = false) => {
     try {
       const today = getTodayStr()
       const data = await attendanceAPI.getAll({ email: currentUser.email })
@@ -69,23 +69,23 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
     } catch (err) {
       console.error(err)
       const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch attendance data'
-      showToast(`❌ ${errorMsg}`, '#dc2626')
+      if (!isSilent) showToast(`❌ ${errorMsg}`, '#dc2626')
     }
   }
 
   useEffect(() => {
-    fetchEmployeeData()
+    fetchEmployeeData(false)
     // Fetch enrolled face status
     faceAPI.get(currentUser.email).then(d => {
       if (d.success && d.enrolled) setEnrolledFaceUrl(d.faceImageUrl)
     }).catch(() => {})
   }, [currentUser.email])
 
-  // Auto-refresh employee data every 5 seconds, on tab focus, and on attendance events
+  // Auto-refresh employee data every 15 seconds, on tab focus, and on attendance events
   useAutoRefresh(() => {
-    fetchEmployeeData()
+    fetchEmployeeData(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.ATTENDANCE_UPDATED],
     onFocus: true,
     enabled: true

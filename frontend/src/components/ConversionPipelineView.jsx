@@ -43,11 +43,11 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
     fetchConversions(false)
   }, [search])
 
-  // Live Auto-Refresh every 5 seconds, on window focus, and on CONVERSION_UPDATED events
+  // Live Auto-Refresh every 15 seconds, on window focus, and on CONVERSION_UPDATED events
   useAutoRefresh(() => {
     fetchConversions(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.CONVERSION_UPDATED],
     onFocus: true,
     enabled: true

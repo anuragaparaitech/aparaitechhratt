@@ -77,11 +77,11 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
     fetchData(false)
   }, [currentUser?.email])
 
-  // Live Auto-Refresh every 5 seconds, on tab focus, and on any real-time system events
+  // Live Auto-Refresh every 15 seconds, on tab focus, and on any real-time system events
   useAutoRefresh(() => {
     fetchData(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [
       SYNC_EVENTS.DATA_ASSIGNED,
       SYNC_EVENTS.ATTENDANCE_UPDATED,

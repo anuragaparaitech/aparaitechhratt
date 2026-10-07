@@ -81,11 +81,11 @@ function SoftwareTaskManager({ currentUser, showToast }) {
     fetchAuxiliaryData()
   }, [])
 
-  // Auto-refresh tasks every 5 seconds, on tab focus, and on instant TASK_ASSIGNED/UPDATED events
+  // Auto-refresh tasks every 15 seconds, on tab focus, and on instant TASK_ASSIGNED/UPDATED events
   useAutoRefresh(() => {
     fetchTasks(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.TASK_ASSIGNED, SYNC_EVENTS.TASK_UPDATED],
     onFocus: true,
     enabled: true

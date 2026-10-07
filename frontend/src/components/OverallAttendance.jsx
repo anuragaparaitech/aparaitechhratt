@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
 import { subscribeSyncEvents, SYNC_EVENTS } from '../utils/realtimeSync'
@@ -25,9 +25,10 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   
-  // Auto refresh
-  const [countdown, setCountdown] = useState(5)
-  const [loadingSkeleton, setLoadingSkeleton] = useState(false)
+  // Auto refresh (15 seconds, non-intrusive background sync)
+  const REFRESH_INTERVAL_SEC = 15
+  const [countdown, setCountdown] = useState(REFRESH_INTERVAL_SEC)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Chart refs
   const trendChartRef = useRef(null)
@@ -38,37 +39,39 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
   const deptChartInstance = useRef(null)
   const pieChartInstance = useRef(null)
 
-  // ── Trigger auto refresh every 5s & on live attendance sync event ────────────
+  // ── Trigger auto refresh every 15s & on live attendance sync event ────────────
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          handleRefresh()
-          return 5
+          handleRefresh(false)
+          return REFRESH_INTERVAL_SEC
         }
         return prev - 1
       })
     }, 1000)
 
     const unsubscribe = subscribeSyncEvents(() => {
-      handleRefresh()
-      setCountdown(5)
+      handleRefresh(false)
+      setCountdown(REFRESH_INTERVAL_SEC)
     }, [SYNC_EVENTS.ATTENDANCE_UPDATED])
 
     return () => {
       clearInterval(timer)
       unsubscribe()
     }
-  }, [])
+  }, [onRefresh])
 
-  const handleRefresh = async () => {
-    setLoadingSkeleton(true)
+  const handleRefresh = async (isManual = false) => {
+    if (isManual) setIsRefreshing(true)
     try {
-      await onRefresh()
+      if (onRefresh) await onRefresh()
     } catch (err) {
-      console.error(err)
+      console.error('Error during attendance refresh:', err)
     } finally {
-      setTimeout(() => setLoadingSkeleton(false), 500)
+      if (isManual) {
+        setTimeout(() => setIsRefreshing(false), 500)
+      }
     }
   }
 
@@ -130,100 +133,104 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
 
   const { start: dateRangeStart, end: dateRangeEnd } = getDateRange()
 
-  // ── Virtual Attendance Grid Generator ─────────────────────────────────────
-  const employeesList = employees.filter(e => e.role === 'employee')
-  const dateList = getDateRangeArray(dateRangeStart, dateRangeEnd)
+  // ── Virtual Attendance Grid Generator (Memoized to prevent render thrashing) ─
+  const employeesList = useMemo(() => employees.filter(e => e.role === 'employee'), [employees])
+  const dateList = useMemo(() => getDateRangeArray(dateRangeStart, dateRangeEnd), [dateRangeStart, dateRangeEnd])
+  const todayStr = useMemo(() => getTodayStr(), [])
 
-  const rawGrid = []
-  const todayStr = getTodayStr()
+  const rawGrid = useMemo(() => {
+    const grid = []
+    dateList.forEach(dateStr => {
+      employeesList.forEach(emp => {
+        // Exclude if employee had not joined yet
+        if (emp.joinDate && emp.joinDate > dateStr) return
 
-  dateList.forEach(dateStr => {
-    employeesList.forEach(emp => {
-      // Exclude if employee had not joined yet
-      if (emp.joinDate && emp.joinDate > dateStr) return
+        const attRecord = attendance.find(a => a.employeeEmail?.toLowerCase() === emp.email?.toLowerCase() && a.date === dateStr)
+        const liveSession = (dateStr === todayStr) ? liveSessions.find(s => s.employeeEmail?.toLowerCase() === emp.email?.toLowerCase()) : null
 
-      const attRecord = attendance.find(a => a.employeeEmail.toLowerCase() === emp.email.toLowerCase() && a.date === dateStr)
-      const liveSession = (dateStr === todayStr) ? liveSessions.find(s => s.employeeEmail.toLowerCase() === emp.email.toLowerCase()) : null
+        let status = 'Absent'
+        let checkIn = '—'
+        let checkOut = '—'
+        let workingHours = '—'
+        let markedBy = '—'
 
-      let status = 'Absent'
-      let checkIn = '—'
-      let checkOut = '—'
-      let workingHours = '—'
-      let markedBy = '—'
+        if (attRecord) {
+          checkIn = attRecord.checkIn || '—'
+          checkOut = attRecord.checkOut || '—'
+          workingHours = attRecord.workingHours || '—'
+          markedBy = attRecord.markedBy || 'Employee'
 
-      if (attRecord) {
-        checkIn = attRecord.checkIn || '—'
-        checkOut = attRecord.checkOut || '—'
-        workingHours = attRecord.workingHours || '—'
-        markedBy = attRecord.markedBy || 'Employee'
-
-        const inMin = timeToMinutes(checkIn)
-        if (attRecord.status === 'half-day') {
-          status = 'Half Day'
-        } else if (inMin !== null && inMin > 10 * 60 + 15) { // late after 10:15 AM
-          status = 'Late'
-        } else if (attRecord.status === 'quarter-day') {
-          status = 'Late'
+          const inMin = timeToMinutes(checkIn)
+          if (attRecord.status === 'half-day') {
+            status = 'Half Day'
+          } else if (inMin !== null && inMin > 10 * 60 + 15) { // late after 10:15 AM
+            status = 'Late'
+          } else if (attRecord.status === 'quarter-day') {
+            status = 'Late'
+          } else {
+            status = 'Present'
+          }
+        } else if (liveSession) {
+          checkIn = liveSession.checkInTime || '—'
+          markedBy = liveSession.markedBy || 'Employee'
+          const inMin = timeToMinutes(checkIn)
+          if (inMin !== null && inMin > 10 * 60 + 15) {
+            status = 'Late'
+          } else {
+            status = 'Present'
+          }
         } else {
-          status = 'Present'
-        }
-      } else if (liveSession) {
-        checkIn = liveSession.checkInTime || '—'
-        markedBy = liveSession.markedBy || 'Employee'
-        const inMin = timeToMinutes(checkIn)
-        if (inMin !== null && inMin > 10 * 60 + 15) {
-          status = 'Late'
-        } else {
-          status = 'Present'
-        }
-      } else {
-        const isHoliday = holidays.some(h => h.holidayDate === dateStr)
-        const isSunday = new Date(dateStr).getDay() === 0
+          const isHoliday = holidays.some(h => h.holidayDate === dateStr)
+          const isSunday = new Date(dateStr).getDay() === 0
 
-        if (isHoliday) {
-          status = 'On Leave'
-        } else if (isSunday) {
-          status = 'Weekly Off'
-        } else {
-          status = 'Absent'
+          if (isHoliday) {
+            status = 'On Leave'
+          } else if (isSunday) {
+            status = 'Weekly Off'
+          } else {
+            status = 'Absent'
+          }
         }
-      }
 
-      rawGrid.push({
-        date: dateStr,
-        employeeId: emp.empId,
-        name: emp.name,
-        email: emp.email,
-        department: emp.department || '—',
-        designation: emp.designation || 'Associate',
-        checkIn,
-        checkOut,
-        workingHours,
-        status,
-        markedBy,
-        live: !!liveSession
+        grid.push({
+          date: dateStr,
+          employeeId: emp.empId,
+          name: emp.name,
+          email: emp.email,
+          department: emp.department || '—',
+          designation: emp.designation || 'Associate',
+          checkIn,
+          checkOut,
+          workingHours,
+          status,
+          markedBy,
+          live: !!liveSession
+        })
       })
     })
-  })
+    return grid
+  }, [dateList, employeesList, attendance, liveSessions, holidays, todayStr])
 
   // ── Filtered Attendance Grid ──────────────────────────────────────────────
-  const filteredGrid = rawGrid.filter(row => {
-    const matchesDept = selectedDept === 'All' ? true : row.department === selectedDept
-    const matchesEmp = selectedEmp === 'All' ? true : row.email === selectedEmp
-    const matchesStatus = selectedStatus === 'All' ? true : row.status === selectedStatus
-    
-    const search = searchTerm.toLowerCase()
-    const matchesSearch = searchTerm === '' ? true : (
-      row.name.toLowerCase().includes(search) ||
-      row.employeeId.toLowerCase().includes(search) ||
-      row.department.toLowerCase().includes(search)
-    )
+  const filteredGrid = useMemo(() => {
+    const list = rawGrid.filter(row => {
+      const matchesDept = selectedDept === 'All' ? true : row.department === selectedDept
+      const matchesEmp = selectedEmp === 'All' ? true : row.email === selectedEmp
+      const matchesStatus = selectedStatus === 'All' ? true : row.status === selectedStatus
+      
+      const search = searchTerm.toLowerCase()
+      const matchesSearch = searchTerm === '' ? true : (
+        row.name.toLowerCase().includes(search) ||
+        row.employeeId.toLowerCase().includes(search) ||
+        row.department.toLowerCase().includes(search)
+      )
 
-    return matchesDept && matchesEmp && matchesStatus && matchesSearch
-  })
+      return matchesDept && matchesEmp && matchesStatus && matchesSearch
+    })
 
-  // Sort: descending by date, then name
-  filteredGrid.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name))
+    list.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name))
+    return list
+  }, [rawGrid, selectedDept, selectedEmp, selectedStatus, searchTerm])
 
   // ── Stats Calculations (Real-time Today) ───────────────────────────────────
   const activeEmployeeCount = employeesList.filter(e => e.status === 'active').length
@@ -331,86 +338,115 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
     const totalPresentRange = filteredGrid.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length
     const totalAbsentRange = filteredGrid.filter(r => r.status === 'Absent').length
 
-    // ── Instantiating Chart.js ───────────────────────────────────────────────
+    // ── Update or Instantiate Chart.js Smoothly in-place ─────────────────────
     // Trend Line Chart
-    trendChartInstance.current = new Chart(trendChartRef.current.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: trendLabels.length > 0 ? trendLabels : ['No Data'],
-        datasets: [{
-          label: 'Attendance Rate %',
-          data: trendData.length > 0 ? trendData : [0],
-          borderColor: '#1e5a7a',
-          backgroundColor: 'rgba(30, 90, 122, 0.08)',
-          fill: true,
-          tension: 0.35,
-          borderWidth: 2,
-          pointRadius: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { min: 0, max: 100, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-          x: { grid: { display: false }, ticks: { color: '#64748b' } }
-        }
-      }
-    })
-
-    // Department Bar Chart
-    deptChartInstance.current = new Chart(deptChartRef.current.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: deptLabels.length > 0 ? deptLabels : ['No Data'],
-        datasets: [{
-          label: 'Present Rate %',
-          data: deptData.length > 0 ? deptData : [0],
-          backgroundColor: '#3b82f6',
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { min: 0, max: 100, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-          x: { grid: { display: false }, ticks: { color: '#64748b' } }
-        }
-      }
-    })
-
-    // Pie/Doughnut Chart
-    pieChartInstance.current = new Chart(pieChartRef.current.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Present', 'Absent'],
-        datasets: [{
-          data: [totalPresentRange, totalAbsentRange],
-          backgroundColor: ['#10b981', '#f43f5e'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: '#64748b', boxWidth: 12 }
+    if (trendChartInstance.current) {
+      trendChartInstance.current.data.labels = trendLabels.length > 0 ? trendLabels : ['No Data']
+      trendChartInstance.current.data.datasets[0].data = trendData.length > 0 ? trendData : [0]
+      trendChartInstance.current.update('none')
+    } else if (trendChartRef.current) {
+      trendChartInstance.current = new Chart(trendChartRef.current.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: trendLabels.length > 0 ? trendLabels : ['No Data'],
+          datasets: [{
+            label: 'Attendance Rate %',
+            data: trendData.length > 0 ? trendData : [0],
+            borderColor: '#1e5a7a',
+            backgroundColor: 'rgba(30, 90, 122, 0.08)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
+            x: { grid: { display: false }, ticks: { color: '#64748b' } }
           }
         }
-      }
-    })
+      })
+    }
 
-    return () => {
-      if (trendChartInstance.current) trendChartInstance.current.destroy()
-      if (deptChartInstance.current) deptChartInstance.current.destroy()
-      if (pieChartInstance.current) pieChartInstance.current.destroy()
+    // Department Bar Chart
+    if (deptChartInstance.current) {
+      deptChartInstance.current.data.labels = deptLabels.length > 0 ? deptLabels : ['No Data']
+      deptChartInstance.current.data.datasets[0].data = deptData.length > 0 ? deptData : [0]
+      deptChartInstance.current.update('none')
+    } else if (deptChartRef.current) {
+      deptChartInstance.current = new Chart(deptChartRef.current.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: deptLabels.length > 0 ? deptLabels : ['No Data'],
+          datasets: [{
+            label: 'Present Rate %',
+            data: deptData.length > 0 ? deptData : [0],
+            backgroundColor: '#3b82f6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
+            x: { grid: { display: false }, ticks: { color: '#64748b' } }
+          }
+        }
+      })
+    }
+
+    // Pie/Doughnut Chart
+    if (pieChartInstance.current) {
+      pieChartInstance.current.data.datasets[0].data = [totalPresentRange, totalAbsentRange]
+      pieChartInstance.current.update('none')
+    } else if (pieChartRef.current) {
+      pieChartInstance.current = new Chart(pieChartRef.current.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [totalPresentRange, totalAbsentRange],
+            backgroundColor: ['#10b981', '#f43f5e'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#64748b', boxWidth: 12 }
+            }
+          }
+        }
+      })
     }
   }, [filteredGrid, rawGrid])
+
+  // Cleanup charts only on unmount
+  useEffect(() => {
+    return () => {
+      if (trendChartInstance.current) {
+        trendChartInstance.current.destroy()
+        trendChartInstance.current = null
+      }
+      if (deptChartInstance.current) {
+        deptChartInstance.current.destroy()
+        deptChartInstance.current = null
+      }
+      if (pieChartInstance.current) {
+        pieChartInstance.current.destroy()
+        pieChartInstance.current = null
+      }
+    }
+  }, [])
 
   // ── Exports Panel ──────────────────────────────────────────────────────────
   const handleExportExcel = () => {
@@ -601,11 +637,11 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
             🔄 Auto-refreshing in <strong style={{ color: '#1e5a7a' }}>{countdown}s</strong>
           </span>
           <button 
-            onClick={handleRefresh} 
+            onClick={() => handleRefresh(true)} 
             className="sidebar-nav-btn"
             style={{ padding: '6px 12px', fontSize: '0.76rem', background: '#1e5a7a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
           >
-            <i className={`fas fa-sync ${loadingSkeleton ? 'fa-spin' : ''}`}></i> Refresh Now
+            <i className={`fas fa-sync ${isRefreshing ? 'fa-spin' : ''}`}></i> Refresh Now
           </button>
         </div>
       </div>
@@ -832,8 +868,8 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
           </div>
         </div>
 
-        {/* Loading Skeleton */}
-        {loadingSkeleton ? (
+        {/* Loading Skeleton only on initial load when data is empty */}
+        {employees.length === 0 && (!attendance || attendance.length === 0) ? (
           <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} style={{ height: '40px', background: '#f1f5f9', borderRadius: '8px', animation: 'pulse 1.5s infinite' }}></div>

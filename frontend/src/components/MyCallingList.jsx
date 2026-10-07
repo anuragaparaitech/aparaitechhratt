@@ -18,6 +18,105 @@ const formatDateTime = (dateVal) => {
   })
 }
 
+// Categorize lead by assigned / created date
+const getLeadDateCategory = (lead) => {
+  const dateVal = lead.assignedAt || lead.createdAt
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+
+  if (!dateVal) {
+    return {
+      id: 'today',
+      title: 'Today',
+      subtitle: "Fresh company assigned calling data for today",
+      order: 0,
+      badgeBg: '#0284c7',
+      headerBg: 'linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)',
+      headerBorder: '#bae6fd',
+      titleColor: '#0369a1',
+      icon: 'fa-calendar-day'
+    }
+  }
+
+  const d = new Date(dateVal)
+  if (isNaN(d.getTime())) {
+    return {
+      id: 'today',
+      title: 'Today',
+      subtitle: "Fresh company assigned calling data for today",
+      order: 0,
+      badgeBg: '#0284c7',
+      headerBg: 'linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)',
+      headerBorder: '#bae6fd',
+      titleColor: '#0369a1',
+      icon: 'fa-calendar-day'
+    }
+  }
+
+  const leadDayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const diffDays = Math.round((todayStart - leadDayStart) / (1000 * 60 * 60 * 24))
+
+  if (diffDays <= 0) {
+    return {
+      id: 'today',
+      title: 'Today',
+      subtitle: "Fresh company assigned calling data for today",
+      order: 0,
+      badgeBg: '#0284c7',
+      headerBg: 'linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)',
+      headerBorder: '#bae6fd',
+      titleColor: '#0369a1',
+      icon: 'fa-calendar-day'
+    }
+  } else if (diffDays === 1) {
+    return {
+      id: 'yesterday',
+      title: 'Yesterday',
+      subtitle: "Assigned calling data from yesterday",
+      order: 1,
+      badgeBg: '#d97706',
+      headerBg: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+      headerBorder: '#fde68a',
+      titleColor: '#b45309',
+      icon: 'fa-history'
+    }
+  } else {
+    const formattedDate = d.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+    return {
+      id: `date-${leadDayStart}`,
+      title: formattedDate,
+      subtitle: `Company assigned calling data from ${formattedDate}`,
+      order: 2 + diffDays,
+      badgeBg: '#475569',
+      headerBg: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+      headerBorder: '#e2e8f0',
+      titleColor: '#334155',
+      icon: 'fa-calendar-alt'
+    }
+  }
+}
+
+const groupLeadsByDate = (leadList) => {
+  const groupsMap = new Map()
+
+  leadList.forEach(lead => {
+    const cat = getLeadDateCategory(lead)
+    if (!groupsMap.has(cat.id)) {
+      groupsMap.set(cat.id, {
+        category: cat,
+        leads: []
+      })
+    }
+    groupsMap.get(cat.id).leads.push(lead)
+  })
+
+  return Array.from(groupsMap.values()).sort((a, b) => a.category.order - b.category.order)
+}
+
 function MyCallingList({ currentUser, showToast }) {
   const [leads, setLeads] = useState([])
   const [stats, setStats] = useState(null)
@@ -188,12 +287,12 @@ function MyCallingList({ currentUser, showToast }) {
     checkTodayReportStatus()
   }, [activeListTab, statusFilter, collegeFilter, domainFilter, priorityFilter])
 
-  // Real-time synchronization: Auto-refresh every 5 seconds, on focus/visibility, & on instant sync events
+  // Real-time synchronization: Auto-refresh every 15 seconds, on focus/visibility, & on instant sync events
   useAutoRefresh(() => {
     fetchLeads(true)
     checkTodayReportStatus()
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.DATA_ASSIGNED, SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
     onFocus: true,
     enabled: true
@@ -1164,18 +1263,100 @@ function MyCallingList({ currentUser, showToast }) {
 
       {/* ── CARD VIEW ──────────────────────────────────────────────── */}
       {viewMode === 'cards' && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
-          gap: '14px'
-        }}>
+        <div>
           {loading ? (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '3.5rem', color: '#64748b' }}>
               <i className="fas fa-spinner fa-spin fa-2x"></i>
               <div style={{ marginTop: '10px', fontWeight: '700' }}>Loading company assigned data...</div>
             </div>
           ) : leads.length > 0 ? (
-            leads.map(lead => {
+            groupLeadsByDate(leads).map((group, groupIdx) => (
+              <div key={group.category.id} style={{ marginBottom: '32px' }}>
+                {/* Date Group Header Divider */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  padding: '12px 18px',
+                  background: group.category.headerBg,
+                  borderRadius: '14px',
+                  border: `1.5px solid ${group.category.headerBorder}`,
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+                  marginBottom: '16px',
+                  marginTop: groupIdx > 0 ? '16px' : '0'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: group.category.badgeBg,
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1rem',
+                      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      <i className={`fas ${group.category.icon}`}></i>
+                    </span>
+                    <div>
+                      <div style={{
+                        fontSize: '1.1rem',
+                        fontWeight: '900',
+                        color: group.category.titleColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}>
+                        <span>{group.category.title}</span>
+                        <span style={{
+                          fontSize: '0.74rem',
+                          fontWeight: '800',
+                          padding: '3px 10px',
+                          borderRadius: '999px',
+                          background: group.category.badgeBg,
+                          color: '#ffffff',
+                          letterSpacing: '0.3px'
+                        }}>
+                          {group.leads.length} {group.leads.length === 1 ? 'Lead' : 'Leads'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: '600', marginTop: '2px' }}>
+                        {group.category.subtitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    fontSize: '0.74rem',
+                    fontWeight: '700',
+                    color: '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <span>
+                      🔥 Hot: <strong style={{ color: '#b91c1c' }}>{group.leads.filter(l => l.priority === 'Hot').length}</strong>
+                    </span>
+                    <span>
+                      ⚡ Warm: <strong style={{ color: '#b45309' }}>{group.leads.filter(l => l.priority === 'Warm').length}</strong>
+                    </span>
+                    <span>
+                      ❄️ Cold: <strong style={{ color: '#475569' }}>{group.leads.filter(l => l.priority === 'Cold').length}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Cards Grid with spacious gap */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
+                  gap: '22px'
+                }}>
+                  {group.leads.map(lead => {
               const telLink = lead.cleanMobile ? `tel:+91${lead.cleanMobile}` : null
               const isSaving = savingNoteId === lead._id
               const assignedFormatted = formatDateTime(lead.assignedAt || lead.createdAt)
@@ -1613,8 +1794,11 @@ function MyCallingList({ currentUser, showToast }) {
                   </div>
                 </div>
               )
-            })
-          ) : activeListTab === 'active' ? (
+            })}
+          </div>
+        </div>
+      ))
+    ) : activeListTab === 'active' ? (
             /* Empty State for Active (All worked leads moved to History) */
             <div style={{
               gridColumn: '1 / -1',

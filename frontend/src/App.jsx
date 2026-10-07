@@ -333,12 +333,12 @@ function App() {
     }
   }
 
-  // Periodic and event-driven auto-refresh (leads, tasks, messages) every 5 seconds, on tab focus, and on sync events
+  // Periodic and event-driven auto-refresh (leads, tasks, messages) every 15 seconds, on tab focus, and on sync events
   useAutoRefresh(() => {
     fetchUnreadCount()
     checkAssignedData()
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [
       SYNC_EVENTS.DATA_ASSIGNED,
       SYNC_EVENTS.TASK_ASSIGNED,

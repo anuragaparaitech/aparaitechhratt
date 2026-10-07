@@ -26,11 +26,11 @@ function RevenueTrackerView({ currentUser, showToast }) {
     fetchRevenue(false)
   }, [])
 
-  // Live Auto-Refresh every 5 seconds, on window focus, and on CONVERSION_UPDATED / DAILY_REPORT_SUBMITTED events
+  // Live Auto-Refresh every 15 seconds, on window focus, and on CONVERSION_UPDATED / DAILY_REPORT_SUBMITTED events
   useAutoRefresh(() => {
     fetchRevenue(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.CONVERSION_UPDATED, SYNC_EVENTS.DAILY_REPORT_SUBMITTED],
     onFocus: true,
     enabled: true

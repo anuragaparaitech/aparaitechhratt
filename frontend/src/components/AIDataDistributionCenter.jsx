@@ -105,8 +105,8 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
     )
   }
 
-  const fetchReports = async () => {
-    setLoadingReports(true)
+  const fetchReports = async (isSilent = false) => {
+    if (!isSilent) setLoadingReports(true)
     try {
       const params = {
         page: reportPage,
@@ -132,7 +132,7 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
     } catch (err) {
       console.error('Error fetching lead reports:', err)
     } finally {
-      setLoadingReports(false)
+      if (!isSilent) setLoadingReports(false)
     }
   }
 
@@ -142,11 +142,11 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
     fetchReports()
   }, [])
 
-  // Auto-refresh reports metrics when on reports tab or when leads/reports are updated
+  // Auto-refresh reports metrics when on reports tab or when leads/reports are updated (every 15s)
   useAutoRefresh(() => {
-    fetchReports()
+    fetchReports(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [
       SYNC_EVENTS.DATA_ASSIGNED,
       SYNC_EVENTS.LEAD_STATUS_UPDATED,
@@ -1929,7 +1929,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                   </tr>
                 </thead>
                 <tbody>
-                  {loadingReports ? (
+                  {loadingReports && !reportsData ? (
                     <tr>
                       <td colSpan="9" style={{ textAlign: 'center', padding: '24px' }}>
                         <i className="fas fa-spinner fa-spin"></i> Loading leads registry...

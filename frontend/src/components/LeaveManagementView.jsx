@@ -44,11 +44,11 @@ function LeaveManagementView({ currentUser, showToast }) {
     fetchLeaves(false)
   }, [])
 
-  // Auto-refresh leave statuses every 5 seconds, on tab focus, and on instant LEAVE_UPDATED events
+  // Auto-refresh leave statuses every 15 seconds, on tab focus, and on instant LEAVE_UPDATED events
   useAutoRefresh(() => {
     fetchLeaves(true)
   }, {
-    intervalMs: 5000,
+    intervalMs: 15000,
     eventTypes: [SYNC_EVENTS.LEAVE_UPDATED],
     onFocus: true,
     enabled: true
