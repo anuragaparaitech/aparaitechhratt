@@ -22,11 +22,11 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
     isNotificationPermissionGranted().then(setHasNotifPermission)
   }, [])
 
-  const handleLanguageChange = (newLang) => {
-    setLang(newLang)
-    localStorage.setItem('aparaitech_lang', newLang)
-    if (onLangChange) onLangChange(newLang)
-    showToast(`🌐 Language set to ${newLang === 'hi' ? 'हिंदी (Hindi)' : (newLang === 'mr' ? 'मराठी (Marathi)' : 'English')}`, '#10b981')
+  const handleLanguageChange = (newLang = 'en') => {
+    setLang('en')
+    localStorage.setItem('aparaitech_lang', 'en')
+    if (onLangChange) onLangChange('en')
+    showToast('🌐 Language set to English (Standard Corporate)', '#10b981')
   }
 
   const handleThemeChange = (newTheme) => {
@@ -88,30 +88,28 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
           </div>
           <div>
             <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', color: '#0f172a' }}>
-              Language Selection (Localization)
+              Portal Standard Language
             </h3>
             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-              Choose your preferred interface language for navigation, reports, and controls.
+              Standard corporate language across all portals, analytics, reports, and controls.
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
           {[
-            { id: 'en', name: 'English', native: 'English', desc: 'Default Corporate' },
-            { id: 'hi', name: 'Hindi', native: 'हिंदी', desc: 'राष्ट्रभाषा इंटरफ़ेस' },
-            { id: 'mr', name: 'Marathi', native: 'मराठी', desc: 'प्रादेशिक इंटरफेस' }
+            { id: 'en', name: 'English (Standard Corporate)', native: 'English', desc: 'Standard Corporate Language (Active)' }
           ].map(l => {
-            const isSel = lang === l.id
+            const isSel = true
             return (
               <div
                 key={l.id}
-                onClick={() => handleLanguageChange(l.id)}
+                onClick={() => handleLanguageChange('en')}
                 style={{
                   padding: '12px 14px',
                   borderRadius: '12px',
-                  border: `2px solid ${isSel ? '#2563eb' : '#e2e8f0'}`,
-                  background: isSel ? '#eff6ff' : '#ffffff',
+                  border: '2px solid #2563eb',
+                  background: '#eff6ff',
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
@@ -120,10 +118,11 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ fontSize: '0.88rem', color: isSel ? '#2563eb' : '#0f172a' }}>{l.native}</strong>
-                  {isSel && <i className="fas fa-check-circle" style={{ color: '#2563eb' }}></i>}
+                  <strong style={{ fontSize: '0.88rem', color: '#2563eb' }}>{l.native}</strong>
+                  <i className="fas fa-check-circle" style={{ color: '#2563eb' }}></i>
                 </div>
-                <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{l.name} • {l.desc}</div>
+                <div style={{ fontSize: '0.72rem', color: '#475569' }}>{l.name}</div>
+                <div style={{ fontSize: '0.68rem', color: '#2563eb', fontWeight: '700' }}>{l.desc}</div>
               </div>
             )
           })}

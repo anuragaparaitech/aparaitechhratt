@@ -109,7 +109,7 @@ function MyCallingList({ currentUser, showToast }) {
       const res = await reportsAPI.submitDaily(payload)
       if (res?.success || res?.data) {
         if (showToast) {
-          showToast('🎉 आजचा दैनिक कॉलिंग रिपोर्ट ॲडमिनकडे यशस्वीरित्या सादर करण्यात आला!', '#16a34a')
+          showToast("🎉 Today's daily calling report submitted to Admin successfully!", '#16a34a')
         }
         emitSyncEvent(SYNC_EVENTS.DAILY_REPORT_SUBMITTED, {
           userEmail: currentUser?.email,
@@ -217,7 +217,7 @@ function MyCallingList({ currentUser, showToast }) {
             // Card disappears from active pending list and moves into History!
             setLeads(prev => prev.filter(l => l._id !== leadId))
             if (showToast) {
-              showToast(`✅ "${currentLead?.name || 'Lead'}" वर काम पूर्ण झाले ("${newStatus}") आणि History मध्ये सुरक्षित हलवले गेले! 📜`, '#16a34a')
+              showToast(`✅ "${currentLead?.name || 'Lead'}" marked as "${newStatus}" and moved directly to Calling History! 📜`, '#16a34a')
             }
           } else {
             setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
@@ -227,7 +227,7 @@ function MyCallingList({ currentUser, showToast }) {
             // Restored back to Active Pending list!
             setLeads(prev => prev.filter(l => l._id !== leadId))
             if (showToast) {
-              showToast(`🔄 "${currentLead?.name || 'Lead'}" चालू लिस्ट (Active Pending) मध्ये परत हलवले!`, '#0284c7')
+              showToast(`🔄 "${currentLead?.name || 'Lead'}" restored back to Active Pending list!`, '#0284c7')
             }
           } else {
             setLeads(prev => prev.map(l => (l._id === leadId ? res.lead : l)))
@@ -451,11 +451,11 @@ function MyCallingList({ currentUser, showToast }) {
                 SHIFT TARGET
               </span>
               <span style={{ fontSize: '1.05rem', fontWeight: '800' }}>
-                🎯 आजचे कॉलिंग टार्गेट व दैनिक शिफ्ट प्रोग्रेस
+                🎯 Today's Calling Target & Shift Progress
               </span>
             </div>
             <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '3px' }}>
-              दिलेले दैनंदिन कॉलिंग टार्गेट वेळेत पूर्ण करून दिवसाच्या अखेरीस ॲडमिनकडे दैनिक रिपोर्ट सादर करा.
+              Complete your daily assigned calling target within shift hours and submit your shift report to Admin.
             </div>
           </div>
 
@@ -475,7 +475,7 @@ function MyCallingList({ currentUser, showToast }) {
                   alignItems: 'center',
                   gap: '6px'
                 }}>
-                  <i className="fas fa-check-double"></i> आजचा रिपोर्ट सादर केला आहे (Submitted)
+                  <i className="fas fa-check-double"></i> Today's Report Submitted
                 </span>
                 <button
                   type="button"
@@ -491,7 +491,7 @@ function MyCallingList({ currentUser, showToast }) {
                     cursor: 'pointer'
                   }}
                 >
-                  <i className="fas fa-edit"></i> रिपोर्ट अपडेट करा
+                  <i className="fas fa-edit"></i> Edit Report
                 </button>
               </div>
             ) : (
@@ -514,7 +514,7 @@ function MyCallingList({ currentUser, showToast }) {
                 }}
               >
                 <i className="fas fa-file-invoice"></i>
-                <span>📋 दैनिक कॉलिंग रिपोर्ट सादर करा (Submit Report)</span>
+                <span>📋 Submit Daily Calling Report</span>
               </button>
             )}
           </div>
@@ -529,25 +529,25 @@ function MyCallingList({ currentUser, showToast }) {
           borderTop: '1px solid rgba(255,255,255,0.08)'
         }}>
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
-            <div style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: '700' }}>🎯 आजचे टार्गेट</div>
+            <div style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: '700' }}>🎯 TODAY TARGET</div>
             <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#f8fafc' }}>
               {stats?.todayTarget ?? stats?.totalAssigned ?? 0}
             </div>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
-            <div style={{ fontSize: '0.68rem', color: '#86efac', fontWeight: '700' }}>✅ पूर्ण झालेले (In History)</div>
+            <div style={{ fontSize: '0.68rem', color: '#86efac', fontWeight: '700' }}>✅ COMPLETED (IN HISTORY)</div>
             <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#4ade80' }}>
               {stats?.todayCompleted ?? stats?.calledCount ?? 0}
             </div>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
-            <div style={{ fontSize: '0.68rem', color: '#fdba74', fontWeight: '700' }}>⏳ बाकी कॉल्स (Pending Cards)</div>
+            <div style={{ fontSize: '0.68rem', color: '#fdba74', fontWeight: '700' }}>⏳ PENDING CALLS</div>
             <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fb923c' }}>
               {stats?.todayPending ?? stats?.pendingCount ?? 0}
             </div>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px' }}>
-            <div style={{ fontSize: '0.68rem', color: '#7dd3fc', fontWeight: '700' }}>📈 शिफ्ट प्रोग्रेस</div>
+            <div style={{ fontSize: '0.68rem', color: '#7dd3fc', fontWeight: '700' }}>📈 SHIFT PROGRESS</div>
             <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#38bdf8' }}>
               {stats?.todayRate ?? 0}%
             </div>
@@ -594,10 +594,10 @@ function MyCallingList({ currentUser, showToast }) {
             }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800' }}>
-                  📋 दैनिक कॉलिंग रिपोर्ट (Daily Calling Report)
+                  📋 Daily Calling Shift Report
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
-                  दिनांक: {formatDateTime(new Date()) || 'Today'} • {currentUser?.name} ({currentUser?.department || 'BDA'})
+                  Date: {formatDateTime(new Date()) || 'Today'} • {currentUser?.name} ({currentUser?.department || 'BDA'})
                 </p>
               </div>
               <button
@@ -634,14 +634,14 @@ function MyCallingList({ currentUser, showToast }) {
                 lineHeight: 1.4
               }}>
                 <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
-                हा रिपोर्ट थेट <strong>Admin AIDataDistributionCenter</strong> आणि लीडरशिप डॅशबोर्डवर त्वरित नोंदवला जाईल.
+                This report will be submitted directly to the <strong>Admin AI Data Distribution Center</strong> and Leadership Dashboard.
               </div>
 
               {/* Numerical Inputs Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
-                    📞 एकूण कनेक्टेड कॉल्स (Connected Calls) *
+                    📞 Total Connected Calls *
                   </label>
                   <input
                     type="number"
@@ -663,7 +663,7 @@ function MyCallingList({ currentUser, showToast }) {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
-                    🌟 इच्छुक / कन्वर्शन्स (Interested Conversions)
+                    🌟 Conversions / Interested Candidates
                   </label>
                   <input
                     type="number"
@@ -684,7 +684,7 @@ function MyCallingList({ currentUser, showToast }) {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
-                    ⏱️ 3 मिनिटांपेक्षा जास्त कॉल्स (&gt;3 Min Calls)
+                    ⏱️ Calls Exceeding 3 Minutes
                   </label>
                   <input
                     type="number"
@@ -704,7 +704,7 @@ function MyCallingList({ currentUser, showToast }) {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
-                    🕒 कामाचे तास (Hours Worked)
+                    🕒 Hours Worked
                   </label>
                   <input
                     type="number"
@@ -727,12 +727,12 @@ function MyCallingList({ currentUser, showToast }) {
               {/* Remarks Textarea */}
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>
-                  📝 आजचे कॉलिंग सारांश व रिमार्क (Work Remarks & Follow-ups) *
+                  📝 Shift Work Summary & Remarks *
                 </label>
                 <textarea
                   rows="3"
                   required
-                  placeholder="उदा. आज 30 विद्यार्थ्यांना कॉल केले. 4 विद्यार्थी Web Dev साठी इच्छुक असून उद्या Demo साठी येणार आहेत. 3 विद्यार्थ्यांनी फी सवलतीबाबत विचारणा केली..."
+                  placeholder="e.g. Completed 35 calls today. 5 candidates interested in Web Development demo session tomorrow. 3 requested callback regarding fee structure..."
                   value={dailyReportRemarks}
                   onChange={e => setDailyReportRemarks(e.target.value)}
                   style={{
@@ -764,7 +764,7 @@ function MyCallingList({ currentUser, showToast }) {
                     cursor: 'pointer'
                   }}
                 >
-                  रद्द करा (Cancel)
+                  Cancel
                 </button>
                 <button
                   type="submit"
@@ -787,12 +787,12 @@ function MyCallingList({ currentUser, showToast }) {
                   {submittingReport ? (
                     <>
                       <i className="fas fa-spinner fa-spin"></i>
-                      <span>सादर करत आहे...</span>
+                      <span>Submitting...</span>
                     </>
                   ) : (
                     <>
                       <i className="fas fa-paper-plane"></i>
-                      <span>🚀 ॲडमिनला रिपोर्ट पाठवा (Submit Report)</span>
+                      <span>🚀 Submit Report to Admin</span>
                     </>
                   )}
                 </button>
@@ -914,7 +914,7 @@ function MyCallingList({ currentUser, showToast }) {
           }}
         >
           <i className="fas fa-phone-volume" style={{ color: activeListTab === 'active' ? '#2563eb' : '#64748b' }}></i>
-          <span>⚡ चालू डेटा (Active Pending)</span>
+          <span>⚡ Active Calling Leads</span>
           <span style={{
             background: activeListTab === 'active' ? '#2563eb' : '#cbd5e1',
             color: '#ffffff',
@@ -950,7 +950,7 @@ function MyCallingList({ currentUser, showToast }) {
           }}
         >
           <i className="fas fa-history" style={{ color: activeListTab === 'history' ? '#16a34a' : '#64748b' }}></i>
-          <span>📜 इतिहास (Calling History)</span>
+          <span>📜 Calling History</span>
           <span style={{
             background: activeListTab === 'history' ? '#16a34a' : '#cbd5e1',
             color: '#ffffff',
@@ -986,7 +986,7 @@ function MyCallingList({ currentUser, showToast }) {
           }}
         >
           <i className="fas fa-layer-group" style={{ color: activeListTab === 'all' ? '#0f172a' : '#64748b' }}></i>
-          <span>📑 सर्व डेटा (All Leads)</span>
+          <span>📑 All Assigned Leads</span>
           <span style={{
             background: activeListTab === 'all' ? '#0f172a' : '#cbd5e1',
             color: '#ffffff',
@@ -1276,14 +1276,14 @@ function MyCallingList({ currentUser, showToast }) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.76rem' }}>
                         <span style={{ color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <i className="fas fa-calendar-alt" style={{ color: '#0284c7' }}></i>
-                          <span>डेटा असाइन वेळ व तारीख (Assigned At):</span>
+                          <span>Assigned Date & Time:</span>
                         </span>
                         <span style={{ fontWeight: '800', color: '#0f172a' }}>
                           {assignedFormatted || 'Recent'}
                         </span>
                       </div>
 
-                      {/* Work Done Status (काम झाले का नाही) with Date & Time */}
+                      {/* Work Done Status with Date & Time */}
                       <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -1294,7 +1294,7 @@ function MyCallingList({ currentUser, showToast }) {
                       }}>
                         <span style={{ color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <i className="fas fa-tasks" style={{ color: lead.status === 'Not Called' ? '#ea580c' : '#16a34a' }}></i>
-                          <span>कामाची स्थिती (Work Status):</span>
+                          <span>Work Status:</span>
                         </span>
 
                         {lead.status === 'Not Called' ? (
@@ -1310,7 +1310,7 @@ function MyCallingList({ currentUser, showToast }) {
                             fontWeight: '800',
                             fontSize: '0.72rem'
                           }}>
-                            <i className="fas fa-clock"></i> ⏳ काम बाकी आहे (Pending)
+                            <i className="fas fa-clock"></i> ⏳ Pending (Not Contacted)
                           </span>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
@@ -1326,7 +1326,7 @@ function MyCallingList({ currentUser, showToast }) {
                               fontWeight: '800',
                               fontSize: '0.72rem'
                             }}>
-                              <i className="fas fa-check-circle"></i> ✅ काम झाले ({lead.status})
+                              <i className="fas fa-check-circle"></i> ✅ Completed ({lead.status})
                             </span>
                             <span style={{ fontSize: '0.69rem', color: '#166534', fontWeight: '700' }}>
                               🕒 {workedFormatted || 'Done'}
@@ -1503,10 +1503,10 @@ function MyCallingList({ currentUser, showToast }) {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.74rem', fontWeight: '800', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <i className="fas fa-check-circle" style={{ color: '#2563eb' }}></i>
-                            <span>काम पूर्ण करा • थेट History मध्ये पाठवा:</span>
+                            <span>Mark Work Complete • Move to History:</span>
                           </span>
                           <span style={{ fontSize: '0.67rem', color: '#2563eb', fontWeight: '700' }}>
-                            (कार्ड गायब होईल)
+                            (Card moves to History)
                           </span>
                         </div>
 
@@ -1530,7 +1530,7 @@ function MyCallingList({ currentUser, showToast }) {
                               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
                             }}
                           >
-                            <i className="fas fa-phone-alt"></i> कॉल झाला
+                            <i className="fas fa-phone-alt"></i> Called
                           </button>
                           <button
                             type="button"
@@ -1551,7 +1551,7 @@ function MyCallingList({ currentUser, showToast }) {
                               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
                             }}
                           >
-                            <i className="fas fa-check-circle"></i> इच्छुक
+                            <i className="fas fa-check-circle"></i> Interested
                           </button>
                           <button
                             type="button"
@@ -1572,7 +1572,7 @@ function MyCallingList({ currentUser, showToast }) {
                               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
                             }}
                           >
-                            <i className="fas fa-times-circle"></i> नाही
+                            <i className="fas fa-times-circle"></i> Not Interested
                           </button>
                         </div>
                       </div>
@@ -1589,7 +1589,7 @@ function MyCallingList({ currentUser, showToast }) {
                       }}>
                         <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#15803d', display: 'flex', alignItems: 'center', gap: '5px' }}>
                           <i className="fas fa-archive"></i>
-                          <span>History मध्ये सुरक्षित (काम पूर्ण)</span>
+                          <span>Saved in History (Work Completed)</span>
                         </span>
                         <button
                           type="button"
@@ -1606,7 +1606,7 @@ function MyCallingList({ currentUser, showToast }) {
                           }}
                           title="Restore back to Active Pending list"
                         >
-                          <i className="fas fa-undo"></i> चालू लिस्टमध्ये परत आणा
+                          <i className="fas fa-undo"></i> Restore to Active
                         </button>
                       </div>
                     ) : null}
@@ -1627,10 +1627,10 @@ function MyCallingList({ currentUser, showToast }) {
             }}>
               <i className="fas fa-check-circle fa-3x" style={{ color: '#16a34a', marginBottom: '14px' }}></i>
               <h3 style={{ margin: 0, color: '#15803d', fontSize: '1.25rem', fontWeight: '900' }}>
-                🎉 सर्व चालू काम पूर्ण झाले! (All Pending Calls Completed!)
+                🎉 All Pending Calls Completed!
               </h3>
               <p style={{ margin: '8px auto 16px', color: '#475569', fontSize: '0.86rem', maxWidth: '460px', lineHeight: 1.5 }}>
-                ज्या डेटा वर काम झाले आहे ते सर्व कार्ड्स इतिहास (Calling History) मध्ये सुरक्षित हलवले गेले आहेत.
+                All leads that have been worked on have been safely archived in the Calling History tab.
               </p>
               <button
                 type="button"
@@ -1650,7 +1650,7 @@ function MyCallingList({ currentUser, showToast }) {
                   boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
                 }}
               >
-                <i className="fas fa-history"></i> Calling History पहा ({historyDisplayCount} Calls Done)
+                <i className="fas fa-history"></i> View Calling History ({historyDisplayCount} Calls Completed)
               </button>
             </div>
           ) : activeListTab === 'history' ? (
@@ -1665,10 +1665,10 @@ function MyCallingList({ currentUser, showToast }) {
             }}>
               <i className="fas fa-history fa-3x" style={{ color: '#94a3b8', marginBottom: '14px' }}></i>
               <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.2rem', fontWeight: '800' }}>
-                📜 अद्याप कोणताही इतिहास नाही (No Call History Yet)
+                📜 No Call History Yet
               </h3>
               <p style={{ margin: '8px auto 16px', color: '#64748b', fontSize: '0.86rem', maxWidth: '460px', lineHeight: 1.5 }}>
-                चालू डेटा टॅबमधील लीड्सवर कॉल करून किंवा स्टेटस निवडल्यास ते येथे इतिहासामध्ये दिसतील.
+                Calls made from the Active Calling Leads tab will automatically appear here in your History.
               </p>
               <button
                 type="button"
@@ -1688,7 +1688,7 @@ function MyCallingList({ currentUser, showToast }) {
                   boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                 }}
               >
-                <i className="fas fa-phone-volume"></i> चालू डेटा वर जा ({pendingDisplayCount} Pending Calls)
+                <i className="fas fa-phone-volume"></i> Go to Active Calling Leads ({pendingDisplayCount} Pending Calls)
               </button>
             </div>
           ) : (
@@ -1801,7 +1801,7 @@ function MyCallingList({ currentUser, showToast }) {
                               gap: '4px',
                               whiteSpace: 'nowrap'
                             }}>
-                              <i className="fas fa-clock"></i> ⏳ Pending (काम बाकी)
+                              <i className="fas fa-clock"></i> ⏳ Pending
                             </span>
                           ) : (
                             <span style={{

@@ -1983,7 +1983,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                               gap: '4px',
                               whiteSpace: 'nowrap'
                             }}>
-                              <i className="fas fa-clock"></i> ⏳ Pending (काम बाकी)
+                              <i className="fas fa-clock"></i> ⏳ Pending
                             </span>
                           ) : (
                             <span style={{

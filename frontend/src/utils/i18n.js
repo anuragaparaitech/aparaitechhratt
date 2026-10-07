@@ -1,5 +1,5 @@
-// Internationalization (i18n) Dictionary for Aparaitech Work Portal
-// Supports English, Hindi (हिंदी), and Marathi (मराठी)
+// Standard English Corporate Dictionary for Aparaitech Work Portal
+// Strictly English across all modules and portals
 
 export const translations = {
   en: {
@@ -46,100 +46,9 @@ export const translations = {
     darkMode: 'Dark Mode',
     lightMode: 'Light Mode',
     logout: 'Sign Out'
-  },
-  hi: {
-    portalName: 'अपाराइटेक वर्क पोर्टल – सॉफ्टवेयर टीम',
-    dashboard: 'सॉफ्टवेयर डैशबोर्ड',
-    tasks: 'स्प्रिंट कार्य (Tasks)',
-    projects: 'परियोजनाएं (Projects)',
-    dailyReport: 'दैनिक कार्य रिपोर्ट',
-    codeRepo: 'कोड रिपॉजिटरी (GitHub)',
-    performance: 'प्रदर्शन (Performance)',
-    attendance: 'उपस्थिति एवं पंच (Attendance)',
-    leaves: 'अवकाश प्रबंधन (Leaves)',
-    documents: 'दस्तावेज़ केंद्र (Documents)',
-    announcements: 'घोषणाएं (Announcements)',
-    messages: 'संदेश केंद्र (Messages)',
-    settings: 'सेटिंग्स',
-    punchIn: 'पंच इन करें (फेस + जीपीएस)',
-    punchOut: 'पंच आउट करें',
-    submitReport: 'दैनिक रिपोर्ट सबमिट करें',
-    reportReminder: '⚠️ अनुस्मारक: दैनिक रिपोर्ट शाम 7:00 बजे तक जमा करना अनिवार्य है!',
-    welcomeBack: 'पुनः स्वागत है,',
-    shift: 'शिफ्ट',
-    activeTasks: 'सक्रिय कार्य',
-    projectProgress: 'परियोजना प्रगति',
-    todayHours: 'आज के कार्य घंटे',
-    commitsPushed: 'कोड कमिट्स',
-    velocityScore: 'वेलोसिटी स्कोर',
-    toDo: 'करने योग्य (To Do)',
-    inProgress: 'प्रगति पर (In Progress)',
-    inReview: 'समीक्षा में (In Review)',
-    done: 'पूर्ण (Done)',
-    newTask: 'नया कार्य जोड़ें',
-    createProject: 'नई परियोजना बनाएं',
-    save: 'सहेजें',
-    cancel: 'रद्द करें',
-    applyLeave: 'छुट्टी का आवेदन करें',
-    download: 'डाउनलोड करें',
-    print: 'प्रिंट करें',
-    switchPortal: 'पोर्टल बदलें',
-    softwarePortal: 'सॉफ्टवेयर पोर्टल',
-    bdaPortal: 'बीडीए सेल्स पोर्टल',
-    language: 'भाषा (Language)',
-    theme: 'थीम',
-    darkMode: 'डार्क मोड',
-    lightMode: 'लाइट मोड',
-    logout: 'साइन आउट'
-  },
-  mr: {
-    portalName: 'अपाराइटेक वर्क पोर्टल – सॉफ्टवेअर टीम',
-    dashboard: 'सॉफ्टवेअर डॅशबोर्ड',
-    tasks: 'स्प्रिंट कामे (Tasks)',
-    projects: 'प्रकल्प केंद्र (Projects)',
-    dailyReport: 'दैनिक कार्य अहवाल',
-    codeRepo: 'कोड रिपॉजिटरी (GitHub)',
-    performance: 'कामगिरी (Performance)',
-    attendance: 'हजेरी व पंच (Attendance)',
-    leaves: 'रजा व्यवस्थापन (Leaves)',
-    documents: 'दस्तऐवज केंद्र (Documents)',
-    announcements: 'सूचना व घोषणा (Announcements)',
-    messages: 'संदेश केंद्र (Messages)',
-    settings: 'सेटिंग्ज',
-    punchIn: 'पंच इन करा (चेहरा + जीपीएस)',
-    punchOut: 'पंच आउट करा',
-    submitReport: 'दैनिक अहवाल सादर करा',
-    reportReminder: '⚠️ स्मरणपत्र: दैनिक कामाचा अहवाल संध्याकाळी 7:00 वाजेपर्यंत सादर करणे आवश्यक आहे!',
-    welcomeBack: 'पुन्हा स्वागत आहे,',
-    shift: 'शिफ्ट',
-    activeTasks: 'सक्रिय कामे',
-    projectProgress: 'प्रकल्प प्रगती',
-    todayHours: 'आजचे कामाचे तास',
-    commitsPushed: 'कोड कमिट्स',
-    velocityScore: 'कामगिरी गुण',
-    toDo: 'करावयाचे (To Do)',
-    inProgress: 'सुरू आहे (In Progress)',
-    inReview: 'तपासणीत (In Review)',
-    done: 'पूर्ण झाले (Done)',
-    newTask: 'नवीन काम जोडा',
-    createProject: 'नवीन प्रकल्प तयार करा',
-    save: 'जतन करा',
-    cancel: 'रद्द करा',
-    applyLeave: 'रजेचा अर्ज करा',
-    download: 'डाउनलोड करा',
-    print: 'प्रिंट करा',
-    switchPortal: 'पोर्टल बदला',
-    softwarePortal: 'सॉफ्टवेअर पोर्टल',
-    bdaPortal: 'बीडीए विक्री पोर्टल',
-    language: 'भाषा (Language)',
-    theme: 'थीम',
-    darkMode: 'डार्क मोड',
-    lightMode: 'लाइट मोड',
-    logout: 'साइन आउट'
   }
 }
 
-export const getTranslation = (key, lang = 'en') => {
-  const currentLang = translations[lang] || translations.en
-  return currentLang[key] || translations.en[key] || key
+export const getTranslation = (key) => {
+  return translations.en[key] || key
 }
