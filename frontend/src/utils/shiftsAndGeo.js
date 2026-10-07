@@ -14,26 +14,30 @@ export const SHIFTS = {
   },
   shift_2: {
     id: 'shift_2',
-    name: 'Shift 2: BDA Phase 1',
+    name: 'Shift 2: BDA Phase 2',
     label: 'Shift 2 (11:00 AM - 05:00 PM)',
     department: 'BDA',
-    roleLabel: 'BDA / Sales Phase 1',
+    roleLabel: 'BDA / Sales Phase 2',
     startTime: '11:00',
     endTime: '17:00',
     duration: '6 Hours',
     durationHours: 6,
+    graceMinutes: 10,
+    lateLoginLimit: '11:10',
     color: '#16a34a'
   },
   shift_3: {
     id: 'shift_3',
-    name: 'Shift 3: BDA Phase 2',
+    name: 'Shift 3: BDA Phase 2 (Evening)',
     label: 'Shift 3 (05:00 PM - 11:00 PM)',
     department: 'BDA',
-    roleLabel: 'BDA / Sales Phase 2',
+    roleLabel: 'BDA / Sales Evening',
     startTime: '17:00',
     endTime: '23:00',
     duration: '6 Hours',
     durationHours: 6,
+    graceMinutes: 10,
+    lateLoginLimit: '17:10',
     color: '#d97706'
   }
 }
