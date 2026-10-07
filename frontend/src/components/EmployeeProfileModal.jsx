@@ -834,8 +834,8 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                           style={{ margin: '4px 0 0', width: '100%', height: '42px' }}
                         >
                           <option value="shift_1">Shift 1 (07:00 AM - 11:00 AM) • Software</option>
-                          <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM) • BDA Phase 1</option>
-                          <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM) • BDA Phase 2</option>
+                          <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM) • BDA Phase 2</option>
+                          <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM) • BDA Phase 2 (Evening)</option>
                         </select>
                       </div>
                       <div style={{ flex: 1, minWidth: '220px' }}>

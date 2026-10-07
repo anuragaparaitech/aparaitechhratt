@@ -2795,8 +2795,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             >
               <option value="">All Shifts</option>
               <option value="shift_1">Shift 1 (07:00 AM - 11:00 AM) • Software</option>
-              <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM) • BDA Phase 1</option>
-              <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM) • BDA Phase 2</option>
+              <option value="shift_2">Shift 2 (11:00 AM - 05:00 PM) • BDA Phase 2</option>
+              <option value="shift_3">Shift 3 (05:00 PM - 11:00 PM) • BDA Phase 2 (Evening)</option>
             </select>
             <button className="g-button success" onClick={() => setIsAddOpen(true)}>
               <i className="fas fa-user-plus"></i> Add Employee

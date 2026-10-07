@@ -561,8 +561,8 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
                 required
               >
                 <option value="shift_1">Shift 1: Software Developer (07:00 AM - 11:00 AM)</option>
-                <option value="shift_2">Shift 2: BDA Phase 1 (11:00 AM - 05:00 PM)</option>
-                <option value="shift_3">Shift 3: BDA Phase 2 (05:00 PM - 11:00 PM)</option>
+                <option value="shift_2">Shift 2: BDA Phase 2 (11:00 AM - 05:00 PM)</option>
+                <option value="shift_3">Shift 3: BDA Phase 2 Evening (05:00 PM - 11:00 PM)</option>
               </select>
             </div>
             <div className="input-group">
