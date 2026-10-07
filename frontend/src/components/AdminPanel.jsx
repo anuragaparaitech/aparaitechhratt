@@ -14,6 +14,7 @@ import ConversionPipelineView from './ConversionPipelineView'
 import ConversionDataFillModal from './ConversionDataFillModal'
 import DailyReportModal from './DailyReportModal'
 import AIDataDistributionCenter from './AIDataDistributionCenter'
+import ErrorBoundary from './ErrorBoundary'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
 function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSectionChange, isHRMode = false }) {
@@ -79,9 +80,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   // BDA Revenue-Based Salary Criteria & Payout States
   const [bdaCriteriaData, setBdaCriteriaData] = useState({
     1: { month: 1, target: 42000, targetConversions: 7, belowTargetPercent: 26, onTargetPercent: 36, excessPercent: 8, label: 'Month 1' },
-    2: { month: 2, target: 54000, targetConversions: 9, belowTargetPercent: 25, onTargetPercent: 35, excessPercent: 8, label: 'Month 2' },
-    3: { month: 3, target: 72000, targetConversions: 12, belowTargetPercent: 25, onTargetPercent: 35, excessPercent: 8, label: 'Month 3' },
-    4: { month: 4, target: 90000, targetConversions: 15, belowTargetPercent: 25, onTargetPercent: 35, excessPercent: 8, label: 'Month 4+' }
+    2: { month: 2, target: 54000, targetConversions: 9, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 2' },
+    3: { month: 3, target: 72000, targetConversions: 12, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 3' },
+    4: { month: 4, target: 90000, targetConversions: 15, belowTargetPercent: 25, onTargetPercent: 30, excessPercent: 8, label: 'Month 4+' }
   })
   const [bdaEmployees, setBdaEmployees] = useState([])
   const [savingBdaCriteria, setSavingBdaCriteria] = useState(false)
@@ -1134,7 +1135,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 target: m === 1 ? 42000 : m === 2 ? 54000 : m === 3 ? 72000 : 90000,
                 targetConversions: m === 1 ? 7 : m === 2 ? 9 : m === 3 ? 12 : 15,
                 belowTargetPercent: m === 1 ? 26 : 25,
-                onTargetPercent: m === 1 ? 36 : 35,
+                onTargetPercent: m === 1 ? 36 : 30,
                 excessPercent: 8,
                 label: m === 4 ? 'Month 4+' : `Month ${m}`
               }
@@ -1544,7 +1545,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               </div>
               <p style={{ margin: '6px 0 0', fontSize: '0.86rem', color: '#a7f3d0', maxWidth: '850px', lineHeight: '1.45' }}>
                 Tenure-based monthly criteria for Business Development Associates.
-                <strong> Note:</strong> Criteria percentages (36%, 26%, 25%, 8%) and salary formulas are <strong>strictly hidden from employees</strong>; employees only see their monthly target numbers and progress bar.
+                <strong> Note:</strong> Criteria percentages (36%, 30%, 26%, 25%, 8%) and salary formulas are <strong>strictly hidden from employees</strong>; employees only see their monthly target numbers and progress bar.
               </p>
             </div>
 
@@ -3457,7 +3458,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
 
       {/* ── AI DATA DISTRIBUTION SYSTEM (show('aiDataDistribution')) ─────────── */}
       {show('aiDataDistribution') && (
-        <AIDataDistributionCenter currentUser={currentUser} showToast={showToast} />
+        <ErrorBoundary fallbackTitle="AI Data Distribution Engine">
+          <AIDataDistributionCenter currentUser={currentUser} showToast={showToast} />
+        </ErrorBoundary>
       )}
 
       {/* ── 12. SYSTEM DATA MANAGEMENT (show('data')) ───────────────────────── */}

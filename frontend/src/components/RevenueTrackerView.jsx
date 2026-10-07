@@ -254,9 +254,9 @@ function RevenueTrackerView({ currentUser, showToast }) {
         }}>
           {[
             { label: 'Month 1', target: '₹42,000', convs: '7 Convs', onTarget: '36%', below: '26%', excess: '+8%' },
-            { label: 'Month 2', target: '₹54,000', convs: '9 Convs', onTarget: '35%', below: '25%', excess: '+8%' },
-            { label: 'Month 3', target: '₹72,000', convs: '12 Convs', onTarget: '35%', below: '25%', excess: '+8%' },
-            { label: 'Month 4+', target: '₹90,000', convs: '15 Convs', onTarget: '35%', below: '25%', excess: '+8%' }
+            { label: 'Month 2', target: '₹54,000', convs: '9 Convs', onTarget: '30%', below: '25%', excess: '+8%' },
+            { label: 'Month 3', target: '₹72,000', convs: '12 Convs', onTarget: '30%', below: '25%', excess: '+8%' },
+            { label: 'Month 4+', target: '₹90,000', convs: '15 Convs', onTarget: '30%', below: '25%', excess: '+8%' }
           ].map((item, idx) => (
             <div key={idx} style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>

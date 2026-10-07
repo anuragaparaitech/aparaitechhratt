@@ -62,23 +62,6 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
   // Daily Employee Work Reports State
   const [dailyReportsList, setDailyReportsList] = useState([])
 
-  // Fetch employees for dropdown & reports
-  useEffect(() => {
-    fetchEmployeesList()
-    fetchReports()
-  }, [])
-
-  // Auto-refresh reports metrics when on reports tab or when leads/reports are updated
-  useAutoRefresh(fetchReports, {
-    intervalMs: 5000,
-    eventTypes: [
-      SYNC_EVENTS.DATA_ASSIGNED,
-      SYNC_EVENTS.LEAD_STATUS_UPDATED,
-      SYNC_EVENTS.DAILY_REPORT_SUBMITTED
-    ],
-    enabled: activeSubTab === 'reports'
-  })
-
   const fetchEmployeesList = async () => {
     try {
       const data = await employeeAPI.getAll()
@@ -152,6 +135,25 @@ function AIDataDistributionCenter({ currentUser, showToast }) {
       setLoadingReports(false)
     }
   }
+
+  // Fetch employees for dropdown & reports on initial mount
+  useEffect(() => {
+    fetchEmployeesList()
+    fetchReports()
+  }, [])
+
+  // Auto-refresh reports metrics when on reports tab or when leads/reports are updated
+  useAutoRefresh(() => {
+    fetchReports()
+  }, {
+    intervalMs: 5000,
+    eventTypes: [
+      SYNC_EVENTS.DATA_ASSIGNED,
+      SYNC_EVENTS.LEAD_STATUS_UPDATED,
+      SYNC_EVENTS.DAILY_REPORT_SUBMITTED
+    ],
+    enabled: activeSubTab === 'reports'
+  })
 
   useEffect(() => {
     if (activeSubTab === 'reports') {
