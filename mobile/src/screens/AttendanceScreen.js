@@ -261,9 +261,10 @@ export default function AttendanceScreen({ navigation }) {
                   }}
                 >
                   <Text style={{ fontWeight: '800', fontSize: 12, color: selectedShiftKey === 'shift_2' ? '#15803d' : '#475569' }}>
-                    Shift 2 (Phase 1)
+                    Shift 2 (BDA Phase 2)
                   </Text>
                   <Text style={{ fontSize: 10, color: '#64748b' }}>11:00 AM – 5:00 PM</Text>
+                  <Text style={{ fontSize: 9, color: '#15803d', fontWeight: '700', marginTop: 2 }}>Cutoff: 11:10 AM (After = Half Day)</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -278,13 +279,13 @@ export default function AttendanceScreen({ navigation }) {
                   }}
                 >
                   <Text style={{ fontWeight: '800', fontSize: 12, color: selectedShiftKey === 'shift_3' ? '#b45309' : '#475569' }}>
-                    Shift 3 (Phase 2)
+                    Shift 3 (BDA Phase 2 - Evening)
                   </Text>
                   <Text style={{ fontSize: 10, color: '#64748b' }}>5:00 PM – 11:00 PM</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>
-                ℹ️ BDA can attend Shift 2 or Shift 3, but must complete that particular shift.
+              <Text style={{ fontSize: 10, color: '#475569', marginTop: 6 }}>
+                ℹ️ BDA Phase 2 login cutoff: 11:10 AM. Check-in after 11:10 AM is marked as Half Day.
               </Text>
             </View>
           )}

@@ -24,7 +24,7 @@ export const SHIFTS = {
   },
   shift_2: {
     id: 'shift_2',
-    name: 'Shift 2 (BDA Phase 1)',
+    name: 'Shift 2 (BDA Phase 2)',
     startTime: '11:00',
     endTime: '17:00',
     display: '11:00 AM – 5:00 PM',
@@ -32,7 +32,7 @@ export const SHIFTS = {
   },
   shift_3: {
     id: 'shift_3',
-    name: 'Shift 3 (BDA Phase 2)',
+    name: 'Shift 3 (BDA Phase 2 - Evening)',
     startTime: '17:00',
     endTime: '23:00',
     display: '5:00 PM – 11:00 PM',

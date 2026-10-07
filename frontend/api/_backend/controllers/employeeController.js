@@ -24,7 +24,7 @@ const DEFAULT_PWD = 'Aparaitech123@'
 
 // Predefined Active Employees:
 // - Software Developers -> Shift 1 (07:00 AM - 11:00 AM)
-// - BDA / Sales Active Members -> Shift 2 (11:00 AM - 05:00 PM)
+// - BDA Phase 2 Members -> Shift 2 (11:00 AM - 05:00 PM, Login cutoff: 11:10 AM)
 const activeEmployeesList = [
   { empId: 'AP7086', name: 'Disha Kale', email: 'kaledisha868@gmail.com', phone: '8767416802', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7087', name: 'Nikita Maruti Survase', email: 'nikitasurvase2125@gmail.com', phone: '8055055645', dob: '2001-08-03', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
