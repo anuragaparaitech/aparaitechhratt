@@ -98,8 +98,18 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
     try {
       const time = getCurrentTimeStr()
       const today = new Date().toISOString().split('T')[0]
-      await attendanceAPI.checkIn(currentUser.email, time, coords, selectedShift)
-      showToast(`✅ Checked in at ${time}`, '#22c55e')
+      const checkInRes = await attendanceAPI.checkIn(currentUser.email, time, coords, selectedShift)
+      
+      const [chH, chM] = time.split(':').map(Number)
+      const curMins = (chH || 0) * 60 + (chM || 0)
+      const activeShift = selectedShift || (currentUser?.department === 'BDA' ? 'shift_2' : (currentUser?.shift || 'shift_1'))
+      const isLateBda = activeShift === 'shift_2' && curMins > (11 * 60 + 10)
+
+      if (isLateBda || checkInRes?.isLateCheckIn) {
+        showToast(`⚠️ Checked in at ${time} (After 11:10 AM cutoff — marked as Half Day)`, '#d97706')
+      } else {
+        showToast(`✅ Checked in at ${time}`, '#22c55e')
+      }
       emitSyncEvent(SYNC_EVENTS.ATTENDANCE_UPDATED, { employeeEmail: currentUser.email, type: 'checkin' })
       // Save photo + verification result asynchronously (non-blocking)
       if (capturedImageDataUrl) {
@@ -476,8 +486,9 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
                         textAlign: 'left'
                       }}
                     >
-                      <div style={{ fontWeight: '800' }}>Shift 2: BDA Phase 1</div>
+                      <div style={{ fontWeight: '800' }}>Shift 2: BDA Phase 2</div>
                       <div style={{ fontSize: '0.74rem' }}>11:00 AM – 05:00 PM (6 Hours)</div>
+                      <div style={{ fontSize: '0.70rem', color: '#166534', marginTop: '2px', fontWeight: '600' }}>Cutoff: 11:10 AM (After = Half Day)</div>
                     </button>
 
                     <button
@@ -495,12 +506,12 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
                         textAlign: 'left'
                       }}
                     >
-                      <div style={{ fontWeight: '800' }}>Shift 3: BDA Phase 2</div>
+                      <div style={{ fontWeight: '800' }}>Shift 3: BDA Phase 2 (Evening)</div>
                       <div style={{ fontSize: '0.74rem' }}>05:00 PM – 11:00 PM (6 Hours)</div>
                     </button>
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '6px' }}>
-                    ℹ️ BDA team can attend Shift 2 or Shift 3, but you must complete the full 6 hours of the selected shift.
+                  <div style={{ fontSize: '0.73rem', color: '#475569', marginTop: '6px' }}>
+                    ℹ️ <strong>BDA Phase 2 Policy:</strong> Attendance login time is up to <strong>11:10 AM</strong>. Check-in after 11:10 AM is automatically marked as <strong>Half Day</strong>.
                   </div>
                 </div>
               )}
