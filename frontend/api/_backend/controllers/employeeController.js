@@ -50,7 +50,11 @@ const activeEmployeesList = [
   { empId: 'AP7105', name: 'Kavita Mehra', email: 'kavitamehra5679@gmail.com', phone: '9927022652', dob: '2004-02-09', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7106', name: 'Rehan Tamboli', email: 'rehantamboli459@gmail.com', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' },
   { empId: 'AP7107', name: 'Gauri Wankhede', email: 'gauri20085@gmail.com', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' },
-  { empId: 'AP7108', name: 'Pratik Baviskar', email: 'pratikbasviskar811@gmail.com', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' }
+  { empId: 'AP7108', name: 'Pratik Baviskar', email: 'pratikbasviskar811@gmail.com', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' },
+  { empId: 'AP7109', name: 'Sakshi Ravindra Pujari', email: 'sakshipujari872@gmail.com', phone: '9699114145', dob: '2006-04-04', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' },
+  { empId: 'AP7110', name: 'Ishaan Mandar Janorkar', email: 'ishaanjanorkar20@gmail.com', phone: '9850541116', dob: '2005-02-20', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' },
+  { empId: 'AP7111', name: 'Harshad Patil', email: 'harshadpatil@gmail.com', phone: '7276706681', dob: '2005-07-06', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' },
+  { empId: 'AP7112', name: 'Aditya Sanjay Patil', email: 'adityaspatil97@gmail.com', phone: '7822077907', dob: '2005-10-21', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_3' }
 ]
 
 
