@@ -21,6 +21,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
   const [addConversionOpen, setAddConversionOpen] = useState(false)
   const [checkoutReportPrompt, setCheckoutReportPrompt] = useState(false)
+  const [checkoutSlotPrompt, setCheckoutSlotPrompt] = useState(null)
 
   // ── Face Verification States ─────────────────────────────────────────────────
   const [faceVerifyOpen, setFaceVerifyOpen] = useState(false)
@@ -205,6 +206,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
     try {
       const res = await reportsAPI.getTodayStatus()
       if (!res?.submitted) {
+        setCheckoutSlotPrompt(res)
         setCheckoutReportPrompt(true)
         return
       }
@@ -226,8 +228,92 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
     ? Math.round(((fullDays * 1 + halfDays * 0.5 + quarterDays * 0.25) / totalDays) * 100) 
     : 0
 
+  const todayKolkataDate = (() => {
+    try {
+      const now = new Date()
+      const kolkataStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+      const kDate = new Date(kolkataStr)
+      const year = kDate.getFullYear()
+      const month = String(kDate.getMonth() + 1).padStart(2, '0')
+      const day = String(kDate.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    } catch {
+      return new Date().toISOString().split('T')[0]
+    }
+  })()
+  const isTwoReportsToday = todayKolkataDate === '2026-10-13'
+
   return (
     <div id="employeePanel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+      {/* ── Today Special: Mandatory 2-Slot Daily Report Notice Banner ── */}
+      {isTwoReportsToday && (
+        <div style={{
+          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
+          borderRadius: '16px',
+          padding: '1.1rem 1.5rem',
+          color: '#ffffff',
+          boxShadow: '0 8px 24px -4px rgba(49, 46, 129, 0.4)',
+          border: '1px solid rgba(165, 180, 252, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          animation: 'pulse 3s infinite alternate'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', maxWidth: '750px' }}>
+            <div style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.4rem',
+              flexShrink: 0
+            }}>
+              📢
+            </div>
+            <div>
+              <div style={{ fontSize: '0.98rem', fontWeight: 800, letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>MANDATORY NOTICE: 2 Daily Reports Required (Today Only - 13 Oct 2026)</span>
+                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: '#ef4444', color: '#fff', fontWeight: 700 }}>
+                  URGENT
+                </span>
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#c7d2fe', lineHeight: 1.45 }}>
+                All BDA team members must submit their daily report <strong>twice today</strong>:
+                <br />
+                🍱 <strong>Slot 1 (Pre-Lunch):</strong> Before going for lunch break &nbsp;|&nbsp;
+                🚪 <strong>Slot 2 (On Logout):</strong> Final report before checking out.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDailyModalOpen(true)}
+            style={{
+              padding: '10px 18px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+              color: '#78350f',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            ✍️ Open Daily Report
+          </button>
+        </div>
+      )}
 
       {/* ── Executive Employee Header Banner ─────────────────────────── */}
       <div style={{
@@ -954,12 +1040,22 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>📝</div>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>
+              {checkoutSlotPrompt?.isTwoReportsDay ? (checkoutSlotPrompt?.submissionCount === 1 ? '🚪' : '🍱') : '📝'}
+            </div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
-              Daily Work Report Pending
+              {checkoutSlotPrompt?.isTwoReportsDay
+                ? (checkoutSlotPrompt?.submissionCount === 1
+                    ? 'Slot 2 (Logout Report) Pending'
+                    : 'Daily Work Reports Pending (Slot 1 & 2)')
+                : 'Daily Work Report Pending'}
             </h3>
             <p style={{ fontSize: '0.92rem', color: '#64748b', lineHeight: 1.5, marginBottom: '20px' }}>
-              You haven't submitted your daily work report for today yet. It is recommended to submit before leaving, but you can also submit it later at any time.
+              {checkoutSlotPrompt?.isTwoReportsDay
+                ? (checkoutSlotPrompt?.submissionCount === 1
+                    ? 'You have submitted your Pre-Lunch report (Slot 1), but today requires two daily reports. Your final Slot 2 (Logout Report) is still pending before checkout.'
+                    : 'For today (13 Oct 2026), all associates must submit daily reports in two slots (Pre-Lunch and Logout). You have not submitted your reports yet. Please submit your daily report now.')
+                : "You haven't submitted your daily work report for today yet. It is recommended to submit before leaving, but you can also submit it later at any time."}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button

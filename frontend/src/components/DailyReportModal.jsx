@@ -18,13 +18,23 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
   })
   const [loading, setLoading] = useState(false)
   const [existingReport, setExistingReport] = useState(null)
+  const [slotInfo, setSlotInfo] = useState({
+    isTwoReportsDay: false,
+    submissionCount: 0,
+    maxSubmissions: 1,
+    currentSlot: 1,
+    slotLabel: 'Daily Work Report',
+    reports: []
+  })
   const [autoInfo, setAutoInfo] = useState({
     date: '',
     time: ''
   })
   const [reportDate, setReportDate] = useState('')
 
-  const isLocked = Boolean(existingReport && !isAdmin)
+  const isLocked = Boolean(
+    (slotInfo.isTwoReportsDay ? slotInfo.submissionCount >= slotInfo.maxSubmissions : Boolean(existingReport)) && !isAdmin
+  )
 
   const activeEmployeeEmail = initialReport?.employeeEmail || targetEmployee?.email || currentUser?.email
   const activeEmployeeName = initialReport?.employeeName || targetEmployee?.name || currentUser?.name
@@ -34,32 +44,84 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
   const loadReportForDate = async (targetDate) => {
     try {
       const res = await reportsAPI.getTodayStatus(targetDate, activeEmployeeEmail)
-      if (res.success && res.report) {
-        setExistingReport(res.report)
-        setFormData({
-          connectedCalls: res.report.connectedCalls || 0,
-          callsAbove3Min: res.report.callsAbove3Min || 0,
-          groupsCreated: res.report.groupsCreated || 0,
-          membersInGroups: res.report.membersInGroups || 0,
-          onboardingConversions: res.report.onboardingConversions ?? 0,
-          finalizeConversions: res.report.finalizeConversions ?? 0,
-          fullConversions: res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0),
-          todayConversions: res.report.todayConversions || 0,
-          remarks: res.report.remarks || ''
+      if (res && res.success) {
+        const isTwo = Boolean(res.isTwoReportsDay)
+        const subCount = res.submissionCount || 0
+        const maxSub = res.maxSubmissions || 1
+
+        setSlotInfo({
+          isTwoReportsDay: isTwo,
+          submissionCount: subCount,
+          maxSubmissions: maxSub,
+          currentSlot: res.currentSlot,
+          slotLabel: res.slotLabel || 'Daily Work Report',
+          reports: res.reports || []
         })
-      } else {
-        setExistingReport(null)
-        setFormData({
-          connectedCalls: 0,
-          callsAbove3Min: 0,
-          groupsCreated: 0,
-          membersInGroups: 0,
-          onboardingConversions: 0,
-          finalizeConversions: 0,
-          fullConversions: 0,
-          todayConversions: 0,
-          remarks: ''
-        })
+
+        if (isTwo) {
+          // If 2-reports day
+          if (subCount >= maxSub) {
+            // Both submitted: Lock and display latest report
+            const rep = res.latestReport || res.report
+            setExistingReport(rep)
+            if (rep) {
+              setFormData({
+                connectedCalls: rep.connectedCalls || 0,
+                callsAbove3Min: rep.callsAbove3Min || 0,
+                groupsCreated: rep.groupsCreated || 0,
+                membersInGroups: rep.membersInGroups || 0,
+                onboardingConversions: rep.onboardingConversions ?? 0,
+                finalizeConversions: rep.finalizeConversions ?? 0,
+                fullConversions: rep.fullConversions ?? (rep.todayConversions && !rep.onboardingConversions && !rep.finalizeConversions ? rep.todayConversions : 0),
+                todayConversions: rep.todayConversions || 0,
+                remarks: rep.remarks || ''
+              })
+            }
+          } else {
+            // Can submit next slot (Slot 1 or Slot 2)
+            setExistingReport(null)
+            setFormData({
+              connectedCalls: 0,
+              callsAbove3Min: 0,
+              groupsCreated: 0,
+              membersInGroups: 0,
+              onboardingConversions: 0,
+              finalizeConversions: 0,
+              fullConversions: 0,
+              todayConversions: 0,
+              remarks: ''
+            })
+          }
+        } else {
+          // Standard 1-report day
+          if (res.report) {
+            setExistingReport(res.report)
+            setFormData({
+              connectedCalls: res.report.connectedCalls || 0,
+              callsAbove3Min: res.report.callsAbove3Min || 0,
+              groupsCreated: res.report.groupsCreated || 0,
+              membersInGroups: res.report.membersInGroups || 0,
+              onboardingConversions: res.report.onboardingConversions ?? 0,
+              finalizeConversions: res.report.finalizeConversions ?? 0,
+              fullConversions: res.report.fullConversions ?? (res.report.todayConversions && !res.report.onboardingConversions && !res.report.finalizeConversions ? res.report.todayConversions : 0),
+              todayConversions: res.report.todayConversions || 0,
+              remarks: res.report.remarks || ''
+            })
+          } else {
+            setExistingReport(null)
+            setFormData({
+              connectedCalls: 0,
+              callsAbove3Min: 0,
+              groupsCreated: 0,
+              membersInGroups: 0,
+              onboardingConversions: 0,
+              finalizeConversions: 0,
+              fullConversions: 0,
+              todayConversions: 0,
+              remarks: ''
+            })
+          }
+        }
       }
     } catch (err) {
       console.warn('Could not load report status for date:', targetDate, err.message)
@@ -261,6 +323,52 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
         </div>
 
         {/* Status Alert Banners */}
+        {slotInfo.isTwoReportsDay && !isLocked && slotInfo.submissionCount === 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+            borderLeft: '4px solid #2563eb',
+            padding: '12px 16px',
+            margin: '1rem 1.5rem 0',
+            borderRadius: '10px',
+            fontSize: '0.84rem',
+            color: '#1e40af',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '1.4rem' }}>🍱</span>
+            <div>
+              <div style={{ fontWeight: '800' }}>Slot 1 of 2: Mandatory Pre-Lunch Report (Today Only)</div>
+              <div style={{ marginTop: '2px', color: '#1d4ed8' }}>
+                For today (13 Oct 2026), all associates must submit two reports. Please file your mid-day progress before lunch. You will submit your second report on shift logout.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {slotInfo.isTwoReportsDay && !isLocked && slotInfo.submissionCount === 1 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+            borderLeft: '4px solid #f59e0b',
+            padding: '12px 16px',
+            margin: '1rem 1.5rem 0',
+            borderRadius: '10px',
+            fontSize: '0.84rem',
+            color: '#92400e',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '1.4rem' }}>🚪</span>
+            <div>
+              <div style={{ fontWeight: '800' }}>Slot 2 of 2: Mandatory Final Logout Report (Today Only)</div>
+              <div style={{ marginTop: '2px', color: '#b45309' }}>
+                Slot 1 (Pre-Lunch) was successfully submitted. Please enter your final day conversions and metrics now before checking out.
+              </div>
+            </div>
+          </div>
+        )}
+
         {isLocked && (
           <div style={{
             background: '#fef2f2',
@@ -278,7 +386,9 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
             <div>
               <div style={{ fontWeight: '800' }}>🔒 Daily Report Submitted & Locked</div>
               <div style={{ marginTop: '2px', color: '#b91c1c' }}>
-                Your daily report for <strong>{reportDate}</strong> was already submitted (filed at {existingReport.reportTime}). Employees cannot modify a submitted report. Please contact an Administrator if any corrections are needed.
+                {slotInfo.isTwoReportsDay
+                  ? `Both daily reports (Pre-Lunch & Logout) for ${reportDate} have been successfully submitted and verified. Only administrators can edit submitted reports.`
+                  : `Your daily report for ${reportDate} was already submitted (filed at ${existingReport?.reportTime || ''}). Employees cannot modify a submitted report. Please contact an Administrator if any corrections are needed.`}
               </div>
             </div>
           </div>
@@ -712,6 +822,14 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                 ) : isAdmin && existingReport ? (
                   <>
                     <i className="fas fa-save"></i> Save Changes (Admin Update)
+                  </>
+                ) : slotInfo.isTwoReportsDay && slotInfo.submissionCount === 0 ? (
+                  <>
+                    <i className="fas fa-utensils"></i> Submit Slot 1: Pre-Lunch Report
+                  </>
+                ) : slotInfo.isTwoReportsDay && slotInfo.submissionCount === 1 ? (
+                  <>
+                    <i className="fas fa-sign-out-alt"></i> Submit Slot 2: Final Logout Report
                   </>
                 ) : (
                   <>

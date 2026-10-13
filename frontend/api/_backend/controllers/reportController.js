@@ -55,35 +55,68 @@ export const submitDailyReport = async (req, res) => {
     const isAdmin = user.role === 'admin'
     const targetEmail = (isAdmin && req.body.employeeEmail) ? req.body.employeeEmail.toLowerCase() : user.email.toLowerCase()
 
-    // Check if report already exists for targetDate by this employee
-    let report = await DailyReport.findOne({
+    // Special rule: Two daily reports allowed for today only (2026-10-13)
+    const isTwoReportsDay = (targetDate === '2026-10-13')
+
+    // Find existing reports for targetDate by this employee
+    const existingReports = await DailyReport.find({
       employeeEmail: targetEmail,
       reportDate: targetDate
-    })
+    }).sort({ createdAt: 1 })
+
+    const submissionCount = existingReports.length
+    const maxSubmissions = isTwoReportsDay ? 2 : 1
+
+    // If limit exceeded and not admin
+    if (!isAdmin && submissionCount >= maxSubmissions) {
+      return res.status(403).json({
+        success: false,
+        message: isTwoReportsDay
+          ? 'Both daily reports (Pre-Lunch and Logout) have already been submitted for today and cannot be modified. Only administrators can edit submitted reports.'
+          : 'Daily report has already been submitted for this date and cannot be modified. Only administrators can edit submitted reports.'
+      })
+    }
+
+    // Determine current slot
+    const slotNumber = isTwoReportsDay ? (submissionCount === 0 ? 1 : 2) : 1
+    const slotName = isTwoReportsDay
+      ? (slotNumber === 1 ? 'Pre-Lunch Report' : 'Logout Report')
+      : 'Daily Work Report'
+
+    // Format remarks to include slot tag if on 2-reports day
+    let finalRemarks = remarks ? remarks.trim() : ''
+    if (isTwoReportsDay) {
+      const tag = `[${slotName}]`
+      if (!finalRemarks.includes(tag)) {
+        finalRemarks = finalRemarks ? `${tag} ${finalRemarks}` : tag
+      }
+    }
 
     if (isSoftwareReport) {
-      if (report) {
-        // Update software report
-        report.tasksCompleted = tasksCompleted || report.tasksCompleted || ''
-        report.tasksInProgress = tasksInProgress || report.tasksInProgress || ''
-        report.tasksPending = tasksPending || report.tasksPending || ''
-        report.hoursWorked = hoursWorked !== undefined ? Number(hoursWorked) : (report.hoursWorked || 0)
-        report.blockers = blockers || report.blockers || ''
-        report.planTomorrow = planTomorrow || report.planTomorrow || ''
-        report.githubPrs = githubPrs || report.githubPrs || ''
-        report.reportTime = timeStr
-        report.reportType = 'software'
-        if (isAdmin) report.updatedByAdmin = user.name || user.email
-        await report.save()
+      // If admin updating an existing software report
+      if (isAdmin && existingReports.length > 0 && (req.body._id || !isTwoReportsDay || existingReports.length >= maxSubmissions)) {
+        const reportToUpdate = (req.body._id ? existingReports.find(r => String(r._id) === String(req.body._id)) : null) || existingReports[existingReports.length - 1]
+        reportToUpdate.tasksCompleted = tasksCompleted || reportToUpdate.tasksCompleted || ''
+        reportToUpdate.tasksInProgress = tasksInProgress || reportToUpdate.tasksInProgress || ''
+        reportToUpdate.tasksPending = tasksPending || reportToUpdate.tasksPending || ''
+        reportToUpdate.hoursWorked = hoursWorked !== undefined ? Number(hoursWorked) : (reportToUpdate.hoursWorked || 0)
+        reportToUpdate.blockers = blockers || reportToUpdate.blockers || ''
+        reportToUpdate.planTomorrow = planTomorrow || reportToUpdate.planTomorrow || ''
+        reportToUpdate.githubPrs = githubPrs || reportToUpdate.githubPrs || ''
+        reportToUpdate.reportTime = timeStr
+        reportToUpdate.reportType = 'software'
+        if (remarks) reportToUpdate.remarks = finalRemarks
+        reportToUpdate.updatedByAdmin = user.name || user.email
+        await reportToUpdate.save()
 
         return res.status(200).json({
           success: true,
-          message: 'Software Daily Report updated successfully!',
-          data: report
+          message: 'Software Daily Report updated successfully by Admin!',
+          data: reportToUpdate
         })
       }
 
-      report = await DailyReport.create({
+      const newReport = await DailyReport.create({
         employeeId: user.empId || 'EMP',
         employeeEmail: user.email.toLowerCase(),
         employeeName: user.name,
@@ -98,13 +131,21 @@ export const submitDailyReport = async (req, res) => {
         blockers: blockers || '',
         planTomorrow: planTomorrow || '',
         githubPrs: githubPrs || '',
-        remarks: remarks || ''
+        remarks: finalRemarks,
+        slotNumber,
+        slotName
       })
+
+      const successMsg = isTwoReportsDay
+        ? (slotNumber === 1
+            ? '🍱 Pre-Lunch Software Report submitted successfully! (Slot 1/2). Please submit your final Logout report at the end of the day.'
+            : '🚪 Final Logout Software Report submitted successfully! (Slot 2/2). All daily reports completed for today!')
+        : 'Software Daily Report submitted successfully!'
 
       return res.status(201).json({
         success: true,
-        message: 'Software Daily Report submitted successfully!',
-        data: report
+        message: successMsg,
+        data: newReport
       })
     }
 
@@ -133,37 +174,32 @@ export const submitDailyReport = async (req, res) => {
       fullNum = conversionsNum
     }
 
-    if (report) {
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Daily report has already been submitted for this date and cannot be modified. Only administrators can edit submitted reports.'
-        })
-      }
-
-      report.connectedCalls = Math.max(0, parseInt(connectedCalls, 10) || 0)
-      report.callsAbove3Min = Math.max(0, parseInt(callsAbove3Min, 10) || 0)
-      report.groupsCreated = Math.max(0, parseInt(groupsCreated, 10) || 0)
-      report.membersInGroups = Math.max(0, parseInt(membersInGroups, 10) || 0)
-      report.onboardingConversions = onbNum
-      report.finalizeConversions = finNum
-      report.fullConversions = fullNum
-      report.todayConversions = conversionsNum
-      report.revenue = revenueCalculated
-      report.reportTime = timeStr
-      report.remarks = remarks || ''
-      report.reportType = 'bda'
-      report.updatedByAdmin = user.name || user.email
-      await report.save()
+    // If admin is updating an already existing report
+    if (isAdmin && existingReports.length > 0 && (req.body._id || !isTwoReportsDay || existingReports.length >= maxSubmissions)) {
+      const reportToUpdate = (req.body._id ? existingReports.find(r => String(r._id) === String(req.body._id)) : null) || existingReports[existingReports.length - 1]
+      reportToUpdate.connectedCalls = Math.max(0, parseInt(connectedCalls, 10) || 0)
+      reportToUpdate.callsAbove3Min = Math.max(0, parseInt(callsAbove3Min, 10) || 0)
+      reportToUpdate.groupsCreated = Math.max(0, parseInt(groupsCreated, 10) || 0)
+      reportToUpdate.membersInGroups = Math.max(0, parseInt(membersInGroups, 10) || 0)
+      reportToUpdate.onboardingConversions = onbNum
+      reportToUpdate.finalizeConversions = finNum
+      reportToUpdate.fullConversions = fullNum
+      reportToUpdate.todayConversions = conversionsNum
+      reportToUpdate.revenue = revenueCalculated
+      reportToUpdate.reportTime = timeStr
+      reportToUpdate.remarks = finalRemarks
+      reportToUpdate.reportType = 'bda'
+      reportToUpdate.updatedByAdmin = user.name || user.email
+      await reportToUpdate.save()
 
       return res.status(200).json({
         success: true,
         message: `Daily report updated by Admin successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}`,
-        data: report
+        data: reportToUpdate
       })
     }
 
-    report = await DailyReport.create({
+    const newReport = await DailyReport.create({
       employeeId: user.empId || 'EMP',
       employeeEmail: user.email.toLowerCase(),
       employeeName: user.name,
@@ -180,13 +216,21 @@ export const submitDailyReport = async (req, res) => {
       fullConversions: fullNum,
       todayConversions: conversionsNum,
       revenue: revenueCalculated,
-      remarks: remarks || ''
+      remarks: finalRemarks,
+      slotNumber,
+      slotName
     })
+
+    const successMsg = isTwoReportsDay
+      ? (slotNumber === 1
+          ? `🍱 Pre-Lunch Daily Report (Slot 1/2) submitted successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}. Please submit your final Logout report at the end of your shift.`
+          : `🚪 Final Logout Daily Report (Slot 2/2) submitted successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}. All daily reports completed for today!`)
+      : `Daily report submitted successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}`
 
     return res.status(201).json({
       success: true,
-      message: `Daily report submitted successfully! Revenue recorded: ₹${revenueCalculated.toLocaleString('en-IN')}`,
-      data: report
+      message: successMsg,
+      data: newReport
     })
   } catch (error) {
     console.error('[Report API Error] submitDailyReport:', error)
@@ -250,16 +294,37 @@ export const getTodayDailyStatus = async (req, res) => {
     const targetDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : dateStr
     const targetEmail = (user.role === 'admin' && email) ? email.toLowerCase() : user.email.toLowerCase()
 
-    const report = await DailyReport.findOne({
+    const isTwoReportsDay = (targetDate === '2026-10-13')
+    const existingReports = await DailyReport.find({
       employeeEmail: targetEmail,
       reportDate: targetDate
-    })
+    }).sort({ createdAt: 1 })
+
+    const submissionCount = existingReports.length
+    const maxSubmissions = isTwoReportsDay ? 2 : 1
+    const isCompleted = submissionCount >= maxSubmissions
+
+    const currentSlot = submissionCount === 0 ? 1 : (isTwoReportsDay && submissionCount === 1 ? 2 : null)
+    const slotLabel = submissionCount === 0
+      ? (isTwoReportsDay ? 'Pre-Lunch Report (Slot 1 of 2)' : 'Daily Work Report')
+      : (isTwoReportsDay && submissionCount === 1 ? 'Logout Report (Slot 2 of 2)' : 'Completed')
+
+    const latestReport = existingReports.length > 0 ? existingReports[existingReports.length - 1] : null
 
     return res.status(200).json({
       success: true,
       todayDate: targetDate,
-      submitted: !!report,
-      report: report || null
+      isTwoReportsDay,
+      maxSubmissions,
+      submissionCount,
+      submitted: isCompleted,
+      hasSubmitted: isCompleted,
+      canSubmit: !isCompleted,
+      currentSlot,
+      slotLabel,
+      report: isCompleted ? latestReport : null,
+      latestReport,
+      reports: existingReports
     })
   } catch (error) {
     console.error('[Report API Error] getTodayDailyStatus:', error)

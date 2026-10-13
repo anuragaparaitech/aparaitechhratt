@@ -113,6 +113,14 @@ const DailyReportSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  slotNumber: {
+    type: Number,
+    default: 1
+  },
+  slotName: {
+    type: String,
+    default: ''
+  },
   remarks: {
     type: String,
     default: '',
