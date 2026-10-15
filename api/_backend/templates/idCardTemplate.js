@@ -28,7 +28,7 @@ export const getIdCardTemplate = (data) => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Project Program ID Card & Credentials - Aparaitech Software</title>
+  <title>Live Project Program ID Card - Aparaitech Software</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -139,7 +139,7 @@ export const getIdCardTemplate = (data) => {
         </p>
 
         <p style="margin: 0 0 18px 0;">
-          Please find your official Internship ID Card and credentials issued below.
+          Please find your official Internship ID Card below.
         </p>
 
         <!-- ── DUAL-SIDED ID CARD SHOWCASE (FRONT & BACK) ── -->
@@ -327,7 +327,7 @@ export const getIdCardTemplate = (data) => {
           IMPORTANT NOTE:
         </div>
         <p style="margin: 0 0 16px 0; color: #334155; font-size: 14px;">
-          Before using this ID card, kindly go through the terms and conditions of Aparaitech Software at <a href="https://terms.aparaitech.org" style="color: #2563eb; text-decoration: underline;" target="_blank">https://terms.aparaitech.org</a>. By accepting this credential, you acknowledge that you have read, understood, and agree to abide by all the terms and conditions stated therein.
+          Before using this ID card, kindly go through the terms and conditions of Aparaitech Software at <a href="https://terms.aparaitech.org" style="color: #2563eb; text-decoration: underline;" target="_blank">https://terms.aparaitech.org</a>. Your ID card is strictly for official use, non-transferable, and remains the property of Aparaitech Software Company. By receiving this ID card, you acknowledge that you have read, understood, and agree to abide by all the terms and conditions stated therein.
         </p>
 
         <!-- ── SECTION: PROGRAM HIGHLIGHTS ── -->

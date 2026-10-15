@@ -277,7 +277,7 @@ export default function IdCardTab({ currentUser, showToast }) {
             textTransform: 'uppercase',
             marginBottom: '8px'
           }}>
-            <span>🪪 Official Credential Verification System</span>
+            <span>🪪 Official Candidate ID Card System</span>
             <span style={{ background: '#10b981', color: '#fff', padding: '1px 7px', borderRadius: '10px' }}>
               hr.aparaitechh@gmail.com
             </span>

@@ -498,7 +498,7 @@ export const sendIdCardEmail = async (conversion) => {
     barcodeNumber: conversion.barcodeNumber || '2431000320445474'
   })
 
-  const subject = `Live Project Program ID Card & Credentials - ${conversion.candidateName} - Aparaitech Software`
+  const subject = `Live Project Program ID Card - ${conversion.candidateName} - Aparaitech Software`
   return sendHrMailHelper(conversion.candidateEmail, subject, html)
 }
 
