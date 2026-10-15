@@ -507,12 +507,24 @@ export const conversionsAPI = {
     const response = await api.get('/api/conversions', { params })
     return response.data
   },
+  update: async (id, data) => {
+    const response = await api.put(`/api/conversions/${id}`, data)
+    return response.data
+  },
   finalize: async (id, data) => {
     const response = await api.patch(`/api/conversions/${id}/finalize`, data)
     return response.data
   },
   getAdminAlerts: async () => {
     const response = await api.get('/api/conversions/admin-alerts')
+    return response.data
+  },
+  sendIdCard: async (id, data = {}) => {
+    const response = await api.post(`/api/conversions/${id}/send-id-card`, data)
+    return response.data
+  },
+  sendPaymentReminder: async (id) => {
+    const response = await api.post(`/api/conversions/${id}/send-payment-reminder`)
     return response.data
   }
 }

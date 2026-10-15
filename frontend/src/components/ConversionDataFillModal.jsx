@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { conversionsAPI } from '../services/api'
 import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
 
@@ -32,7 +32,7 @@ const PAYMENT_OPTIONS = [
   }
 ]
 
-export default function ConversionDataFillModal({ isOpen, onClose, currentUser, onSuccess, showToast }) {
+export default function ConversionDataFillModal({ isOpen, onClose, currentUser, onSuccess, showToast, editData = null }) {
   const [formData, setFormData] = useState({
     candidateName: '',
     candidateEmail: '',
@@ -42,13 +42,62 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
     paymentUtr: '',
     remarks: '',
     receiptUrl: '',
-    receiptName: ''
+    receiptName: '',
+    candidatePhoto: '',
+    idCardNumber: '',
+    designation: 'Software Developer Intern',
+    joinDate: '',
+    expireDate: ''
   })
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [filePreview, setFilePreview] = useState(null)
   const [fileType, setFileType] = useState('') // 'image' | 'pdf'
   const [fileLoading, setFileLoading] = useState(false)
+  const [photoPreview, setPhotoPreview] = useState(null)
+
+  // Sync form with editData when opening or editing
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        candidateName: editData.candidateName || '',
+        candidateEmail: editData.candidateEmail || '',
+        candidatePhone: editData.candidatePhone || '',
+        collegeName: editData.collegeName || '',
+        paymentType: editData.paymentType || 'onboarding',
+        paymentUtr: editData.paymentUtr || '',
+        remarks: editData.remarks || '',
+        receiptUrl: editData.receiptUrl || '',
+        receiptName: editData.receiptName || '',
+        candidatePhoto: editData.candidatePhoto || '',
+        idCardNumber: editData.idCardNumber || `APT-IN-${Math.floor(1000 + Math.random() * 9000)}`,
+        designation: editData.designation || 'Software Developer Intern',
+        joinDate: editData.joinDate || editData.onboardingDate || '',
+        expireDate: editData.expireDate || ''
+      })
+      setPhotoPreview(editData.candidatePhoto || null)
+      setFilePreview(editData.receiptUrl || null)
+    } else {
+      setFormData({
+        candidateName: '',
+        candidateEmail: '',
+        candidatePhone: '',
+        collegeName: '',
+        paymentType: 'onboarding',
+        paymentUtr: '',
+        remarks: '',
+        receiptUrl: '',
+        receiptName: '',
+        candidatePhoto: '',
+        idCardNumber: `APT-IN-${Math.floor(1000 + Math.random() * 9000)}`,
+        designation: 'Software Developer Intern',
+        joinDate: '',
+        expireDate: ''
+      })
+      setPhotoPreview(null)
+      setFilePreview(null)
+    }
+  }, [editData, isOpen])
 
   if (!isOpen) return null
 
@@ -60,6 +109,40 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
     if (errorMsg) setErrorMsg('')
   }
 
+  // Handle Candidate ID Photo upload
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('Candidate photo must be less than 5 MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64Data = event.target.result
+      setFormData(prev => ({
+        ...prev,
+        candidatePhoto: base64Data
+      }))
+      setPhotoPreview(base64Data)
+    }
+    reader.onerror = () => {
+      setErrorMsg('Failed to read photo.')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemovePhoto = () => {
+    setFormData(prev => ({
+      ...prev,
+      candidatePhoto: ''
+    }))
+    setPhotoPreview(null)
+  }
+
+  // Handle Receipt File upload
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -131,29 +214,22 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
 
     try {
       setSubmitting(true)
-      const data = await conversionsAPI.create(formData)
-
-      if (showToast) {
-        showToast(data.message || 'Product conversion logged successfully!', '#22c55e')
+      let data
+      if (editData && editData._id) {
+        data = await conversionsAPI.update(editData._id, formData)
+        if (showToast) {
+          showToast('Candidate onboarding details updated successfully!', '#22c55e')
+        }
       } else {
-        alert(data.message || 'Product conversion logged successfully!')
+        data = await conversionsAPI.create(formData)
+        if (showToast) {
+          showToast(data.message || 'Product conversion logged successfully!', '#22c55e')
+        } else {
+          alert(data.message || 'Product conversion logged successfully!')
+        }
       }
 
       emitSyncEvent(SYNC_EVENTS.CONVERSION_UPDATED, { candidateName: formData.candidateName })
-
-      setFormData({
-        candidateName: '',
-        candidateEmail: '',
-        candidatePhone: '',
-        collegeName: '',
-        paymentType: 'onboarding',
-        paymentUtr: '',
-        remarks: '',
-        receiptUrl: '',
-        receiptName: ''
-      })
-      setFilePreview(null)
-      setFileType('')
 
       if (onSuccess) onSuccess(data.conversion)
       onClose()
@@ -208,13 +284,13 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
               letterSpacing: '0.05em',
               marginBottom: '6px'
             }}>
-              ✨ Onboarding & Conversions Pipeline
+              {editData ? '✏️ Edit Candidate Onboarding' : '✨ Onboarding & Conversions Pipeline'}
             </div>
             <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#0a192f' }}>
-              Log Product Conversion
+              {editData ? 'Edit Candidate & ID Card Data' : 'Log Product Conversion'}
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' }}>
-              Fill in candidate details to record ₹6,000 product sales in 1 or 2 parts.
+              {editData ? 'Update candidate information, photo, and ID card credentials.' : 'Fill in candidate details to record ₹6,000 product sales in 1 or 2 parts.'}
             </p>
           </div>
           <button
@@ -253,6 +329,149 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
         )}
 
         <form onSubmit={handleSubmit}>
+          {/* Candidate ID Photo Upload Section */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+            border: '1.5px dashed #a78bfa',
+            borderRadius: '14px',
+            padding: '14px 16px',
+            marginBottom: '1.15rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <div style={{ position: 'relative', width: '70px', height: '70px', flexShrink: 0 }}>
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Candidate Preview"
+                  style={{
+                    width: '70px',
+                    height: '70px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid #8b5cf6',
+                    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '70px',
+                  height: '70px',
+                  borderRadius: '50%',
+                  background: '#ffffff',
+                  color: '#7c3aed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.8rem',
+                  border: '2px dashed #c4b5fd'
+                }}>
+                  👤
+                </div>
+              )}
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: '800', color: '#4c1d95', marginBottom: '3px' }}>
+                📸 Candidate Profile Photo (For Official ID Card)
+              </label>
+              <div style={{ fontSize: '0.74rem', color: '#6d28d9', marginBottom: '8px' }}>
+                Upload formal candidate photo. This will be printed on the official Aparaitech ID card.
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label style={{
+                  background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                  color: '#ffffff',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.25)'
+                }}>
+                  {photoPreview ? 'Change Photo' : 'Upload Photo'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {photoPreview && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    style={{
+                      background: '#fee2e2',
+                      color: '#dc2626',
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ID Card Credentials: Designation & ID Number */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                Designation on ID Card
+              </label>
+              <input
+                type="text"
+                name="designation"
+                value={formData.designation}
+                onChange={handleChange}
+                placeholder="Software Developer Intern"
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.88rem',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                Official ID Number
+              </label>
+              <input
+                type="text"
+                name="idCardNumber"
+                value={formData.idCardNumber}
+                onChange={handleChange}
+                placeholder="APT-IN-7081"
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.88rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  fontFamily: 'monospace',
+                  fontWeight: '700'
+                }}
+              />
+            </div>
+          </div>
+
           {/* Payment Selection Options */}
           <div style={{ marginBottom: '1.25rem' }}>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>
@@ -669,7 +888,9 @@ export default function ConversionDataFillModal({ isOpen, onClose, currentUser, 
                 boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
               }}
             >
-              {submitting ? 'Recording Conversion...' : `Submit & Credit ${selectedOpt.amountDisplay}`}
+              {submitting
+                ? (editData ? 'Saving Changes...' : 'Recording Conversion...')
+                : (editData ? '💾 Save & Update Details' : `Submit & Credit ${selectedOpt.amountDisplay}`)}
             </button>
           </div>
         </form>

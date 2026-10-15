@@ -14,6 +14,7 @@ import ConversionPipelineView from './ConversionPipelineView'
 import ConversionDataFillModal from './ConversionDataFillModal'
 import DailyReportModal from './DailyReportModal'
 import AIDataDistributionCenter from './AIDataDistributionCenter'
+import IdCardTab from './IdCardTab'
 import ErrorBoundary from './ErrorBoundary'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
@@ -684,6 +685,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
     live:         { icon: 'fa-eye',                 label: 'Live Checked-In Today' },
     dailyReports: { icon: 'fa-clipboard-check',     label: 'Daily Working Reports Compliance' },
     mailBlast:    { icon: 'fa-mail-bulk',           label: 'Mail Blast Outreach Campaigns' },
+    idCards:      { icon: 'fa-id-card',             label: 'Candidate ID Cards & Onboarding' },
     revenue:      { icon: 'fa-rupee-sign',          label: 'Commercial Revenue & Conversions' },
     bdaSalary:    { icon: 'fa-briefcase',           label: 'BDA Revenue-Based Salary Criteria & Payout' },
     internTarget: { icon: 'fa-bullseye',            label: 'Intern Monthly Benchmark Targets' },
@@ -873,6 +875,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           { id: 'live', icon: 'fa-eye', label: 'Live Check-Ins', badge: liveSessions.length ? `${liveSessions.length} Active` : null, badgeColor: '#22c55e' },
           { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null, badgeColor: '#ef4444' },
           { id: 'mailBlast', icon: 'fa-mail-bulk', label: 'Mail Blasts' },
+          { id: 'idCards', icon: 'fa-id-card', label: 'ID Cards & Onboarding', badge: 'HR Mail', badgeColor: '#7c3aed' },
           { id: 'revenue', icon: 'fa-rupee-sign', label: 'Revenue' },
           { id: 'bdaSalary', icon: 'fa-briefcase', label: 'Monthly Criteria & BDA Salary', badge: 'Criteria', badgeColor: '#059669' },
           { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Monthly Targets', badge: 'Goal', badgeColor: '#2563eb' },
@@ -2517,6 +2520,14 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           currentUser={currentUser}
           showToast={showToast}
           onOpenAddModal={() => setIsConversionModalOpen(true)}
+        />
+      )}
+
+      {/* ── 4C. DEDICATED ID CARDS & ONBOARDING SECTION (activeSection === 'idCards') ────────── */}
+      {show('idCards') && (
+        <IdCardTab
+          currentUser={currentUser}
+          showToast={showToast}
         />
       )}
 

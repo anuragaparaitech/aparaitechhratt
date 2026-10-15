@@ -41,6 +41,7 @@ const ADMIN_NAV = [
   { id: 'live',               icon: 'fa-eye',                 label: 'Live Check-Ins',          section: true,  group: 'Command Center' },
   { id: 'dailyReports',       icon: 'fa-clipboard-check',     label: 'Daily Working Reports',   section: true,  group: 'Command Center' },
   { id: 'mailBlast',          icon: 'fa-mail-bulk',           label: 'Mail Blast Campaigns',    section: true,  group: 'Command Center' },
+  { id: 'idCards',            icon: 'fa-id-card',             label: 'ID Cards & Onboarding',   section: true,  group: 'Command Center' },
   { id: 'pipeline',           icon: 'fa-funnel-dollar',       label: 'Onboarding & Pipeline (7-Day)', section: true,  group: 'Command Center' },
   { id: 'revenue',            icon: 'fa-rupee-sign',          label: 'Revenue & Conversions',   section: true,  group: 'Command Center' },
   { id: 'bdaSalary',          icon: 'fa-briefcase',           label: 'BDA Salary & Monthly Criteria', section: true, group: 'Command Center' },
@@ -86,6 +87,7 @@ const SOFTWARE_NAV = [
 const HR_NAV = [
   // 1. HR Command Center
   { id: 'overview',     icon: 'fa-tachometer-alt',  label: 'HR Overview',               group: 'HR Command Center', section: true },
+  { id: 'idCards',      icon: 'fa-id-card',         label: 'ID Cards & Candidate Onboarding', group: 'HR Command Center', section: true },
   { id: 'employees',    icon: 'fa-users',           label: 'Workforce Directory',       group: 'HR Command Center', section: true },
   { id: 'leaves',       icon: 'fa-calendar-alt',    label: 'Leave Approvals Desk',      group: 'HR Command Center', section: false, tab: 'leave' },
   { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'All Daily Work Reports',    group: 'HR Command Center', section: true },

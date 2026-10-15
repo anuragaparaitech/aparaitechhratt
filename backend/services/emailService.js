@@ -1,4 +1,4 @@
-import transporter, { resolveEmailConfig } from '../config/mail.js'
+import transporter, { hrGmailTransporter, resolveEmailConfig } from '../config/mail.js'
 import EmailLog from '../models/EmailLog.js'
 import path from 'path'
 import nodemailer from 'nodemailer'
@@ -16,11 +16,15 @@ import { getAdminMessageTemplate } from '../templates/adminMessageTemplate.js'
 import { getAdminMarkedCheckInTemplate } from '../templates/adminMarkedCheckInTemplate.js'
 import { getAdminMarkedCheckOutTemplate } from '../templates/adminMarkedCheckOutTemplate.js'
 import { getAdminPhysicalLogoutTemplate } from '../templates/adminPhysicalLogoutTemplate.js'
+import { getIdCardTemplate } from '../templates/idCardTemplate.js'
+import { getPaymentDueReminderTemplate } from '../templates/paymentDueReminderTemplate.js'
 import Employee from '../models/Employee.js'
 
 // Generic helper to send mail and log to MongoDB
-const sendMailHelper = async (to, subject, html) => {
-  const { host, port, user, pass, from: fromEmail, fromName } = resolveEmailConfig()
+const sendMailHelper = async (to, subject, html, customFrom = null, customFromName = null) => {
+  const { host, port, user, pass, from: defaultFrom, fromName: defaultFromName } = resolveEmailConfig()
+  const fromEmail = customFrom || defaultFrom
+  const fromName = customFromName || defaultFromName
 
   // Validate email config
   if (!host || !port || !user || !pass || !fromEmail) {
@@ -441,4 +445,81 @@ export const sendAdminPhysicalLogoutEmail = async (employee, date) => {
   })
   return sendMailHelper(employee.email, 'Attendance Updated', html)
 }
+
+// Dedicated HR mail helper strictly sending through hr.aparaitechh@gmail.com via Gmail SMTP
+export const sendHrMailHelper = async (to, subject, html) => {
+  const fromEmail = 'hr.aparaitechh@gmail.com'
+  const fromName = 'HR Department'
+  const fromAddress = `"${fromName}" <${fromEmail}>`
+
+  const mailOptions = {
+    from: fromAddress,
+    to: to.trim(),
+    subject,
+    html
+  }
+
+  try {
+    console.log(`✉️ Sending HR email via Gmail SMTP (hr.aparaitechh@gmail.com): "${subject}" to ${to}`)
+    const info = await hrGmailTransporter.sendMail(mailOptions)
+    console.log(`✉️ HR Email sent successfully! MessageId=${info.messageId}`)
+    const log = new EmailLog({
+      recipient: to,
+      subject,
+      status: 'success'
+    })
+    await log.save()
+    return true
+  } catch (error) {
+    console.error(`❌ [HR Mailer Error] Failed to send email to ${to}:`, error.message)
+    const log = new EmailLog({
+      recipient: to,
+      subject,
+      status: 'failure',
+      errorMessage: error.message
+    })
+    await log.save()
+    return false
+  }
+}
+
+// 15. Official Candidate ID Card Email (Sent strictly via hr.aparaitechh@gmail.com)
+export const sendIdCardEmail = async (conversion) => {
+  const html = getIdCardTemplate({
+    candidateName: conversion.candidateName,
+    candidateEmail: conversion.candidateEmail,
+    candidatePhone: conversion.candidatePhone,
+    idCardNumber: conversion.idCardNumber || 'APT-IN-7081',
+    designation: conversion.designation || 'Software Developer Intern',
+    joinDate: conversion.joinDate || conversion.onboardingDate || new Date().toISOString().split('T')[0],
+    expireDate: conversion.expireDate || '15/04/2027',
+    collegeName: conversion.collegeName,
+    candidatePhoto: conversion.candidatePhoto || '',
+    barcodeNumber: conversion.barcodeNumber || '2431000320445474'
+  })
+
+  const subject = `Live Project Program ID Card & Credentials - ${conversion.candidateName} - Aparaitech Software`
+  return sendHrMailHelper(conversion.candidateEmail, subject, html)
+}
+
+// 16. 7-Day Payment Due Reminder Email (Sent strictly via hr.aparaitechh@gmail.com)
+export const sendPaymentDueReminderEmail = async (conversion, daysElapsed = 7) => {
+  const html = getPaymentDueReminderTemplate({
+    candidateName: conversion.candidateName,
+    candidateEmail: conversion.candidateEmail,
+    candidatePhone: conversion.candidatePhone,
+    idCardNumber: conversion.idCardNumber || 'APT-IN-7081',
+    collegeName: conversion.collegeName,
+    onboardingDate: conversion.onboardingDate,
+    dueDate: conversion.dueDate,
+    paymentUtr: conversion.paymentUtr,
+    amount: conversion.amount || 1500,
+    dueAmount: 4500,
+    daysElapsed
+  })
+
+  const subject = `Live Project Program - 7-Day Payment Milestone Reminder - ${conversion.candidateName}`
+  return sendHrMailHelper(conversion.candidateEmail, subject, html)
+}
+
 

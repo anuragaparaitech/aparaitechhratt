@@ -1,5 +1,6 @@
 import ProductConversion from '../models/ProductConversion.js'
 import Employee from '../models/Employee.js'
+import { sendIdCardEmail, sendPaymentDueReminderEmail } from '../services/emailService.js'
 
 // Helper for IST Date (YYYY-MM-DD)
 const getKolkataDate = () => {
@@ -46,7 +47,13 @@ export const createConversion = async (req, res) => {
       remarks,
       customDate,
       receiptUrl,
-      receiptName
+      receiptName,
+      candidatePhoto,
+      idCardNumber,
+      designation,
+      joinDate,
+      expireDate,
+      barcodeNumber
     } = req.body
 
     if (!candidateName || !candidateEmail || !candidatePhone || !collegeName || !paymentType || !paymentUtr) {
@@ -92,6 +99,12 @@ export const createConversion = async (req, res) => {
 
     const totalPaid = amount + finalizeAmount
 
+    const idCardFinal = (idCardNumber && idCardNumber.trim()) || `APT-IN-${Math.floor(1000 + Math.random() * 9000)}`
+    const designationFinal = (designation && designation.trim()) || 'Software Developer Intern'
+    const joinDateFinal = (joinDate && joinDate.trim()) || today
+    const expireDateFinal = (expireDate && expireDate.trim()) || addDaysToDate(today, 180)
+    const barcodeFinal = (barcodeNumber && barcodeNumber.trim()) || `2431${Math.floor(100000000000 + Math.random() * 900000000000)}`
+
     const newRecord = new ProductConversion({
       candidateName: candidateName.trim(),
       candidateEmail: candidateEmail.toLowerCase().trim(),
@@ -113,7 +126,13 @@ export const createConversion = async (req, res) => {
       teamName: emp?.department || 'BDA Team',
       remarks: (remarks || '').trim(),
       receiptUrl: receiptUrl || '',
-      receiptName: receiptName || ''
+      receiptName: receiptName || '',
+      candidatePhoto: candidatePhoto || '',
+      idCardNumber: idCardFinal,
+      designation: designationFinal,
+      joinDate: joinDateFinal,
+      expireDate: expireDateFinal,
+      barcodeNumber: barcodeFinal
     })
 
     await newRecord.save()
@@ -306,3 +325,142 @@ export const getAdminAlerts = async (req, res) => {
     })
   }
 }
+
+// @desc    Update candidate onboarding / conversion record
+// @route   PUT /api/conversions/:id
+// @access  Private (Admin, Managers, or author)
+export const updateConversion = async (req, res) => {
+  try {
+    const { id } = req.params
+    const conversion = await ProductConversion.findById(id)
+    if (!conversion) {
+      return res.status(404).json({ success: false, message: 'Conversion record not found.' })
+    }
+
+    const updatableFields = [
+      'candidateName', 'candidateEmail', 'candidatePhone', 'collegeName',
+      'paymentType', 'paymentUtr', 'remarks', 'receiptUrl', 'receiptName',
+      'candidatePhoto', 'idCardNumber', 'designation', 'joinDate', 'expireDate',
+      'barcodeNumber', 'status', 'onboardingDate', 'dueDate'
+    ]
+
+    updatableFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        conversion[field] = req.body[field]
+      }
+    })
+
+    if (req.body.paymentType) {
+      if (req.body.paymentType === 'onboarding') {
+        conversion.amount = 1500
+        if (conversion.status !== 'completed') conversion.status = 'onboarding_pending_final'
+      } else if (req.body.paymentType === 'finalize') {
+        conversion.finalizeAmount = 4500
+        conversion.status = 'completed'
+      } else if (req.body.paymentType === 'full') {
+        conversion.amount = 6000
+        conversion.status = 'completed'
+      }
+      conversion.totalPaid = (conversion.amount || 0) + (conversion.finalizeAmount || 0)
+    }
+
+    await conversion.save()
+
+    res.json({
+      success: true,
+      message: 'Candidate onboarding details updated successfully!',
+      conversion
+    })
+  } catch (error) {
+    console.error('updateConversion error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update conversion details: ' + error.message,
+      error: error.message
+    })
+  }
+}
+
+// @desc    Approve and send ID card to candidate email via hr.aparaitechh@gmail.com
+// @route   POST /api/conversions/:id/send-id-card
+// @access  Private (Admin only)
+export const sendIdCard = async (req, res) => {
+  try {
+    const { id } = req.params
+    const conversion = await ProductConversion.findById(id)
+    if (!conversion) {
+      return res.status(404).json({ success: false, message: 'Candidate onboarding record not found.' })
+    }
+
+    if (req.body.designation) conversion.designation = req.body.designation
+    if (req.body.idCardNumber) conversion.idCardNumber = req.body.idCardNumber
+    if (req.body.joinDate) conversion.joinDate = req.body.joinDate
+    if (req.body.expireDate) conversion.expireDate = req.body.expireDate
+    if (req.body.candidatePhoto) conversion.candidatePhoto = req.body.candidatePhoto
+
+    if (!conversion.idCardNumber) {
+      conversion.idCardNumber = `APT-IN-${Math.floor(1000 + Math.random() * 9000)}`
+    }
+    if (!conversion.barcodeNumber) {
+      conversion.barcodeNumber = `2431${Math.floor(100000000000 + Math.random() * 900000000000)}`
+    }
+
+    // Send email via Gmail SMTP through hr.aparaitechh@gmail.com
+    await sendIdCardEmail(conversion)
+
+    conversion.idCardApproved = true
+    conversion.idCardSent = true
+    conversion.idCardSentAt = new Date()
+    await conversion.save()
+
+    res.json({
+      success: true,
+      message: `ID Card successfully approved and emailed to ${conversion.candidateEmail} via hr.aparaitechh@gmail.com!`,
+      conversion
+    })
+  } catch (error) {
+    console.error('sendIdCard error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send ID card email: ' + error.message,
+      error: error.message
+    })
+  }
+}
+
+// @desc    Send 7-day payment due reminder email via hr.aparaitechh@gmail.com
+// @route   POST /api/conversions/:id/send-payment-reminder
+// @access  Private (Admin only)
+export const sendPaymentReminder = async (req, res) => {
+  try {
+    const { id } = req.params
+    const conversion = await ProductConversion.findById(id)
+    if (!conversion) {
+      return res.status(404).json({ success: false, message: 'Candidate onboarding record not found.' })
+    }
+
+    const today = getKolkataDate()
+    const daysElapsed = getDaysDiff(conversion.onboardingDate, today)
+
+    // Send reminder email via Gmail SMTP through hr.aparaitechh@gmail.com
+    await sendPaymentDueReminderEmail(conversion, daysElapsed)
+
+    conversion.paymentReminderSent = true
+    conversion.paymentReminderSentAt = new Date()
+    await conversion.save()
+
+    res.json({
+      success: true,
+      message: `7-Day payment due reminder email sent to ${conversion.candidateEmail} via hr.aparaitechh@gmail.com!`,
+      conversion
+    })
+  } catch (error) {
+    console.error('sendPaymentReminder error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send payment reminder email: ' + error.message,
+      error: error.message
+    })
+  }
+}
+

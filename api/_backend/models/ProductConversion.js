@@ -111,6 +111,55 @@ const ProductConversionSchema = new mongoose.Schema({
     type: String,
     default: '',
     trim: true
+  },
+  candidatePhoto: {
+    type: String,
+    default: ''
+  },
+  idCardNumber: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  designation: {
+    type: String,
+    default: 'Software Developer Intern',
+    trim: true
+  },
+  joinDate: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  expireDate: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  barcodeNumber: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  idCardApproved: {
+    type: Boolean,
+    default: false
+  },
+  idCardSent: {
+    type: Boolean,
+    default: false
+  },
+  idCardSentAt: {
+    type: Date,
+    default: null
+  },
+  paymentReminderSent: {
+    type: Boolean,
+    default: false
+  },
+  paymentReminderSentAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

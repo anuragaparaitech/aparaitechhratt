@@ -45,4 +45,14 @@ const transporter = nodemailer.createTransport({
   dnsTimeout: 5000           // 5 seconds dns resolution timeout
 })
 
+// Dedicated Gmail Transporter for HR & ID Card emails (hr.aparaitechh@gmail.com)
+export const hrGmailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.HR_GMAIL_USER || 'hr.aparaitechh@gmail.com',
+    pass: process.env.HR_GMAIL_PASS || 'ffdwjvxecaymemrm'
+  }
+})
+
 export default transporter
+
