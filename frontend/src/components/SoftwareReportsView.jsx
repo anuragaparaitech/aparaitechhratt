@@ -126,7 +126,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
           <button
             onClick={() => setIsModalOpen(true)}
             style={{
-              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
@@ -183,7 +183,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b' }}>TOTAL REPORTS LOGGED</span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F0F9FF', color: '#0EA5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="fas fa-file-alt"></i>
             </div>
           </div>
@@ -324,7 +324,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
       }}>
         {loading ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#2563eb', marginBottom: '10px' }}></i>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#0EA5E9', marginBottom: '10px' }}></i>
             <div>Loading software daily reports...</div>
           </div>
         ) : filteredReports.length === 0 ? (
@@ -352,7 +352,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
             <button
               onClick={() => setIsModalOpen(true)}
               style={{
-                background: '#2563eb',
+                background: '#0EA5E9',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '10px',
@@ -389,7 +389,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
                       width: '38px',
                       height: '38px',
                       borderRadius: '10px',
-                      background: 'linear-gradient(135deg, #0a192f, #2563eb)',
+                      background: 'linear-gradient(135deg, #0a192f, #0EA5E9)',
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
@@ -438,7 +438,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
                         ✓ Normal Progress
                       </span>
                     )}
-                    <span style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: '700' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#0EA5E9', fontWeight: '700' }}>
                       View Details →
                     </span>
                   </div>
@@ -549,7 +549,7 @@ function SoftwareReportsView({ currentUser, showToast }) {
                   <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>
                     <i className="fab fa-github"></i> GitHub PR / Commit Reference:
                   </strong>
-                  <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '10px', fontFamily: 'monospace', color: '#2563eb' }}>
+                  <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '10px', fontFamily: 'monospace', color: '#0EA5E9' }}>
                     {selectedReport.githubPrs}
                   </div>
                 </div>

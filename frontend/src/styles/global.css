@@ -1,54 +1,63 @@
 /* ==========================================================================
-   Atlassian Jira / Atlassian Design System (ADS) Enterprise UI
-   Clean, Professional, Information-Dense Enterprise Work Management
+   Aparaitech Enterprise UI — Black, White & Sky Blue Theme
+   Minimalist, Clean, High-Contrast Architecture
    ========================================================================== */
 
-/* ── Atlassian Design Tokens ─────────────────────────────────────────────── */
+/* ── Theme Design Tokens ─────────────────────────────────────────────────── */
 :root {
-  /* Brand & Action Colors */
-  --ds-brand: #0C66E4;
-  --ds-brand-hover: #0055CC;
-  --ds-brand-active: #0047B3;
-  --ds-brand-subtle: #E9F2FF;
-  --ds-brand-text: #0055CC;
+  /* Sky Blue Brand & Accent Colors */
+  --ds-brand: #0EA5E9;
+  --ds-brand-hover: #0284C7;
+  --ds-brand-active: #0369A1;
+  --ds-brand-subtle: #F0F9FF;
+  --ds-brand-text: #0284C7;
+  --ds-sky: #0EA5E9;
+  --ds-sky-dark: #0284C7;
+  --ds-sky-light: #E0F2FE;
+  --ds-sky-subtle: #F0F9FF;
 
-  /* Neutrals & Surfaces */
-  --ds-canvas: #F4F5F7;
+  /* Black & White Neutrals & Surfaces */
+  --ds-canvas: #FAFAFA;
   --ds-surface: #FFFFFF;
-  --ds-surface-sunken: #FAFBFC;
-  --ds-surface-hovered: #F1F2F4;
-  --ds-surface-pressed: #E9F2FF;
+  --ds-surface-sunken: #F4F4F5;
+  --ds-surface-hovered: #F4F4F5;
+  --ds-surface-pressed: #E4E4E7;
   --ds-surface-overlay: #FFFFFF;
 
-  /* Borders */
-  --ds-border: #DFE1E6;
-  --ds-border-subtle: #EBECF0;
-  --ds-border-bold: #8590A2;
-  --ds-border-focused: #388BFF;
+  /* Black Core */
+  --ds-black: #09090B;
+  --ds-black-card: #18181B;
+  --ds-black-muted: #27272A;
 
-  /* Typography Colors */
-  --ds-text: #172B4D;
-  --ds-text-subtle: #44546F;
-  --ds-text-subtlest: #626F86;
+  /* Borders — Crisp Monochrome Hairlines */
+  --ds-border: #E4E4E7;
+  --ds-border-subtle: #F4F4F5;
+  --ds-border-bold: #71717A;
+  --ds-border-focused: #0EA5E9;
+
+  /* Typography — Pure Black High Contrast */
+  --ds-text: #09090B;
+  --ds-text-subtle: #52525B;
+  --ds-text-subtlest: #71717A;
   --ds-text-inverse: #FFFFFF;
-  --ds-text-brand: #0C66E4;
+  --ds-text-brand: #0284C7;
 
-  /* Status Lozenges (Atlassian Issue Status Badges) */
-  --ds-success-bg: #DCFFF1;
-  --ds-success-text: #216E4E;
-  --ds-warning-bg: #FFF7D6;
-  --ds-warning-text: #7F5F01;
-  --ds-danger-bg: #FFEDEB;
-  --ds-danger-text: #AE2E24;
-  --ds-info-bg: #E9F2FF;
-  --ds-info-text: #0055CC;
-  --ds-neutral-bg: #F1F2F4;
-  --ds-neutral-text: #44546F;
+  /* Status Lozenges */
+  --ds-success-bg: #ECFDF5;
+  --ds-success-text: #059669;
+  --ds-warning-bg: #FFFBEB;
+  --ds-warning-text: #D97706;
+  --ds-danger-bg: #FEF2F2;
+  --ds-danger-text: #DC2626;
+  --ds-info-bg: #F0F9FF;
+  --ds-info-text: #0284C7;
+  --ds-neutral-bg: #F4F4F5;
+  --ds-neutral-text: #52525B;
 
   /* Elevation Shadows */
-  --ds-shadow-card: 0 1px 1px rgba(9, 30, 66, 0.25), 0 0 1px 0 rgba(9, 30, 66, 0.31);
-  --ds-shadow-raised: 0 3px 5px -1px rgba(9, 30, 66, 0.15), 0 0 1px 0 rgba(9, 30, 66, 0.31);
-  --ds-shadow-modal: 0 8px 16px -4px rgba(9, 30, 66, 0.25), 0 0 1px 0 rgba(9, 30, 66, 0.31);
+  --ds-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ds-shadow-raised: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+  --ds-shadow-modal: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
 
   /* Radius (Enterprise standard 3px/4px, no bulbous bubble styling) */
   --ds-radius-sm: 3px;

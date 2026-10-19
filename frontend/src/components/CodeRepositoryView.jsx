@@ -211,7 +211,7 @@ function CodeRepositoryView({ currentUser, showToast }) {
       }}>
         {loading ? (
           <div style={{ padding: '3.5rem', textAlign: 'center', color: '#64748b' }}>
-            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#2563eb', marginBottom: '10px' }}></i>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#0EA5E9', marginBottom: '10px' }}></i>
             <div>Connecting to code repository...</div>
           </div>
         ) : (
@@ -282,8 +282,8 @@ function CodeRepositoryView({ currentUser, showToast }) {
                           target="_blank"
                           rel="noreferrer"
                           style={{
-                            background: '#eff6ff',
-                            color: '#2563eb',
+                            background: '#F0F9FF',
+                            color: '#0EA5E9',
                             border: 'none',
                             borderRadius: '6px',
                             padding: '6px 10px',
@@ -387,12 +387,12 @@ function CodeRepositoryView({ currentUser, showToast }) {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <i className="fas fa-code-branch" style={{ color: '#2563eb' }}></i>
+                      <i className="fas fa-code-branch" style={{ color: '#0EA5E9' }}></i>
                       <span style={{ fontWeight: '800', fontSize: '0.88rem', color: '#0f172a', fontFamily: 'monospace' }}>
                         {b.name}
                       </span>
                       {b.isDefault && (
-                        <span style={{ background: '#eff6ff', color: '#2563eb', padding: '2px 8px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: '800' }}>
+                        <span style={{ background: '#F0F9FF', color: '#0EA5E9', padding: '2px 8px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: '800' }}>
                           default
                         </span>
                       )}
@@ -446,8 +446,8 @@ function CodeRepositoryView({ currentUser, showToast }) {
                         <span
                           key={idx}
                           style={{
-                            background: l === 'bug' ? '#fef2f2' : (l === 'feature' ? '#eff6ff' : '#f8fafc'),
-                            color: l === 'bug' ? '#ef4444' : (l === 'feature' ? '#2563eb' : '#475569'),
+                            background: l === 'bug' ? '#fef2f2' : (l === 'feature' ? '#F0F9FF' : '#f8fafc'),
+                            color: l === 'bug' ? '#ef4444' : (l === 'feature' ? '#0EA5E9' : '#475569'),
                             border: `1px solid ${l === 'bug' ? '#fecaca' : '#bfdbfe'}`,
                             padding: '2px 8px',
                             borderRadius: '999px',

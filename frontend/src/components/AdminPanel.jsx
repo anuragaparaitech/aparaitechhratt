@@ -782,9 +782,10 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           <div style={{
             width: '28px',
             height: '28px',
-            borderRadius: '3px',
-            background: '#E9F2FF',
-            color: '#0C66E4',
+            borderRadius: '4px',
+            background: '#F0F9FF',
+            color: '#0EA5E9',
+            border: '1px solid #BAE6FD',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -793,8 +794,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             <i className={`fas ${currentSection.icon}`}></i>
           </div>
           <div>
-            <div style={{ fontWeight: 600, color: '#172B4D', fontSize: '14px' }}>{currentSection.label}</div>
-            <div style={{ fontSize: '11px', color: '#626F86' }}>Aparaitech Software Administrator Control Suite</div>
+            <div style={{ fontWeight: 600, color: '#09090B', fontSize: '14px' }}>{currentSection.label}</div>
+            <div style={{ fontSize: '11px', color: '#71717A' }}>Aparaitech Software Administrator Control Suite</div>
           </div>
         </div>
 
@@ -810,13 +811,14 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         </div>
       </div>
 
-      {/* ── Top Jira Horizontal Tab Navigation ───────────────────────────────── */}
+      {/* ── Top Horizontal Tab Navigation ───────────────────────────────── */}
       <div className="admin-quick-pills" style={{
         display: 'flex',
         gap: '4px',
-        background: '#EBECF0',
+        background: '#F4F4F5',
+        border: '1px solid #E4E4E7',
         padding: '3px',
-        borderRadius: '3px',
+        borderRadius: '4px',
         overflowX: 'auto',
         scrollbarWidth: 'none'
       }}>
@@ -843,9 +845,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             style={{
               padding: '6px 12px',
               borderRadius: '3px',
-              border: activeSection === pill.id ? '1px solid #DFE1E6' : '1px solid transparent',
-              background: activeSection === pill.id ? '#FFFFFF' : 'transparent',
-              color: activeSection === pill.id ? '#0C66E4' : '#44546F',
+              border: activeSection === pill.id ? '1px solid #0EA5E9' : '1px solid transparent',
+              background: activeSection === pill.id ? '#0EA5E9' : 'transparent',
+              color: activeSection === pill.id ? '#FFFFFF' : '#71717A',
               fontWeight: activeSection === pill.id ? 600 : 500,
               fontSize: '12px',
               cursor: 'pointer',
@@ -853,8 +855,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: activeSection === pill.id ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none',
-              transition: 'all 0.1s ease'
+              boxShadow: activeSection === pill.id ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+              transition: 'all 0.12s ease'
             }}
           >
             <i className={`fas ${pill.icon}`}></i>
@@ -924,8 +926,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             </div>
             <div style={{ width: '1px', background: '#DFE1E6' }} />
             <div>
-              <div style={{ fontSize: '11px', color: '#626F86', textTransform: 'uppercase', fontWeight: 700 }}>Total Revenue</div>
-              <div style={{ fontSize: '20px', fontWeight: 600, color: '#0C66E4' }}>
+              <div style={{ fontSize: '11px', color: '#71717A', textTransform: 'uppercase', fontWeight: 700 }}>Total Revenue</div>
+              <div style={{ fontSize: '20px', fontWeight: 600, color: '#0284C7' }}>
                 ₹{(revenueData?.summary?.totalRevenue || 0).toLocaleString('en-IN')}
               </div>
             </div>
@@ -988,13 +990,13 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           <button className="g-button success" onClick={() => setIsAddOpen(true)} style={{ padding: '8px 16px', fontSize: '0.82rem' }}>
             <i className="fas fa-user-plus"></i> Add New Employee
           </button>
-          <button className="g-button" onClick={() => setSection('live')} style={{ background: '#1e5a7a', padding: '8px 16px', fontSize: '0.82rem' }}>
+          <button className="g-button" onClick={() => setSection('live')} style={{ background: '#09090B', padding: '8px 16px', fontSize: '0.82rem' }}>
             <i className="fas fa-eye"></i> Monitor Live ({checkedInNow})
           </button>
-          <button className="g-button" onClick={() => setSection('dailyReports')} style={{ background: '#2563eb', padding: '8px 16px', fontSize: '0.82rem' }}>
+          <button className="g-button" onClick={() => setSection('dailyReports')} style={{ background: '#0EA5E9', padding: '8px 16px', fontSize: '0.82rem' }}>
             <i className="fas fa-clipboard-check"></i> Daily Reports Hub
           </button>
-          <button className="g-button" onClick={() => setSection('mailBlast')} style={{ background: '#0284c7', padding: '8px 16px', fontSize: '0.82rem' }}>
+          <button className="g-button" onClick={() => setSection('mailBlast')} style={{ background: '#0284C7', padding: '8px 16px', fontSize: '0.82rem' }}>
             <i className="fas fa-mail-bulk"></i> Mail Blast Logs
           </button>
           <button className="g-button excel" onClick={handleExportAllAttendance} style={{ padding: '8px 16px', fontSize: '0.82rem' }}>
@@ -1055,7 +1057,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               <button
                 onClick={() => setSection('internTarget')}
                 style={{
-                  background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
+                  background: '#F0F9FF', color: '#0284C7', border: '1px solid #bfdbfe',
                   borderRadius: '10px', padding: '8px 16px', fontSize: '0.82rem',
                   fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
                 }}
@@ -1105,7 +1107,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                     }}>
                       {rule.label || (m === 4 ? 'Month 4+' : `Month ${m}`)}
                     </span>
-                    <span style={{ fontSize: '0.74rem', color: '#2563eb', fontWeight: '800' }}>
+                    <span style={{ fontSize: '0.74rem', color: '#0284C7', fontWeight: '800' }}>
                       {rule.targetConversions} Convs
                     </span>
                   </div>
@@ -1149,7 +1151,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
 
           {/* Intern Monthly Benchmark Glance Bar */}
           <div style={{
-            background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
+            background: 'linear-gradient(135deg, #F0F9FF 0%, #f0fdf4 100%)',
             border: '1px dashed #93c5fd',
             borderRadius: '12px',
             padding: '10px 16px',
@@ -1241,7 +1243,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 </h2>
                 <button
                   onClick={() => setSection('live')}
-                  style={{ background: 'transparent', border: 'none', color: '#2563eb', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: '#0284C7', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }}
                 >
                   View Full Live Monitor ({liveSessions.length}) ↗
                 </button>
@@ -1316,7 +1318,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '8px' }}>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <i className="fas fa-bullseye" style={{ color: '#2563eb' }}></i>
+                <i className="fas fa-bullseye" style={{ color: '#0284C7' }}></i>
                 Intern Monthly Target Configuration
               </h2>
               <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
@@ -1325,9 +1327,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <span style={{
-                background: '#eff6ff',
-                color: '#1d4ed8',
-                border: '1px solid #bfdbfe',
+                background: '#F0F9FF',
+                color: '#0284C7',
+                border: '1px solid #BAE6FD',
                 padding: '4px 10px',
                 borderRadius: '8px',
                 fontSize: '0.78rem',
@@ -1344,7 +1346,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1e293b', display: 'flex', justifyContent: 'space-between' }}>
                   <span>🎯 Target Conversions <span style={{ color: '#ef4444' }}>*</span></span>
-                  <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '800' }}>{internTargetData.targetConversions || 10} Convs</span>
+                  <span style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: '800' }}>{internTargetData.targetConversions || 10} Convs</span>
                 </label>
                 <input
                   type="number"
@@ -1431,7 +1433,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                 disabled={savingInternTarget}
                 className="g-button"
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  background: '#0EA5E9',
                   color: '#ffffff',
                   fontWeight: '700',
                   padding: '10px 24px',
@@ -1661,14 +1663,14 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: '0.7rem', fontWeight: '700', color: '#2563eb' }} title="Bonus rate for revenue above target">
+                        <label style={{ fontSize: '0.7rem', fontWeight: '700', color: '#0284C7' }} title="Bonus rate for revenue above target">
                           Surplus %
                         </label>
                         <input
                           type="number"
                           step="0.5"
                           className="auth-input"
-                          style={{ width: '100%', padding: '6px 8px', fontSize: '0.88rem', fontWeight: '800', color: '#1d4ed8', marginTop: '3px' }}
+                          style={{ width: '100%', padding: '6px 8px', fontSize: '0.88rem', fontWeight: '800', color: '#0284C7', marginTop: '3px' }}
                           value={rule.excessPercent}
                           onChange={e => {
                             const val = parseFloat(e.target.value) || 0
@@ -1696,7 +1698,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <i className="fas fa-users-cog" style={{ color: '#2563eb' }}></i>
+                  <i className="fas fa-users-cog" style={{ color: '#0284C7' }}></i>
                   Active BDA Associates & Monthly Salary Payout Sheet
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
@@ -1740,7 +1742,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                   </div>
                   <div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>MONTH CONVERSIONS</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#2563eb' }}>{totalBdaConvs}</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#0284C7' }}>{totalBdaConvs}</div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b' }}>₹6,000 unit sales</div>
                   </div>
                   <div>
@@ -1993,7 +1995,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         <div className="section-card">
           <div className="section-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <h2><i className="fas fa-clipboard-check" style={{ color: '#2563eb', marginRight: '8px' }}></i> Employee Daily Working Reports</h2>
+              <h2><i className="fas fa-clipboard-check" style={{ color: '#0284C7', marginRight: '8px' }}></i> Employee Daily Working Reports</h2>
               <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                 Track call volume, groups formed, candidate conversions, and ₹6,000 unit revenue
               </p>
@@ -2040,7 +2042,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             </div>
             <div>
               <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>CONNECTED CALLS</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: '800', color: '#2563eb' }}>{totalDailyCalls}</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: '800', color: '#0284C7' }}>{totalDailyCalls}</div>
             </div>
             <div>
               <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '700' }}>CONVERSIONS</div>
@@ -2103,7 +2105,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                           </div>
                         )}
                       </td>
-                      <td style={{ color: '#2563eb', fontWeight: '800' }}>
+                      <td style={{ color: '#0284C7', fontWeight: '800' }}>
                         ₹{(r.revenue || 0).toLocaleString('en-IN')}
                       </td>
                       <td style={{ maxWidth: '220px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -2116,8 +2118,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                           style={{
                             padding: '4px 10px',
                             borderRadius: '6px',
-                            background: '#eff6ff',
-                            color: '#1d4ed8',
+                            background: '#F0F9FF',
+                            color: '#0284C7',
                             border: '1px solid #bfdbfe',
                             fontSize: '0.78rem',
                             fontWeight: '700',
@@ -2267,8 +2269,8 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                       </td>
                       <td>
                         <span style={{
-                          background: m.targetType === 'College-wise' ? '#eff6ff' : '#f1f5f9',
-                          color: m.targetType === 'College-wise' ? '#2563eb' : '#475569',
+                          background: m.targetType === 'College-wise' ? '#F0F9FF' : '#f1f5f9',
+                          color: m.targetType === 'College-wise' ? '#0284C7' : '#475569',
                           padding: '2px 7px', borderRadius: '6px', fontWeight: '700', fontSize: '0.74rem'
                         }}>
                           {m.targetType}
@@ -2369,9 +2371,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               </div>
             </div>
 
-            <div style={{ background: '#eff6ff', borderRadius: '18px', padding: '1.5rem', border: '1px solid #bfdbfe' }}>
+            <div style={{ background: '#F0F9FF', borderRadius: '18px', padding: '1.5rem', border: '1px solid #bfdbfe' }}>
               <div style={{ color: '#1e40af', fontSize: '0.78rem', fontWeight: '700' }}>UNIT CONVERSION RATE</div>
-              <div style={{ fontSize: '2rem', fontWeight: '900', color: '#1d4ed8', margin: '6px 0 2px' }}>
+              <div style={{ fontSize: '2rem', fontWeight: '900', color: '#0284C7', margin: '6px 0 2px' }}>
                 ₹6,000 INR
               </div>
               <div style={{ fontSize: '0.76rem', color: '#1e40af' }}>Standard rate per admission</div>
@@ -2549,9 +2551,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{
                             width: '36px', height: '36px', borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #1e5a7a, #2563eb)',
+                            background: '#09090B', border: '1.5px solid #0EA5E9',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#fff', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
+                            color: '#38BDF8', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
                           }}>
                             {(emp.name || '?').charAt(0).toUpperCase()}
                           </div>
@@ -2660,9 +2662,9 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               <div style={{ textAlign: 'center', marginBottom: '1.4rem' }}>
                 <div style={{
                   width: '70px', height: '70px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #1e5a7a, #2563eb)',
+                  background: '#09090B', border: '2px solid #0EA5E9',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontWeight: 800, fontSize: '1.6rem',
+                  color: '#38BDF8', fontWeight: 800, fontSize: '1.6rem',
                   margin: '0 auto 10px'
                 }}>
                   {(emp.name || '?').charAt(0).toUpperCase()}
@@ -2757,7 +2759,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               className="g-button" 
               onClick={() => setShowAllCredentials(prev => !prev)}
               style={{
-                background: showAllCredentials ? '#0a192f' : '#2563eb',
+                background: showAllCredentials ? '#09090B' : '#0EA5E9',
                 color: '#fff',
                 fontSize: '0.8rem',
                 display: 'inline-flex',
@@ -2830,7 +2832,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                         <span style={{
                           fontFamily: 'monospace',
                           fontSize: '0.82rem',
-                          background: (showAllCredentials || revealedPasswords[emp.email]) ? '#eff6ff' : '#f1f5f9',
+                          background: (showAllCredentials || revealedPasswords[emp.email]) ? '#F0F9FF' : '#f1f5f9',
                           color: (showAllCredentials || revealedPasswords[emp.email]) ? '#1e40af' : '#64748b',
                           padding: '3px 8px',
                           borderRadius: '6px',
@@ -2944,7 +2946,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                           setProfileEditMode(false)
                           setIsProfileOpen(true)
                         }}
-                        style={{ background: '#2563eb', marginRight: '6px' }}
+                        style={{ background: '#0EA5E9', marginRight: '6px' }}
                         title="View Profile Details & Face ID Enrollment"
                       >
                         <i className="fas fa-user-cog" style={{ marginRight: '4px' }}></i> Profile
@@ -3102,7 +3104,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
                   } else if (rec.status === 'holiday') {
                     cls = ''
                     txt = 'Holiday'
-                    badgeStyle = { background: '#dbeafe', color: '#1d4ed8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
+                    badgeStyle = { background: '#dbeafe', color: '#0284C7', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
                   } else if (rec.status === 'worked-on-holiday') {
                     cls = ''
                     txt = 'Worked on Holiday'

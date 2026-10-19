@@ -56,7 +56,7 @@ function NotificationBanner() {
             width: '40px',
             height: '40px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+            background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -93,7 +93,7 @@ function NotificationBanner() {
               setCurrentNotif(null)
             }}
             style={{
-              background: '#2563eb',
+              background: '#0EA5E9',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',

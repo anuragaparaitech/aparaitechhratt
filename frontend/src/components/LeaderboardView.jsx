@@ -42,7 +42,7 @@ function LeaderboardView({ currentUser, showToast }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
       {/* Header Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, #0a192f 0%, #1e3a8a 50%, #2563eb 100%)',
+        background: 'linear-gradient(135deg, #0a192f 0%, #1e3a8a 50%, #0EA5E9 100%)',
         borderRadius: '24px',
         padding: '2rem 2.25rem',
         color: '#ffffff',
@@ -152,7 +152,7 @@ function LeaderboardView({ currentUser, showToast }) {
       }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-            <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.8rem', color: '#2563eb', marginBottom: '10px' }}></i>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.8rem', color: '#0EA5E9', marginBottom: '10px' }}></i>
             <div>Loading leaderboard rankings...</div>
           </div>
         ) : (
@@ -183,12 +183,12 @@ function LeaderboardView({ currentUser, showToast }) {
                       leaderboardData.byConversions.map((item, idx) => {
                         const isMe = item._id === currentUser?.email?.toLowerCase()
                         return (
-                          <tr key={item._id} style={{ background: isMe ? '#eff6ff' : (idx < 3 ? '#fafaf9' : 'transparent') }}>
+                          <tr key={item._id} style={{ background: isMe ? '#F0F9FF' : (idx < 3 ? '#fafaf9' : 'transparent') }}>
                             <td>{renderRankBadge(idx + 1)}</td>
                             <td>
                               <div style={{ fontWeight: '700', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 {item.name}
-                                {isMe && <span style={{ fontSize: '0.68rem', background: '#2563eb', color: '#fff', padding: '1px 6px', borderRadius: '4px' }}>You</span>}
+                                {isMe && <span style={{ fontSize: '0.68rem', background: '#0EA5E9', color: '#fff', padding: '1px 6px', borderRadius: '4px' }}>You</span>}
                               </div>
                               <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{item.empId}</div>
                             </td>
@@ -205,7 +205,7 @@ function LeaderboardView({ currentUser, showToast }) {
                                 {item.totalConversions}
                               </span>
                             </td>
-                            <td style={{ color: '#2563eb', fontWeight: '800', fontSize: '1rem' }}>
+                            <td style={{ color: '#0EA5E9', fontWeight: '800', fontSize: '1rem' }}>
                               ₹{(item.totalRevenue || 0).toLocaleString('en-IN')}
                             </td>
                             <td><strong>{item.totalCalls || 0}</strong></td>
@@ -244,12 +244,12 @@ function LeaderboardView({ currentUser, showToast }) {
                       leaderboardData.byCalls.map((item, idx) => {
                         const isMe = item._id === currentUser?.email?.toLowerCase()
                         return (
-                          <tr key={item._id} style={{ background: isMe ? '#eff6ff' : (idx < 3 ? '#fafaf9' : 'transparent') }}>
+                          <tr key={item._id} style={{ background: isMe ? '#F0F9FF' : (idx < 3 ? '#fafaf9' : 'transparent') }}>
                             <td>{renderRankBadge(idx + 1)}</td>
                             <td>
                               <div style={{ fontWeight: '700', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 {item.name}
-                                {isMe && <span style={{ fontSize: '0.68rem', background: '#2563eb', color: '#fff', padding: '1px 6px', borderRadius: '4px' }}>You</span>}
+                                {isMe && <span style={{ fontSize: '0.68rem', background: '#0EA5E9', color: '#fff', padding: '1px 6px', borderRadius: '4px' }}>You</span>}
                               </div>
                               <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{item.empId}</div>
                             </td>
@@ -299,12 +299,12 @@ function LeaderboardView({ currentUser, showToast }) {
                       leaderboardData.byMailBlasts.map((item, idx) => {
                         const isMe = item._id === currentUser?.email?.toLowerCase()
                         return (
-                          <tr key={item._id} style={{ background: isMe ? '#eff6ff' : (idx < 3 ? '#fafaf9' : 'transparent') }}>
+                          <tr key={item._id} style={{ background: isMe ? '#F0F9FF' : (idx < 3 ? '#fafaf9' : 'transparent') }}>
                             <td>{renderRankBadge(idx + 1)}</td>
                             <td>
                               <div style={{ fontWeight: '700', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 {item.name}
-                                {isMe && <span style={{ fontSize: '0.68rem', background: '#2563eb', color: '#fff', padding: '1px 6px', borderRadius: '4px' }}>You</span>}
+                                {isMe && <span style={{ fontSize: '0.68rem', background: '#0EA5E9', color: '#fff', padding: '1px 6px', borderRadius: '4px' }}>You</span>}
                               </div>
                               <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{item.empId}</div>
                             </td>
@@ -359,7 +359,7 @@ function LeaderboardView({ currentUser, showToast }) {
                               {item.totalConversions}
                             </span>
                           </td>
-                          <td style={{ color: '#2563eb', fontWeight: '800', fontSize: '1rem' }}>
+                          <td style={{ color: '#0EA5E9', fontWeight: '800', fontSize: '1rem' }}>
                             ₹{(item.totalRevenue || 0).toLocaleString('en-IN')}
                           </td>
                           <td><strong>{item.totalCalls || 0}</strong></td>

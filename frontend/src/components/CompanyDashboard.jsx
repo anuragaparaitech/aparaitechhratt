@@ -109,7 +109,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
       
       {/* ── 1. WELCOME HERO BANNER ───────────────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(135deg, #0a192f 0%, #1e3a8a 50%, #2563eb 100%)',
+        background: 'linear-gradient(135deg, #0a192f 0%, #1e3a8a 50%, #0EA5E9 100%)',
         borderRadius: '24px',
         padding: '2rem 2.25rem',
         color: '#ffffff',
@@ -316,7 +316,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '1rem', color: '#0a192f' }}>
-                <i className="fas fa-fingerprint" style={{ color: '#2563eb' }}></i>
+                <i className="fas fa-fingerprint" style={{ color: '#0EA5E9' }}></i>
                 Today's Attendance Status
               </div>
               <span style={{
@@ -347,7 +347,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
             </div>
 
             <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <i className="fas fa-clock" style={{ color: '#2563eb' }}></i>
+              <i className="fas fa-clock" style={{ color: '#0EA5E9' }}></i>
               Shift: <strong>{userShift.name} ({userShift.startTime} - {userShift.endTime})</strong>
             </div>
             <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
@@ -402,7 +402,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
               <button
                 onClick={() => setIsProfileOpen(true)}
                 style={{
-                  background: '#eff6ff',
+                  background: '#F0F9FF',
                   border: '1px solid #bfdbfe',
                   borderRadius: '12px',
                   padding: '14px 12px',
@@ -414,11 +414,11 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
                   gap: '4px'
                 }}
               >
-                <div style={{ color: '#2563eb', fontSize: '1.25rem' }}>
+                <div style={{ color: '#0EA5E9', fontSize: '1.25rem' }}>
                   <i className="fas fa-user-circle"></i>
                 </div>
                 <div style={{ fontWeight: '700', fontSize: '0.88rem', color: '#1e3a8a' }}>My Profile</div>
-                <div style={{ fontSize: '0.72rem', color: '#1d4ed8' }}>View ID, credentials & info</div>
+                <div style={{ fontSize: '0.72rem', color: '#0284C7' }}>View ID, credentials & info</div>
               </button>
 
               {/* Edit 4-Digit PIN Button */}
@@ -663,7 +663,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '700', color: '#0a192f' }}>
-            <i className="fas fa-tachometer-alt" style={{ marginRight: '8px', color: '#2563eb' }}></i>
+            <i className="fas fa-tachometer-alt" style={{ marginRight: '8px', color: '#0EA5E9' }}></i>
             My Performance Snapshot
           </h3>
           <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Calculated in real-time</span>
@@ -684,7 +684,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b', fontSize: '0.78rem', fontWeight: '600' }}>
               <span>CONNECTED CALLS</span>
-              <i className="fas fa-phone-alt" style={{ color: '#2563eb' }}></i>
+              <i className="fas fa-phone-alt" style={{ color: '#0EA5E9' }}></i>
             </div>
             <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#0a192f', marginTop: '6px' }}>
               {performance?.today?.connectedCalls || 0}
@@ -736,7 +736,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
 
           {/* Card 4: Revenue Tracker */}
           <div style={{
-            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+            background: 'linear-gradient(135deg, #F0F9FF 0%, #dbeafe 100%)',
             borderRadius: '16px',
             padding: '1.25rem',
             border: '1px solid #bfdbfe',
@@ -744,9 +744,9 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#1e40af', fontSize: '0.78rem', fontWeight: '700' }}>
               <span>REVENUE GENERATED</span>
-              <i className="fas fa-rupee-sign" style={{ color: '#2563eb' }}></i>
+              <i className="fas fa-rupee-sign" style={{ color: '#0EA5E9' }}></i>
             </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#1d4ed8', marginTop: '6px' }}>
+            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#0284C7', marginTop: '6px' }}>
               ₹{todayRevenue.toLocaleString('en-IN')}
             </div>
             <div style={{ fontSize: '0.76rem', color: '#1e40af', marginTop: '4px' }}>
@@ -770,7 +770,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <div>
             <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <i className="fas fa-bullseye" style={{ color: '#2563eb' }}></i>
+              <i className="fas fa-bullseye" style={{ color: '#0EA5E9' }}></i>
               {performance?.targets?.monthLabel ? `${performance.targets.monthLabel} Target & Performance Tracker` : 'Monthly Target & Performance Tracker'}
             </div>
             <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
@@ -780,9 +780,9 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
           <button
             onClick={() => onNavigate('revenue')}
             style={{
-              background: '#eff6ff',
+              background: '#F0F9FF',
               border: '1px solid #bfdbfe',
-              color: '#1d4ed8',
+              color: '#0284C7',
               fontWeight: '700',
               fontSize: '0.82rem',
               padding: '6px 14px',
@@ -807,7 +807,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
               <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>{performance?.monthly?.totalConversions || 0}</span>
               <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b' }}>/ {performance?.targets?.targetConversions || 10}</span>
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '600', marginTop: '2px' }}>
+            <div style={{ fontSize: '0.72rem', color: '#0EA5E9', fontWeight: '600', marginTop: '2px' }}>
               Goal: {performance?.targets?.targetConversions || 10} product enrollments
             </div>
           </div>
@@ -843,7 +843,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
             <span style={{ fontWeight: '700', color: '#334155' }}>
               Monthly Benchmark Progress: {performance?.monthly?.totalConversions || 0} of {performance?.targets?.targetConversions || 10} Conversions
             </span>
-            <span style={{ fontWeight: '800', color: '#2563eb' }}>
+            <span style={{ fontWeight: '800', color: '#0EA5E9' }}>
               {Math.min(100, Math.round(((performance?.monthly?.totalConversions || 0) / (performance?.targets?.targetConversions || 10)) * 100))}% Completed
             </span>
           </div>
@@ -856,7 +856,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
             <div style={{
               height: '100%',
               width: `${Math.min(100, Math.round(((performance?.monthly?.totalConversions || 0) / (performance?.targets?.targetConversions || 10)) * 100))}%`,
-              background: 'linear-gradient(90deg, #2563eb, #10b981)',
+              background: 'linear-gradient(90deg, #0EA5E9, #10b981)',
               borderRadius: '6px',
               transition: 'width 0.5s ease-out'
             }} />
@@ -871,7 +871,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
               onClick={() => setDailyModalOpen(true)}
               style={{
                 flex: 1,
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                background: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
                 color: '#ffffff',
                 border: 'none',
                 padding: '10px',

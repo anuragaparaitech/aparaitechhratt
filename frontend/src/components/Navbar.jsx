@@ -77,8 +77,8 @@ function Navbar({
       className="navbar"
       style={{
         height: '56px',
-        background: '#0C66E4',
-        borderBottom: '1px solid #0055CC',
+        background: '#09090B',
+        borderBottom: '1px solid #27272A',
         padding: '0 1rem',
         display: 'flex',
         justifyContent: 'space-between',
@@ -87,7 +87,7 @@ function Navbar({
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        boxShadow: '0 1px 3px rgba(9, 30, 66, 0.15)'
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)'
       }}
     >
       {/* ── Left Section: 9-Dot App Switcher + Brand Logo + Mode Selector ──────── */}
@@ -126,14 +126,14 @@ function Navbar({
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: '#FFFFFF',
+            color: '#A1A1AA',
             fontSize: '0.95rem'
           }}
         >
           <i className="fas fa-th"></i>
         </div>
 
-        {/* Corporate Brand: Logo + Jira-Style Badge */}
+        {/* Corporate Brand: Logo + Sky-Blue Badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
           <div
             style={{
@@ -145,7 +145,7 @@ function Navbar({
               alignItems: 'center',
               justifyContent: 'center',
               padding: '2px',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
             }}
           >
             <img
@@ -164,9 +164,10 @@ function Navbar({
                 fontSize: '10px',
                 fontWeight: '700',
                 textTransform: 'uppercase',
-                background: 'rgba(255, 255, 255, 0.22)',
-                color: '#FFFFFF',
-                padding: '1px 5px',
+                background: 'rgba(14, 165, 233, 0.18)',
+                color: '#38BDF8',
+                border: '1px solid rgba(14, 165, 233, 0.35)',
+                padding: '1px 6px',
                 borderRadius: '3px',
                 letterSpacing: '0.04em'
               }}
@@ -176,7 +177,7 @@ function Navbar({
           </div>
         </div>
 
-        {/* Jira-Style Top Navigation Tabs (For Multi-Portal Users) */}
+        {/* Top Navigation Tabs (For Multi-Portal Users) */}
         {canSwitchPortal && (
           <nav
             className="portal-switcher-header"
@@ -190,17 +191,18 @@ function Navbar({
             <button
               onClick={() => onTogglePortal('software')}
               style={{
-                background: portalMode === 'software' ? 'rgba(255, 255, 255, 0.24)' : 'transparent',
-                color: '#FFFFFF',
+                background: portalMode === 'software' ? '#0EA5E9' : 'transparent',
+                color: portalMode === 'software' ? '#FFFFFF' : '#A1A1AA',
                 border: 'none',
                 borderRadius: '3px',
-                padding: '6px 10px',
-                fontSize: '13px',
-                fontWeight: portalMode === 'software' ? '600' : '400',
+                padding: '5px 10px',
+                fontSize: '12px',
+                fontWeight: portalMode === 'software' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '5px',
+                transition: 'all 0.12s ease'
               }}
             >
               <i className="fas fa-laptop-code" style={{ fontSize: '12px' }}></i>
@@ -210,17 +212,18 @@ function Navbar({
             <button
               onClick={() => onTogglePortal('bda')}
               style={{
-                background: portalMode === 'bda' ? 'rgba(255, 255, 255, 0.24)' : 'transparent',
-                color: '#FFFFFF',
+                background: portalMode === 'bda' ? '#0EA5E9' : 'transparent',
+                color: portalMode === 'bda' ? '#FFFFFF' : '#A1A1AA',
                 border: 'none',
                 borderRadius: '3px',
-                padding: '6px 10px',
-                fontSize: '13px',
-                fontWeight: portalMode === 'bda' ? '600' : '400',
+                padding: '5px 10px',
+                fontSize: '12px',
+                fontWeight: portalMode === 'bda' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '5px',
+                transition: 'all 0.12s ease'
               }}
             >
               <i className="fas fa-headset" style={{ fontSize: '12px' }}></i>
@@ -230,17 +233,18 @@ function Navbar({
             <button
               onClick={() => onTogglePortal('hr')}
               style={{
-                background: portalMode === 'hr' ? 'rgba(255, 255, 255, 0.24)' : 'transparent',
-                color: '#FFFFFF',
+                background: portalMode === 'hr' ? '#0EA5E9' : 'transparent',
+                color: portalMode === 'hr' ? '#FFFFFF' : '#A1A1AA',
                 border: 'none',
                 borderRadius: '3px',
-                padding: '6px 10px',
-                fontSize: '13px',
-                fontWeight: portalMode === 'hr' ? '600' : '400',
+                padding: '5px 10px',
+                fontSize: '12px',
+                fontWeight: portalMode === 'hr' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '5px',
+                transition: 'all 0.12s ease'
               }}
             >
               <i className="fas fa-users-cog" style={{ fontSize: '12px' }}></i>
@@ -278,9 +282,9 @@ function Navbar({
           onFocus={() => setSearchFocused(true)}
           onBlur={() => setSearchFocused(false)}
           style={{
-            background: searchFocused ? '#FFFFFF' : 'rgba(255, 255, 255, 0.18)',
-            border: searchFocused ? '1px solid #388BFF' : '1px solid rgba(255, 255, 255, 0.25)',
-            color: searchFocused ? '#172B4D' : '#FFFFFF',
+            background: searchFocused ? '#FFFFFF' : '#18181B',
+            border: searchFocused ? '1px solid #0EA5E9' : '1px solid #27272A',
+            color: searchFocused ? '#09090B' : '#FFFFFF',
             borderRadius: '3px',
             height: '32px',
             padding: '0 10px 0 30px',
@@ -288,7 +292,7 @@ function Navbar({
             width: searchFocused ? '260px' : '200px',
             transition: 'all 0.15s ease',
             outline: 'none',
-            boxShadow: searchFocused ? '0 2px 4px rgba(9, 30, 66, 0.15)' : 'none'
+            boxShadow: searchFocused ? '0 0 0 2px rgba(14, 165, 233, 0.25)' : 'none'
           }}
         />
       </div>
@@ -303,10 +307,10 @@ function Navbar({
             title="Download latest Aparaitech Android App (.APK)"
             style={{
               textDecoration: 'none',
-              background: 'rgba(255, 255, 255, 0.15)',
+              background: 'rgba(255, 255, 255, 0.08)',
               color: '#FFFFFF',
-              border: 'none',
-              padding: '6px 10px',
+              border: '1px solid #27272A',
+              padding: '5px 10px',
               borderRadius: '3px',
               fontWeight: '500',
               fontSize: '12px',
@@ -315,7 +319,7 @@ function Navbar({
               gap: '5px'
             }}
           >
-            <i className="fab fa-android"></i>
+            <i className="fab fa-android" style={{ color: '#38BDF8' }}></i>
             <span>APK</span>
           </a>
         )}
@@ -326,10 +330,10 @@ function Navbar({
             onClick={handleInstallApp}
             title="Install Desktop Work Application"
             style={{
-              background: 'rgba(255, 255, 255, 0.15)',
+              background: 'rgba(255, 255, 255, 0.08)',
               color: '#FFFFFF',
-              border: 'none',
-              padding: '6px 10px',
+              border: '1px solid #27272A',
+              padding: '5px 10px',
               borderRadius: '3px',
               fontWeight: '500',
               fontSize: '12px',
@@ -339,7 +343,7 @@ function Navbar({
               gap: '5px'
             }}
           >
-            <i className="fas fa-download"></i>
+            <i className="fas fa-download" style={{ color: '#38BDF8' }}></i>
             <span>Desktop</span>
           </button>
         )}
@@ -374,7 +378,7 @@ function Navbar({
                 height: '7px',
                 borderRadius: '50%',
                 background: '#EF4444',
-                border: '1.5px solid #0C66E4'
+                border: '1.5px solid #09090B'
               }}
             />
           )}
@@ -401,7 +405,7 @@ function Navbar({
                 height: '28px',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: '1.5px solid #FFFFFF',
+                border: '1.5px solid #38BDF8',
                 flexShrink: 0
               }}
             >
@@ -422,8 +426,8 @@ function Navbar({
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
-                background: '#0052CC',
-                border: '1.5px solid #FFFFFF',
+                background: '#0EA5E9',
+                border: '1.5px solid #38BDF8',
                 color: '#FFFFFF',
                 display: 'flex',
                 alignItems: 'center',

@@ -4,7 +4,7 @@ import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSyn
 
 const STATUS_COLUMNS = [
   { id: 'To Do', label: 'To Do', color: '#64748b', bg: '#f1f5f9', icon: 'fa-clipboard-list' },
-  { id: 'In Progress', label: 'In Progress', color: '#2563eb', bg: '#eff6ff', icon: 'fa-spinner fa-spin' },
+  { id: 'In Progress', label: 'In Progress', color: '#0284C7', bg: '#F0F9FF', icon: 'fa-spinner fa-spin' },
   { id: 'In Review', label: 'In Review', color: '#8b5cf6', bg: '#f5f3ff', icon: 'fa-eye' },
   { id: 'Done', label: 'Done', color: '#10b981', bg: '#ecfdf5', icon: 'fa-check-circle' }
 ]
@@ -12,7 +12,7 @@ const STATUS_COLUMNS = [
 const PRIORITY_BADGES = {
   Urgent: { color: '#ef4444', bg: '#fef2f2', border: '#fecaca', icon: 'fa-bolt' },
   High: { color: '#f97316', bg: '#fff7ed', border: '#fed7aa', icon: 'fa-arrow-up' },
-  Medium: { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: 'fa-minus' },
+  Medium: { color: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD', icon: 'fa-minus' },
   Low: { color: '#64748b', bg: '#f8fafc', border: '#e2e8f0', icon: 'fa-arrow-down' }
 }
 
@@ -393,7 +393,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
             <button
               onClick={() => setIsCreateOpen(true)}
               style={{
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                background: '#0EA5E9',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '12px',
@@ -486,7 +486,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
       {/* Main Task View */}
       {loading ? (
         <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-          <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#2563eb', marginBottom: '10px' }}></i>
+          <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#0EA5E9', marginBottom: '10px' }}></i>
           <div>Loading sprint tasks...</div>
         </div>
       ) : viewMode === 'kanban' ? (
@@ -601,7 +601,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                         </div>
 
                         {/* Project Name */}
-                        <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <i className="fas fa-folder-open"></i> {task.projectName || 'Aparaitech Core'}
                         </div>
 
@@ -620,7 +620,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                               width: '22px',
                               height: '22px',
                               borderRadius: '50%',
-                              background: '#2563eb',
+                              background: '#0EA5E9',
                               color: '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
@@ -690,7 +690,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                     <td style={{ padding: '12px 16px', fontWeight: '700', color: '#0f172a' }}>
                       {task.title}
                     </td>
-                    <td style={{ padding: '12px', color: '#2563eb', fontWeight: '600' }}>
+                    <td style={{ padding: '12px', color: '#0284C7', fontWeight: '600' }}>
                       {task.projectName || 'Aparaitech Core'}
                     </td>
                     <td style={{ padding: '12px', color: '#334155' }}>
@@ -731,8 +731,8 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                           setSelectedTask(task)
                         }}
                         style={{
-                          background: '#eff6ff',
-                          color: '#2563eb',
+                          background: '#F0F9FF',
+                          color: '#0284C7',
                           border: 'none',
                           borderRadius: '8px',
                           padding: '6px 12px',
@@ -805,7 +805,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                   }}>
                     {selectedTask.priority || 'Medium'} Priority
                   </span>
-                  <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#0284C7', background: '#F0F9FF', padding: '2px 8px', borderRadius: '6px' }}>
                     {selectedTask.projectName || 'Aparaitech Core'}
                   </span>
                 </div>
@@ -892,7 +892,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>ESTIMATED HOURS</span>
-                  <strong style={{ color: '#2563eb' }}>⏱️ {selectedTask.estimatedHours || 4} hrs</strong>
+                  <strong style={{ color: '#0284C7' }}>⏱️ {selectedTask.estimatedHours || 4} hrs</strong>
                 </div>
               </div>
 
@@ -905,7 +905,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                   <button
                     type="button"
                     onClick={() => setIsAddingAttachment(v => !v)}
-                    style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
+                    style={{ background: 'none', border: 'none', color: '#0284C7', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
                   >
                     + Add Attachment
                   </button>
@@ -929,7 +929,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                       required
                       style={{ flex: 2, padding: '6px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
                     />
-                    <button type="submit" style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}>
+                    <button type="submit" style={{ background: '#0EA5E9', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}>
                       Add
                     </button>
                   </form>
@@ -951,7 +951,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           textDecoration: 'none',
-                          color: '#2563eb',
+                          color: '#0284C7',
                           fontSize: '0.8rem',
                           fontWeight: '600'
                         }}
@@ -1037,7 +1037,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#F0F9FF', color: '#0284C7', border: '1px solid #BAE6FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <i className="fas fa-plus"></i>
                 </div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#0f172a' }}>
@@ -1197,7 +1197,7 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
+                  style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#0EA5E9', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
                 >
                   {submitting ? 'Assigning...' : 'Assign Task'}
                 </button>

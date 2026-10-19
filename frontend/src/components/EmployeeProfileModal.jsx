@@ -449,7 +449,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
       case 'success': return { background: '#f0fdf4', border: '1px solid #86efac', color: '#166534' }
       case 'error':   return { background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c' }
       case 'warn':    return { background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }
-      default:        return { background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }
+      default:        return { background: '#F0F9FF', border: '1px solid #bfdbfe', color: '#0284C7' }
     }
   }
 
@@ -481,7 +481,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
           {/* Header */}
           <div style={{ padding: '1.2rem 1.5rem', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid #2563eb', flexShrink: 0 }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid #0EA5E9', flexShrink: 0 }}>
                 {profilePreview ? (
                   <img src={profilePreview} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
@@ -513,8 +513,8 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
               onClick={() => setActiveTab('details')}
               style={{
                 padding: '12px 16px', border: 'none', background: 'none', fontWeight: 600, fontSize: '0.88rem',
-                color: activeTab === 'details' ? '#2563eb' : '#64748b',
-                borderBottom: activeTab === 'details' ? '3px solid #2563eb' : '3px solid transparent',
+                color: activeTab === 'details' ? '#0EA5E9' : '#64748b',
+                borderBottom: activeTab === 'details' ? '3px solid #0EA5E9' : '3px solid transparent',
                 cursor: 'pointer'
               }}
             >
@@ -524,8 +524,8 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
               onClick={() => setActiveTab('face')}
               style={{
                 padding: '12px 16px', border: 'none', background: 'none', fontWeight: 600, fontSize: '0.88rem',
-                color: activeTab === 'face' ? '#2563eb' : '#64748b',
-                borderBottom: activeTab === 'face' ? '3px solid #2563eb' : '3px solid transparent',
+                color: activeTab === 'face' ? '#0EA5E9' : '#64748b',
+                borderBottom: activeTab === 'face' ? '3px solid #0EA5E9' : '3px solid transparent',
                 cursor: 'pointer'
               }}
             >
@@ -612,14 +612,14 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                     <div style={{ background: '#f8fafc', padding: '1rem 1.25rem', borderRadius: '14px', border: '1px solid #e2e8f0', marginTop: '0.75rem' }}>
                       <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <i className="fas fa-shield-alt" style={{ color: '#2563eb' }}></i>
+                          <i className="fas fa-shield-alt" style={{ color: '#0EA5E9' }}></i>
                           Account Security & Credentials {isAdmin ? '(Admin View)' : ''}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <button
                             type="button"
                             onClick={() => setShowCreds(prev => !prev)}
-                            style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
+                            style={{ background: 'none', border: 'none', color: '#0EA5E9', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
                           >
                             <i className={`fas ${showCreds ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                             {showCreds ? 'Hide Details' : 'Reveal Details'}
@@ -630,7 +630,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                         <div style={{ flex: 1, minWidth: '180px' }}>
                           <small style={{ color: '#64748b', fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase' }}>Login Password</small>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af', background: '#eff6ff', padding: '3px 8px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af', background: '#F0F9FF', padding: '3px 8px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
                               {showCreds ? (employee.plainPassword || employee.password || 'Aparaitech123@') : '••••••••••••'}
                             </span>
                           </div>
@@ -649,7 +649,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                           type="button"
                           onClick={() => setIsPinModalOpen(true)}
                           style={{
-                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                            background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
                             color: '#ffffff',
                             border: 'none',
                             borderRadius: '8px',
@@ -691,7 +691,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                       <button
                         onClick={() => setEditMode(true)}
                         className="g-button"
-                        style={{ background: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        style={{ background: '#0EA5E9', display: 'flex', alignItems: 'center', gap: '6px' }}
                       >
                         <i className="fas fa-edit"></i> Edit Profile
                       </button>
@@ -717,7 +717,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                           type="button"
                           onClick={() => { setWebcamTarget('profile'); setIsWebcamOpen(true) }}
                           className="g-button"
-                          style={{ padding: '6px 14px', fontSize: '0.78rem', background: '#2563eb' }}
+                          style={{ padding: '6px 14px', fontSize: '0.78rem', background: '#0EA5E9' }}
                         >
                           📷 Capture Photo
                         </button>
@@ -858,7 +858,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                       <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: '220px' }}>
                           <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <i className="fas fa-key" style={{ color: '#2563eb' }}></i> Reset Login Password (Admin)
+                            <i className="fas fa-key" style={{ color: '#0EA5E9' }}></i> Reset Login Password (Admin)
                           </label>
                           <input
                             type="text"
@@ -946,11 +946,11 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                 </div>
 
                 {/* Update Face ID Section */}
-                <div style={{ border: '1px solid #bfdbfe', background: '#eff6ff', borderRadius: '12px', padding: '1.2rem', marginBottom: '1.5rem' }}>
+                <div style={{ border: '1px solid #bfdbfe', background: '#F0F9FF', borderRadius: '12px', padding: '1.2rem', marginBottom: '1.5rem' }}>
                   <h4 style={{ margin: '0 0 0.5rem', color: '#1e3a8a', fontSize: '0.95rem', fontWeight: 700 }}>
                     📷 Update Face Image &amp; Descriptor
                   </h4>
-                  <p style={{ fontSize: '0.8rem', color: '#1d4ed8', margin: '0 0 1rem', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '0.8rem', color: '#0284C7', margin: '0 0 1rem', lineHeight: 1.5 }}>
                     Capturing a new face will automatically run face detection to ensure exactly 1 face is visible, compute a 128-dimensional embedding vector, and replace the existing Face ID safely.
                   </p>
 
@@ -959,7 +959,7 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                       <button
                         onClick={() => { setWebcamTarget('face'); setIsWebcamOpen(true) }}
                         className="g-button"
-                        style={{ background: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', padding: '8px 16px' }}
+                        style={{ background: '#0EA5E9', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', padding: '8px 16px' }}
                       >
                         📷 Open Camera &amp; Capture
                       </button>
@@ -982,8 +982,8 @@ function EmployeeProfileModal({ isOpen, onClose, employee, isAdmin = false, show
                         </div>
                         <div style={{ flex: 1 }}>
                           {validatingFace ? (
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#1d4ed8', fontSize: '0.82rem', fontWeight: 600 }}>
-                              <div style={{ width: '6px', height: '6px', background: '#1d4ed8', borderRadius: '50%', animation: 'pulse 1.2s infinite' }}></div>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#0284C7', fontSize: '0.82rem', fontWeight: 600 }}>
+                              <div style={{ width: '6px', height: '6px', background: '#0284C7', borderRadius: '50%', animation: 'pulse 1.2s infinite' }}></div>
                               Validating face embedding...
                             </div>
                           ) : (

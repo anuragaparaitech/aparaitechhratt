@@ -325,8 +325,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
         {/* Status Alert Banners */}
         {slotInfo.isTwoReportsDay && !isLocked && slotInfo.submissionCount === 0 && (
           <div style={{
-            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-            borderLeft: '4px solid #2563eb',
+            background: 'linear-gradient(135deg, #F0F9FF 0%, #dbeafe 100%)',
+            borderLeft: '4px solid #0EA5E9',
             padding: '12px 16px',
             margin: '1rem 1.5rem 0',
             borderRadius: '10px',
@@ -339,7 +339,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
             <span style={{ fontSize: '1.4rem' }}>🍱</span>
             <div>
               <div style={{ fontWeight: '800' }}>Slot 1 of 2: Mandatory Pre-Lunch Report (Today Only)</div>
-              <div style={{ marginTop: '2px', color: '#1d4ed8' }}>
+              <div style={{ marginTop: '2px', color: '#0284C7' }}>
                 For today (13 Oct 2026), all associates must submit two reports. Please file your mid-day progress before lunch. You will submit your second report on shift logout.
               </div>
             </div>
@@ -396,7 +396,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
 
         {isAdmin && existingReport && (
           <div style={{
-            background: '#eff6ff',
+            background: '#F0F9FF',
             borderLeft: '4px solid #3b82f6',
             padding: '12px 16px',
             margin: '1rem 1.5rem 0',
@@ -407,10 +407,10 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
             alignItems: 'center',
             gap: '12px'
           }}>
-            <i className="fas fa-user-shield" style={{ fontSize: '1.2rem', color: '#2563eb' }}></i>
+            <i className="fas fa-user-shield" style={{ fontSize: '1.2rem', color: '#0EA5E9' }}></i>
             <div>
               <div style={{ fontWeight: '800' }}>👑 Administrator Edit Mode</div>
-              <div style={{ marginTop: '2px', color: '#1d4ed8' }}>
+              <div style={{ marginTop: '2px', color: '#0284C7' }}>
                 Editing daily report for <strong>{activeEmployeeName}</strong> on <strong>{reportDate}</strong>. As an admin, you have permission to modify and save corrections.
               </div>
             </div>
@@ -429,9 +429,9 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
           }}>
             <div style={{ fontWeight: '700', color: '#0a192f', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <i className="fas fa-id-badge" style={{ color: '#2563eb' }}></i> Employee Information
+                <i className="fas fa-id-badge" style={{ color: '#0EA5E9' }}></i> Employee Information
               </div>
-              <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '600' }}>
+              <span style={{ fontSize: '0.72rem', color: '#0EA5E9', fontWeight: '600' }}>
                 📅 You can change the date below to view other dates
               </span>
             </div>
@@ -449,8 +449,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                   style={{
                     padding: '3px 8px',
                     borderRadius: '6px',
-                    border: '1.5px solid #2563eb',
-                    background: '#eff6ff',
+                    border: '1.5px solid #0EA5E9',
+                    background: '#F0F9FF',
                     fontSize: '0.82rem',
                     fontWeight: '700',
                     color: '#1e40af',
@@ -581,13 +581,13 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                 🎯 Product Conversions Split (₹6,000 Model) <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div style={{
-                background: '#eff6ff',
+                background: '#F0F9FF',
                 border: '1px solid #bfdbfe',
                 borderRadius: '8px',
                 padding: '3px 10px',
                 fontSize: '0.78rem',
                 fontWeight: '700',
-                color: '#1d4ed8'
+                color: '#0284C7'
               }}>
                 Total: {totalConversions} conversions
               </div>
@@ -708,7 +708,7 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
 
             {/* Live Calculated Revenue Banner */}
             <div style={{
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #0EA5E9 100%)',
               borderRadius: '10px',
               padding: '10px 14px',
               display: 'flex',
@@ -804,8 +804,8 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
                   borderRadius: '10px',
                   border: 'none',
                   background: isAdmin && existingReport
-                    ? 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)'
-                    : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    ? 'linear-gradient(135deg, #0284C7 0%, #1e40af 100%)'
+                    : 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
                   color: '#ffffff',
                   fontWeight: '700',
                   cursor: loading ? 'not-allowed' : 'pointer',

@@ -32,7 +32,7 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
   const handleThemeChange = (newTheme) => {
     setTheme(newTheme)
     localStorage.setItem('aparaitech_theme', newTheme)
-    showToast(`🎨 Theme switched to ${newTheme === 'dark' ? 'Dark Mode' : 'Light Mode'}`, '#2563eb')
+    showToast(`🎨 Theme switched to ${newTheme === 'dark' ? 'Dark Mode' : 'Light Mode'}`, '#0EA5E9')
   }
 
   const handleToggleBiometrics = () => {
@@ -83,7 +83,7 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
         gap: '1rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F0F9FF', color: '#0EA5E9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>
             <i className="fas fa-language"></i>
           </div>
           <div>
@@ -108,8 +108,8 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
                 style={{
                   padding: '12px 14px',
                   borderRadius: '12px',
-                  border: '2px solid #2563eb',
-                  background: '#eff6ff',
+                  border: '2px solid #0EA5E9',
+                  background: '#F0F9FF',
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
@@ -118,11 +118,11 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ fontSize: '0.88rem', color: '#2563eb' }}>{l.native}</strong>
-                  <i className="fas fa-check-circle" style={{ color: '#2563eb' }}></i>
+                  <strong style={{ fontSize: '0.88rem', color: '#0EA5E9' }}>{l.native}</strong>
+                  <i className="fas fa-check-circle" style={{ color: '#0EA5E9' }}></i>
                 </div>
                 <div style={{ fontSize: '0.72rem', color: '#475569' }}>{l.name}</div>
-                <div style={{ fontSize: '0.68rem', color: '#2563eb', fontWeight: '700' }}>{l.desc}</div>
+                <div style={{ fontSize: '0.68rem', color: '#0EA5E9', fontWeight: '700' }}>{l.desc}</div>
               </div>
             )
           })}
@@ -160,8 +160,8 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
             style={{
               padding: '14px',
               borderRadius: '12px',
-              border: `2px solid ${theme === 'light' ? '#2563eb' : '#e2e8f0'}`,
-              background: theme === 'light' ? '#eff6ff' : '#ffffff',
+              border: `2px solid ${theme === 'light' ? '#0EA5E9' : '#e2e8f0'}`,
+              background: theme === 'light' ? '#F0F9FF' : '#ffffff',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -180,8 +180,8 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
             style={{
               padding: '14px',
               borderRadius: '12px',
-              border: `2px solid ${theme === 'dark' ? '#2563eb' : '#e2e8f0'}`,
-              background: theme === 'dark' ? '#eff6ff' : '#ffffff',
+              border: `2px solid ${theme === 'dark' ? '#0EA5E9' : '#e2e8f0'}`,
+              background: theme === 'dark' ? '#F0F9FF' : '#ffffff',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -361,7 +361,7 @@ function SettingsView({ currentUser, onLogout, showToast, currentLang, onLangCha
           <button
             onClick={() => setIsPinModalOpen(true)}
             style={{
-              background: '#2563eb',
+              background: '#0EA5E9',
               color: '#ffffff',
               border: 'none',
               borderRadius: '10px',

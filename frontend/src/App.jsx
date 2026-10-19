@@ -323,7 +323,7 @@ function App() {
               tag: 'new-task-assigned',
               onClick: () => setActiveTab('softwareTasks')
             })
-            showToast(`🚀 New sprint task assigned!`, '#2563eb')
+            showToast(`🚀 New sprint task assigned!`, '#0EA5E9')
           }
           prevTasksCountRef.current = count
           const pendingTasks = res.data.filter(t => t.status !== 'Done' && t.status !== 'Completed').length
@@ -402,7 +402,7 @@ function App() {
       }
     }
     const modeName = mode === 'software' ? 'Software Team' : (mode === 'hr' ? 'Human Resources (HR)' : 'BDA Calling')
-    showToast(`Switched to ${modeName} Portal`, '#2563eb')
+    showToast(`Switched to ${modeName} Portal`, '#0EA5E9')
   }
 
   // Navigate to an admin section or top-level tab
@@ -421,11 +421,11 @@ function App() {
   }
 
   const sidebarBtnStyle = (active) => ({
-    background: active ? '#E9F2FF' : 'transparent',
-    color: active ? '#0C66E4' : '#44546F',
+    background: active ? '#F0F9FF' : 'transparent',
+    color: active ? '#0284C7' : '#52525B',
     border: 'none',
-    borderLeft: active ? '3px solid #0C66E4' : '3px solid transparent',
-    borderRadius: '0 3px 3px 0',
+    borderLeft: active ? '3px solid #0EA5E9' : '3px solid transparent',
+    borderRadius: '0 4px 4px 0',
     padding: '8px 12px',
     textAlign: 'left',
     fontWeight: active ? '600' : '500',
@@ -440,7 +440,7 @@ function App() {
   })
 
   return (
-    <div style={{ background: '#F4F5F7', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ background: '#FAFAFA', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       {!currentUser ? (
         <LoginScreen onLogin={handleLogin} showToast={showToast} />
@@ -460,12 +460,12 @@ function App() {
 
           <div className="main-layout" style={{ display: 'flex', width: '100%', minHeight: 'calc(100vh - 56px)' }}>
 
-            {/* ── Atlassian Jira Project Sidebar (Desktop) ─────────────────── */}
+            {/* ── Jira-Style Minimal Project Sidebar (Desktop) ─────────────────── */}
             <aside className="sidebar-card desktop-sidebar" style={{
               width: '240px',
               minWidth: '240px',
-              background: '#FAFBFC',
-              borderRight: '1px solid #DFE1E6',
+              background: '#FFFFFF',
+              borderRight: '1px solid #E4E4E7',
               padding: '16px 8px 32px 8px',
               display: 'flex',
               flexDirection: 'column',
@@ -475,21 +475,22 @@ function App() {
               boxSizing: 'border-box'
             }}>
 
-              {/* Jira Project Identity Header */}
+              {/* Project Identity Header */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
                 padding: '0 8px 12px 8px',
-                borderBottom: '1px solid #EBECF0',
+                borderBottom: '1px solid #E4E4E7',
                 marginBottom: '10px'
               }}>
                 <div style={{
                   width: '32px',
                   height: '32px',
-                  borderRadius: '3px',
-                  background: portalMode === 'software' ? '#0C66E4' : (portalMode === 'hr' ? '#6554C0' : '#00875A'),
-                  color: '#FFFFFF',
+                  borderRadius: '4px',
+                  background: '#09090B',
+                  color: '#38BDF8',
+                  border: '1px solid #27272A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -503,7 +504,7 @@ function App() {
                   <div style={{
                     fontWeight: 600,
                     fontSize: '13px',
-                    color: '#172B4D',
+                    color: '#09090B',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -512,7 +513,7 @@ function App() {
                   </div>
                   <div style={{
                     fontSize: '11px',
-                    color: '#626F86',
+                    color: '#71717A',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em'
                   }}>
@@ -524,12 +525,13 @@ function App() {
               {/* Portal Mode Segmented Switcher for Management & Admin */}
               {canSwitchPortal && (
                 <div style={{
-                  background: '#EBECF0',
-                  borderRadius: '3px',
+                  background: '#F4F4F5',
+                  borderRadius: '4px',
                   padding: '2px',
                   display: 'flex',
                   gap: '2px',
-                  marginBottom: '10px'
+                  marginBottom: '10px',
+                  border: '1px solid #E4E4E7'
                 }}>
                   <button
                     onClick={() => handleTogglePortal('software')}
@@ -541,10 +543,10 @@ function App() {
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      background: portalMode === 'software' ? '#FFFFFF' : 'transparent',
-                      color: portalMode === 'software' ? '#0C66E4' : '#44546F',
-                      boxShadow: portalMode === 'software' ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none',
-                      transition: 'all 0.1s ease'
+                      background: portalMode === 'software' ? '#0EA5E9' : 'transparent',
+                      color: portalMode === 'software' ? '#FFFFFF' : '#71717A',
+                      boxShadow: portalMode === 'software' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+                      transition: 'all 0.12s ease'
                     }}
                   >
                     Software
@@ -559,10 +561,10 @@ function App() {
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      background: portalMode === 'bda' ? '#FFFFFF' : 'transparent',
-                      color: portalMode === 'bda' ? '#00875A' : '#44546F',
-                      boxShadow: portalMode === 'bda' ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none',
-                      transition: 'all 0.1s ease'
+                      background: portalMode === 'bda' ? '#0EA5E9' : 'transparent',
+                      color: portalMode === 'bda' ? '#FFFFFF' : '#71717A',
+                      boxShadow: portalMode === 'bda' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+                      transition: 'all 0.12s ease'
                     }}
                   >
                     BDA
@@ -577,10 +579,10 @@ function App() {
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      background: portalMode === 'hr' ? '#FFFFFF' : 'transparent',
-                      color: portalMode === 'hr' ? '#6554C0' : '#44546F',
-                      boxShadow: portalMode === 'hr' ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none',
-                      transition: 'all 0.1s ease'
+                      background: portalMode === 'hr' ? '#0EA5E9' : 'transparent',
+                      color: portalMode === 'hr' ? '#FFFFFF' : '#71717A',
+                      boxShadow: portalMode === 'hr' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+                      transition: 'all 0.12s ease'
                     }}
                   >
                     HR
@@ -715,7 +717,7 @@ function App() {
                       </button>
                       <button
                         className="sidebar-nav-btn"
-                        style={{ ...sidebarBtnStyle(false), color: '#6554C0', marginTop: '2px' }}
+                        style={{ ...sidebarBtnStyle(false), color: '#0284C7', marginTop: '2px' }}
                         onClick={() => handleTogglePortal('hr')}
                       >
                         <i className="fas fa-users-cog" style={{ width: '16px', textAlign: 'center' }}></i>
@@ -880,7 +882,7 @@ function App() {
             </aside>
 
             {/* ── Main Content Canvas ──────────────────────────────────── */}
-            <main className="content-pane" style={{ flex: 1, minWidth: 0, padding: '20px 28px', background: '#F4F5F7' }}>
+            <main className="content-pane" style={{ flex: 1, minWidth: 0, padding: '20px 28px', background: '#FAFAFA' }}>
 
               {/* Jira Project Breadcrumbs Header */}
               <div style={{
@@ -889,18 +891,18 @@ function App() {
                 justifyContent: 'space-between',
                 marginBottom: '16px',
                 paddingBottom: '10px',
-                borderBottom: '1px solid #DFE1E6',
+                borderBottom: '1px solid #E4E4E7',
                 flexWrap: 'wrap',
                 gap: '8px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#626F86' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#71717A' }}>
                   <span style={{ fontWeight: 500 }}>Projects</span>
-                  <span style={{ color: '#8590A2' }}>/</span>
-                  <span style={{ fontWeight: 600, color: '#172B4D' }}>
+                  <span style={{ color: '#A1A1AA' }}>/</span>
+                  <span style={{ fontWeight: 600, color: '#09090B' }}>
                     {portalMode === 'software' ? 'Software Engineering' : (portalMode === 'hr' ? 'HR Operations' : 'BDA Business Desk')}
                   </span>
-                  <span style={{ color: '#8590A2' }}>/</span>
-                  <span style={{ fontWeight: 600, color: '#0C66E4' }}>
+                  <span style={{ color: '#A1A1AA' }}>/</span>
+                  <span style={{ fontWeight: 600, color: '#0284C7' }}>
                     {activeTab === 'softwareDashboard' ? 'Overview' :
                      activeTab === 'softwareTasks' ? 'Sprint Board & Tasks' :
                      activeTab === 'softwareDailyReports' ? 'Daily Reports' :
@@ -1224,30 +1226,31 @@ function App() {
               <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
                 <div style={{
                   padding: '16px 20px',
-                  background: '#0C66E4',
+                  background: '#09090B',
                   color: '#ffffff',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+                  borderBottom: '1px solid #27272A'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
                       width: '32px',
                       height: '32px',
-                      borderRadius: '3px',
-                      background: 'rgba(255, 255, 255, 0.2)',
+                      borderRadius: '4px',
+                      background: 'rgba(14, 165, 233, 0.2)',
+                      border: '1px solid rgba(14, 165, 233, 0.4)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#ffffff',
+                      color: '#38BDF8',
                       fontSize: '14px'
                     }}>
                       <i className="fas fa-cubes"></i>
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '14px' }}>Aparaitech Portal</div>
-                      <div style={{ fontSize: '11px', color: '#E9F2FF' }}>
+                      <div style={{ fontSize: '11px', color: '#A1A1AA' }}>
                         {currentUser.name} • {portalMode === 'software' ? 'Software' : (portalMode === 'hr' ? 'HR' : 'BDA')}
                       </div>
                     </div>
@@ -1256,12 +1259,12 @@ function App() {
                     onClick={() => setMobileDrawerOpen(false)}
                     aria-label="Close navigation"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.15)',
-                      border: 'none',
+                      background: '#18181B',
+                      border: '1px solid #27272A',
                       color: '#ffffff',
                       width: '30px',
                       height: '30px',
-                      borderRadius: '3px',
+                      borderRadius: '4px',
                       fontSize: '14px',
                       cursor: 'pointer',
                       display: 'flex',
@@ -1278,12 +1281,13 @@ function App() {
                   {/* Portal Switcher for Mobile Drawer (Management & Admin) */}
                   {canSwitchPortal && (
                     <div style={{
-                      background: '#EBECF0',
-                      borderRadius: '3px',
+                      background: '#F4F4F5',
+                      borderRadius: '4px',
                       padding: '2px',
                       display: 'flex',
                       gap: '2px',
-                      marginBottom: '12px'
+                      marginBottom: '12px',
+                      border: '1px solid #E4E4E7'
                     }}>
                       <button
                         onClick={() => {
@@ -1298,9 +1302,9 @@ function App() {
                           fontSize: '11px',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          background: portalMode === 'software' ? '#FFFFFF' : 'transparent',
-                          color: portalMode === 'software' ? '#0C66E4' : '#44546F',
-                          boxShadow: portalMode === 'software' ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none'
+                          background: portalMode === 'software' ? '#0EA5E9' : 'transparent',
+                          color: portalMode === 'software' ? '#FFFFFF' : '#71717A',
+                          boxShadow: portalMode === 'software' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none'
                         }}
                       >
                         Software
@@ -1318,9 +1322,9 @@ function App() {
                           fontSize: '11px',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          background: portalMode === 'bda' ? '#FFFFFF' : 'transparent',
-                          color: portalMode === 'bda' ? '#00875A' : '#44546F',
-                          boxShadow: portalMode === 'bda' ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none'
+                          background: portalMode === 'bda' ? '#0EA5E9' : 'transparent',
+                          color: portalMode === 'bda' ? '#FFFFFF' : '#71717A',
+                          boxShadow: portalMode === 'bda' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none'
                         }}
                       >
                         BDA
@@ -1338,9 +1342,9 @@ function App() {
                           fontSize: '11px',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          background: portalMode === 'hr' ? '#FFFFFF' : 'transparent',
-                          color: portalMode === 'hr' ? '#6554C0' : '#44546F',
-                          boxShadow: portalMode === 'hr' ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none'
+                          background: portalMode === 'hr' ? '#0EA5E9' : 'transparent',
+                          color: portalMode === 'hr' ? '#FFFFFF' : '#71717A',
+                          boxShadow: portalMode === 'hr' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none'
                         }}
                       >
                         HR
@@ -1485,7 +1489,7 @@ function App() {
                           </button>
                           <button
                             className="sidebar-nav-btn"
-                            style={{ ...sidebarBtnStyle(false), color: '#6554C0', marginTop: '2px' }}
+                            style={{ ...sidebarBtnStyle(false), color: '#0284C7', marginTop: '2px' }}
                             onClick={() => {
                               handleTogglePortal('hr')
                               setMobileDrawerOpen(false)

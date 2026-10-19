@@ -67,13 +67,13 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
 
-      {/* 1. Atlassian Executive Profile & Shift Status Header */}
+      {/* 1. Executive Profile & Shift Status Header */}
       <div style={{
         background: '#FFFFFF',
-        borderRadius: '3px',
-        border: '1px solid #DFE1E6',
+        borderRadius: '4px',
+        border: '1px solid #E4E4E7',
         padding: '20px 24px',
-        boxShadow: '0 1px 1px rgba(9, 30, 66, 0.08)',
+        boxShadow: '0 1px 3px rgba(9, 9, 11, 0.05)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -85,8 +85,9 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
             width: '48px',
             height: '48px',
             borderRadius: '50%',
-            background: '#0C66E4',
-            color: '#FFFFFF',
+            background: '#09090B',
+            color: '#38BDF8',
+            border: '2px solid #0EA5E9',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -99,7 +100,7 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#172B4D', margin: 0 }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#09090B', margin: 0 }}>
                 {currentUser.name}
               </h1>
               <span className="badge badge-brand" style={{ fontSize: '11px' }}>
@@ -109,7 +110,7 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
                 {isCheckedIn ? (isCheckedOut ? 'Shift Completed' : 'Checked In • Active') : 'Pending Punch-In'}
               </span>
             </div>
-            <p style={{ margin: 0, fontSize: '13px', color: '#626F86', lineHeight: 1.4 }}>
+            <p style={{ margin: 0, fontSize: '13px', color: '#71717A', lineHeight: 1.4 }}>
               {currentUser.designation || 'Software Engineer'} • {currentUser.department || 'Development'} • ID: {currentUser.empId || 'N/A'} • Shift: 07:00 AM - 11:00 AM
             </p>
           </div>
@@ -212,10 +213,10 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
         >
           <div className="label">ACTIVE SPRINT TASKS</div>
           <div className="value">{tasks.length}</div>
-          <div style={{ fontSize: '12px', color: '#626F86', marginTop: '6px', display: 'flex', gap: '8px' }}>
+          <div style={{ fontSize: '12px', color: '#71717A', marginTop: '6px', display: 'flex', gap: '8px' }}>
             <span style={{ color: '#216E4E', fontWeight: 600 }}>{myCompleted} Done</span>
             <span>•</span>
-            <span style={{ color: '#0055CC', fontWeight: 600 }}>{myInProgress} In Progress</span>
+            <span style={{ color: '#0284C7', fontWeight: 600 }}>{myInProgress} In Progress</span>
           </div>
         </div>
 
@@ -226,7 +227,7 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
         >
           <div className="label">PROJECTS HUB</div>
           <div className="value">{projects.length}</div>
-          <div style={{ fontSize: '12px', color: '#626F86', marginTop: '6px' }}>
+          <div style={{ fontSize: '12px', color: '#71717A', marginTop: '6px' }}>
             Enterprise codebases & milestones
           </div>
         </div>
@@ -238,7 +239,7 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
         >
           <div className="label">COMMITS SYNCHRONIZED</div>
           <div className="value">142+</div>
-          <div style={{ fontSize: '12px', color: '#0C66E4', marginTop: '6px', fontWeight: 500 }}>
+          <div style={{ fontSize: '12px', color: '#0284C7', marginTop: '6px', fontWeight: 500 }}>
             Branch main • Synchronized
           </div>
         </div>
@@ -249,8 +250,8 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
           style={{ cursor: 'pointer' }}
         >
           <div className="label">SPRINT VELOCITY</div>
-          <div className="value" style={{ color: '#172B4D' }}>
-            4.9 <span style={{ fontSize: '14px', color: '#626F86', fontWeight: 400 }}>/ 5.0</span>
+          <div className="value" style={{ color: '#09090B' }}>
+            4.9 <span style={{ fontSize: '14px', color: '#71717A', fontWeight: 400 }}>/ 5.0</span>
           </div>
           <div style={{ fontSize: '12px', color: '#216E4E', marginTop: '6px', fontWeight: 600 }}>
             High reliability sprint delivery
@@ -279,9 +280,9 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
                 key={task._id}
                 onClick={() => onNavigate('tasks')}
                 style={{
-                  background: '#FAFBFC',
-                  border: '1px solid #DFE1E6',
-                  borderRadius: '3px',
+                  background: '#FFFFFF',
+                  border: '1px solid #E4E4E7',
+                  borderRadius: '4px',
                   padding: '10px 14px',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -291,10 +292,10 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
                 }}
               >
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#172B4D', marginBottom: '2px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#09090B', marginBottom: '2px' }}>
                     {task.title}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#626F86' }}>
+                  <div style={{ fontSize: '12px', color: '#71717A' }}>
                     Due: {task.deadline || 'Current Sprint'} • {task.projectName || 'Aparaitech Core'}
                   </div>
                 </div>
@@ -306,7 +307,7 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
             ))}
 
             {tasks.length === 0 && (
-              <div style={{ padding: '24px 12px', textAlign: 'center', color: '#626F86', fontSize: '13px' }}>
+              <div style={{ padding: '24px 12px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>
                 No active tasks assigned yet.
               </div>
             )}
@@ -337,21 +338,21 @@ function SoftwareDashboard({ currentUser, onNavigate, showToast, onOpenProfile, 
                   key={proj._id}
                   onClick={() => onNavigate('projects')}
                   style={{
-                    background: '#FAFBFC',
-                    border: '1px solid #DFE1E6',
-                    borderRadius: '3px',
+                    background: '#FFFFFF',
+                    border: '1px solid #E4E4E7',
+                    borderRadius: '4px',
                     padding: '10px 14px',
                     cursor: 'pointer'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <strong style={{ fontSize: '13px', color: '#172B4D', fontWeight: 600 }}>{proj.title}</strong>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#0C66E4' }}>{progress}%</span>
+                    <strong style={{ fontSize: '13px', color: '#09090B', fontWeight: 600 }}>{proj.title}</strong>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#0284C7' }}>{progress}%</span>
                   </div>
-                  <div style={{ width: '100%', height: '5px', background: '#EBECF0', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: `${progress}%`, height: '100%', background: '#0C66E4', borderRadius: '3px' }} />
+                  <div style={{ width: '100%', height: '5px', background: '#F4F4F5', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: `${progress}%`, height: '100%', background: '#0EA5E9', borderRadius: '3px' }} />
                   </div>
-                  <div style={{ fontSize: '11px', color: '#626F86', marginTop: '4px' }}>
+                  <div style={{ fontSize: '11px', color: '#71717A', marginTop: '4px' }}>
                     Code: <strong>{proj.code}</strong> • Deadline: {proj.deadline}
                   </div>
                 </div>

@@ -144,7 +144,7 @@ function AnnouncementsView({ currentUser, showToast }) {
           <button
             onClick={() => setIsComposeOpen(true)}
             style={{
-              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
@@ -191,7 +191,7 @@ function AnnouncementsView({ currentUser, showToast }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {loading ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#2563eb', marginBottom: '10px' }}></i>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#0EA5E9', marginBottom: '10px' }}></i>
             <div>Loading bulletins...</div>
           </div>
         ) : filteredAnnouncements.map((ann) => {
@@ -204,7 +204,7 @@ function AnnouncementsView({ currentUser, showToast }) {
               style={{
                 background: '#ffffff',
                 borderRadius: '16px',
-                border: ann.isPinned ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                border: ann.isPinned ? '2px solid #0EA5E9' : '1px solid #e2e8f0',
                 padding: '1.4rem',
                 display: 'flex',
                 flexDirection: 'column',
@@ -216,7 +216,7 @@ function AnnouncementsView({ currentUser, showToast }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {ann.isPinned && (
-                    <span style={{ background: '#eff6ff', color: '#2563eb', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '800' }}>
+                    <span style={{ background: '#F0F9FF', color: '#0EA5E9', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '800' }}>
                       📌 PINNED
                     </span>
                   )}
@@ -250,7 +250,7 @@ function AnnouncementsView({ currentUser, showToast }) {
               </div>
 
               <div style={{ paddingTop: '8px', borderTop: '1px solid #f1f5f9', fontSize: '0.72rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <i className="fas fa-user-circle" style={{ color: '#2563eb' }}></i>
+                <i className="fas fa-user-circle" style={{ color: '#0EA5E9' }}></i>
                 <span>Issued by <strong>{ann.postedBy}</strong></span>
               </div>
             </div>
@@ -377,7 +377,7 @@ function AnnouncementsView({ currentUser, showToast }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
+                  style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#0EA5E9', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
                 >
                   {submitting ? 'Publishing...' : 'Publish Announcement'}
                 </button>

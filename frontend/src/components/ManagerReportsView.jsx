@@ -185,7 +185,7 @@ function ManagerReportsView({ currentUser, showToast }) {
 
         <div style={{ background: '#ffffff', borderRadius: '16px', padding: '1.25rem', border: '1px solid #e2e8f0' }}>
           <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '700' }}>CHECKED IN TODAY</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#2563eb', marginTop: '6px' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#0EA5E9', marginTop: '6px' }}>
             {metrics.checkedInToday || 0}
           </div>
           <div style={{ fontSize: '0.76rem', color: '#64748b' }}>Present at office/shift</div>
@@ -209,9 +209,9 @@ function ManagerReportsView({ currentUser, showToast }) {
           </div>
         </div>
 
-        <div style={{ background: '#eff6ff', borderRadius: '16px', padding: '1.25rem', border: '1px solid #bfdbfe' }}>
+        <div style={{ background: '#F0F9FF', borderRadius: '16px', padding: '1.25rem', border: '1px solid #bfdbfe' }}>
           <div style={{ color: '#1e40af', fontSize: '0.75rem', fontWeight: '700' }}>TODAY'S TEAM REVENUE</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#1d4ed8', marginTop: '6px' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#0284C7', marginTop: '6px' }}>
             ₹{(metrics.todayRevenue || 0).toLocaleString('en-IN')}
           </div>
           <div style={{ fontSize: '0.76rem', color: '#1e40af' }}>
@@ -463,7 +463,7 @@ function ManagerReportsView({ currentUser, showToast }) {
                           {r.todayConversions}
                         </span>
                       </td>
-                      <td style={{ color: '#2563eb', fontWeight: '800' }}>
+                      <td style={{ color: '#0EA5E9', fontWeight: '800' }}>
                         ₹{(r.revenue || 0).toLocaleString('en-IN')}
                       </td>
                       <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

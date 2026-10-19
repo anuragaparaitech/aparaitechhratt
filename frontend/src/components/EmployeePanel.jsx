@@ -286,7 +286,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
               borderRadius: '3px',
               fontSize: '13px',
               fontWeight: '500',
-              background: '#0C66E4',
+              background: '#0EA5E9',
               color: '#FFFFFF',
               boxShadow: 'none'
             }}
@@ -296,27 +296,28 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
         </div>
       )}
 
-      {/* ── Atlassian Jira User Profile Card ─────────────────────────── */}
+      {/* ── User Profile Card ─────────────────────────── */}
       <div style={{
         background: '#FFFFFF',
         borderRadius: '4px',
         padding: '16px 20px',
-        color: '#172B4D',
+        color: '#09090B',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '1rem',
-        border: '1px solid #DFE1E6',
-        boxShadow: '0 1px 1px rgba(9, 30, 66, 0.08)'
+        border: '1px solid #E4E4E7',
+        boxShadow: '0 1px 3px rgba(9, 9, 11, 0.05)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
             width: '44px',
             height: '44px',
             borderRadius: '4px',
-            background: '#0C66E4',
-            color: '#FFFFFF',
+            background: '#09090B',
+            color: '#38BDF8',
+            border: '1.5px solid #0EA5E9',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -554,9 +555,9 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
                   style={{
                     padding: '12px 18px',
                     borderRadius: '10px',
-                    border: '1.5px solid #2563eb',
-                    background: '#eff6ff',
-                    color: '#1d4ed8',
+                    border: '1.5px solid #BAE6FD',
+                    background: '#F0F9FF',
+                    color: '#0284C7',
                     fontWeight: '700',
                     fontSize: '0.88rem',
                     cursor: 'pointer',
@@ -664,7 +665,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
                   } else if (rec.status === 'holiday') {
                     cls = ''
                     txt = 'Holiday'
-                    badgeStyle = { background: '#dbeafe', color: '#1d4ed8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
+                    badgeStyle = { background: '#dbeafe', color: '#0284C7', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }
                   } else if (rec.status === 'worked-on-holiday') {
                     cls = ''
                     txt = 'Worked on Holiday'
@@ -938,13 +939,13 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
                   width: '100%',
                   padding: '12px',
                   borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  background: '#0EA5E9',
                   color: '#ffffff',
                   fontWeight: 600,
                   fontSize: '0.95rem',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                  boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.25)'
                 }}
               >
                 ✍️ Fill Daily Report Now

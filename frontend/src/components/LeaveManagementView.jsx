@@ -4,7 +4,7 @@ import { emitSyncEvent, SYNC_EVENTS, useAutoRefresh } from '../utils/realtimeSyn
 
 // Company Leave Policy Annual Quotas
 const LEAVE_CATEGORIES = [
-  { type: 'Casual Leave', quota: 12, color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: 'fa-umbrella-beach', desc: 'Personal errands & urgent leaves' },
+  { type: 'Casual Leave', quota: 12, color: '#0EA5E9', bg: '#F0F9FF', border: '#bfdbfe', icon: 'fa-umbrella-beach', desc: 'Personal errands & urgent leaves' },
   { type: 'Sick Leave', quota: 7, color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0', icon: 'fa-heartbeat', desc: 'Illness recovery & medical checkups' },
   { type: 'Privilege Leave', quota: 15, color: '#8b5cf6', bg: '#f5f3ff', border: '#ddd6fe', icon: 'fa-calendar-check', desc: 'Planned vacations & earned breaks' },
   { type: 'Emergency Leave', quota: 3, color: '#ef4444', bg: '#fef2f2', border: '#fecaca', icon: 'fa-bolt', desc: 'Family emergencies & urgent crises' }
@@ -226,7 +226,7 @@ function LeaveManagementView({ currentUser, showToast }) {
         <button
           onClick={() => setIsApplyOpen(true)}
           style={{
-            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+            background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
             color: '#ffffff',
             border: 'none',
             borderRadius: '12px',
@@ -329,7 +329,7 @@ function LeaveManagementView({ currentUser, showToast }) {
         gap: '0.85rem'
       }}>
         <div style={{ background: '#ffffff', borderRadius: '12px', padding: '12px 16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F0F9FF', color: '#0EA5E9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>
             <i className="fas fa-file-alt"></i>
           </div>
           <div>
@@ -563,7 +563,7 @@ function LeaveManagementView({ currentUser, showToast }) {
       }}>
         {loading ? (
           <div style={{ padding: '3.5rem 1rem', textAlign: 'center', color: '#64748b' }}>
-            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '2rem', color: '#2563eb', marginBottom: '12px' }}></i>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '2rem', color: '#0EA5E9', marginBottom: '12px' }}></i>
             <div style={{ fontWeight: '700', fontSize: '0.92rem' }}>Loading dynamic leave records...</div>
           </div>
         ) : activeTab === 'myLeaves' ? (
@@ -598,7 +598,7 @@ function LeaveManagementView({ currentUser, showToast }) {
                     <td style={{ padding: '14px 12px', color: '#334155', fontWeight: '600' }}>
                       {leave.startDate} <span style={{ color: '#94a3b8' }}>to</span> {leave.endDate}
                     </td>
-                    <td style={{ padding: '14px 12px', fontWeight: '800', color: '#2563eb' }}>
+                    <td style={{ padding: '14px 12px', fontWeight: '800', color: '#0EA5E9' }}>
                       {leave.totalDays} day{Number(leave.totalDays) > 1 ? 's' : ''}
                     </td>
                     <td style={{ padding: '14px 12px', color: '#475569', maxWidth: '240px', lineHeight: 1.4 }}>
@@ -707,8 +707,8 @@ function LeaveManagementView({ currentUser, showToast }) {
                     </td>
                     <td style={{ padding: '14px 12px' }}>
                       <span style={{
-                        background: (leave.teamName || '').toLowerCase().includes('soft') ? '#eff6ff' : '#ecfdf5',
-                        color: (leave.teamName || '').toLowerCase().includes('soft') ? '#2563eb' : '#059669',
+                        background: (leave.teamName || '').toLowerCase().includes('soft') ? '#F0F9FF' : '#ecfdf5',
+                        color: (leave.teamName || '').toLowerCase().includes('soft') ? '#0EA5E9' : '#059669',
                         padding: '3px 8px',
                         borderRadius: '6px',
                         fontWeight: '700',
@@ -724,7 +724,7 @@ function LeaveManagementView({ currentUser, showToast }) {
                       <div style={{ fontWeight: '600', color: '#0f172a' }}>
                         {leave.startDate} <span style={{ color: '#94a3b8' }}>to</span> {leave.endDate}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '700' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#0EA5E9', fontWeight: '700' }}>
                         {leave.totalDays} day{Number(leave.totalDays) > 1 ? 's' : ''}
                       </div>
                     </td>
@@ -901,11 +901,11 @@ function LeaveManagementView({ currentUser, showToast }) {
               {startDate && endDate && (
                 <div style={{
                   padding: '8px 12px',
-                  background: '#eff6ff',
+                  background: '#F0F9FF',
                   border: '1px solid #bfdbfe',
                   borderRadius: '10px',
                   fontSize: '0.78rem',
-                  color: '#1d4ed8',
+                  color: '#0284C7',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px'
@@ -944,7 +944,7 @@ function LeaveManagementView({ currentUser, showToast }) {
                     padding: '8px 22px',
                     borderRadius: '8px',
                     border: 'none',
-                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
                     color: '#ffffff',
                     fontWeight: '800',
                     cursor: 'pointer',

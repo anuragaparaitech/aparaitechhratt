@@ -49,8 +49,8 @@ function NotificationCenterModal({ isOpen, onClose, currentUser, onNavigate, onO
       id: 'notif-shift',
       type: 'info',
       icon: 'fa-fingerprint',
-      color: '#2563eb',
-      bg: '#eff6ff',
+      color: '#0EA5E9',
+      bg: '#F0F9FF',
       title: 'Shift 1 Timing (07:00 AM - 11:00 AM)',
       message: 'Software Developers & Interns shift is active. Face recognition and GPS check-in status recorded.',
       actionText: 'Punch Desk',
@@ -152,7 +152,7 @@ function NotificationCenterModal({ isOpen, onClose, currentUser, onNavigate, onO
           <button
             onClick={handleTestPop}
             style={{
-              background: testSent ? '#10b981' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              background: testSent ? '#10b981' : 'linear-gradient(135deg, #0EA5E9, #0284C7)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',

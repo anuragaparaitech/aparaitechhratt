@@ -805,7 +805,7 @@ function FaceVerificationModal({
             <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
               {[0,1,2].map(i => (
                 <div key={i} style={{
-                  width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb',
+                  width: '8px', height: '8px', borderRadius: '50%', background: '#0EA5E9',
                   animation: `pulse 1.2s ease-in-out ${i*0.3}s infinite`
                 }} />
               ))}
@@ -817,7 +817,7 @@ function FaceVerificationModal({
         {(phase === 'capturing' || phase === 'verifying') && (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
             {capturedImage && (
-              <div style={{ width: '110px', height: '110px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 1rem', border: '3px solid #2563eb' }}>
+              <div style={{ width: '110px', height: '110px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 1rem', border: '3px solid #0EA5E9' }}>
                 <img src={capturedImage} alt="Captured" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             )}
@@ -920,7 +920,7 @@ function FaceVerificationModal({
                 Cancel
               </button>
               {retryCount < MAX_RETRIES && (
-                <button onClick={handleRetry} style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '0.86rem' }}>
+                <button onClick={handleRetry} style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', background: '#0EA5E9', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '0.86rem' }}>
                   🔄 Try Again ({MAX_RETRIES - retryCount} left)
                 </button>
               )}
@@ -999,9 +999,9 @@ function FaceVerificationModal({
               <p style={{ color: '#dc2626', fontSize: '0.83rem', margin: 0, lineHeight: 1.5 }}>{statusMsg}</p>
             </div>
             {phase === 'cam-denied' && (
-              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.7rem 1rem', marginBottom: '1rem', textAlign: 'left' }}>
-                <p style={{ color: '#1d4ed8', fontSize: '0.78rem', fontWeight: 600, margin: '0 0 4px' }}>How to allow camera:</p>
-                <ul style={{ color: '#1d4ed8', fontSize: '0.78rem', paddingLeft: '1.1rem', margin: 0, lineHeight: 1.8 }}>
+              <div style={{ background: '#F0F9FF', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.7rem 1rem', marginBottom: '1rem', textAlign: 'left' }}>
+                <p style={{ color: '#0284C7', fontSize: '0.78rem', fontWeight: 600, margin: '0 0 4px' }}>How to allow camera:</p>
+                <ul style={{ color: '#0284C7', fontSize: '0.78rem', paddingLeft: '1.1rem', margin: 0, lineHeight: 1.8 }}>
                   <li>Click the 🔒 lock icon in your browser address bar</li>
                   <li>Set Camera to "Allow"</li>
                   <li>Refresh the page and try again</li>
@@ -1015,7 +1015,7 @@ function FaceVerificationModal({
               {phase !== 'cam-denied' && phase !== 'cam-not-found' && (
                 <button
                   onClick={() => { fullReset(); setTimeout(startCameraThenLoad, 100) }}
-                  style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '0.86rem' }}
+                  style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', background: '#0EA5E9', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '0.86rem' }}
                 >
                   🔄 Retry
                 </button>

@@ -166,7 +166,7 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '800', color: '#0a192f', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <i className="fas fa-inbox" style={{ color: '#2563eb' }}></i>
+              <i className="fas fa-inbox" style={{ color: '#0EA5E9' }}></i>
               Administrative Message Centre
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
@@ -321,7 +321,7 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
                       onClick={() => handleReadMessage(rec)}
                     >
                       <td>
-                        <span className={`status-badge ${rec.isRead ? 'status-quarter' : 'status-full'}`} style={!rec.isRead ? { background: '#dbeafe', color: '#1d4ed8' } : undefined}>
+                        <span className={`status-badge ${rec.isRead ? 'status-quarter' : 'status-full'}`} style={!rec.isRead ? { background: '#dbeafe', color: '#0284C7' } : undefined}>
                           {rec.isRead ? 'Read' : 'New ✉️'}
                         </span>
                       </td>
@@ -348,7 +348,7 @@ function EmployeeInbox({ currentUser, showToast, onUnreadUpdate }) {
                         <div style={{ display: 'flex', gap: '6px' }}>
                           <button 
                             className="g-button"
-                            style={{ padding: '5px 10px', fontSize: '0.78rem', background: '#2563eb' }}
+                            style={{ padding: '5px 10px', fontSize: '0.78rem', background: '#0EA5E9' }}
                             onClick={(e) => {
                               e.stopPropagation()
                               handleReadMessage(rec)

@@ -121,7 +121,7 @@ function SoftwareDailyReportModal({ isOpen, onClose, currentUser, showToast, onR
               width: '40px',
               height: '40px',
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #2563eb, #38bdf8)',
+              background: 'linear-gradient(135deg, #0EA5E9, #38bdf8)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -178,7 +178,7 @@ function SoftwareDailyReportModal({ isOpen, onClose, currentUser, showToast, onR
             </div>
             <div>
               <span style={{ color: '#64748b', display: 'block', fontSize: '0.7rem' }}>EMP ID</span>
-              <strong style={{ color: '#2563eb' }}>{currentUser.empId || 'AP-EMP'}</strong>
+              <strong style={{ color: '#0EA5E9' }}>{currentUser.empId || 'AP-EMP'}</strong>
             </div>
             <div>
               <span style={{ color: '#64748b', display: 'block', fontSize: '0.7rem' }}>TEAM</span>
@@ -389,7 +389,7 @@ function SoftwareDailyReportModal({ isOpen, onClose, currentUser, showToast, onR
                 padding: '10px 24px',
                 borderRadius: '10px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
                 color: '#ffffff',
                 fontWeight: '800',
                 fontSize: '0.88rem',

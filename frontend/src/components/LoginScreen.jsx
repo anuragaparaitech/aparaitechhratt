@@ -95,7 +95,7 @@ function LoginScreen({ onLogin, showToast }) {
     }
 
     setLoading(true)
-    showToast('🔍 Analyzing facial biometrics...', '#0C66E4')
+    showToast('🔍 Analyzing facial biometrics...', '#0EA5E9')
     try {
       const res = await faceAPI.verifyFace(faceEmail.trim(), imageDataUrl)
       if (res.verified) {
@@ -199,12 +199,12 @@ function LoginScreen({ onLogin, showToast }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#F4F5F7',
+        background: '#FAFAFA',
         padding: '2rem 1rem',
         boxSizing: 'border-box'
       }}
     >
-      {/* ── Atlassian Account Centered Authentication Card ─────────────────── */}
+      {/* ── Enterprise Authentication Card ─────────────────── */}
       <div
         className="auth-card"
         style={{
@@ -212,8 +212,8 @@ function LoginScreen({ onLogin, showToast }) {
           width: '100%',
           background: '#FFFFFF',
           borderRadius: '4px',
-          border: '1px solid #DFE1E6',
-          boxShadow: '0 8px 24px -4px rgba(9, 30, 66, 0.12), 0 0 1px 0 rgba(9, 30, 66, 0.25)',
+          border: '1px solid #E4E4E7',
+          boxShadow: '0 8px 24px -4px rgba(9, 9, 11, 0.08), 0 0 1px 0 rgba(9, 9, 11, 0.15)',
           padding: '2.5rem 2.25rem',
           boxSizing: 'border-box'
         }}
@@ -226,12 +226,13 @@ function LoginScreen({ onLogin, showToast }) {
                 width: '42px',
                 height: '42px',
                 borderRadius: '4px',
-                background: '#0C66E4',
+                background: '#09090B',
+                border: '1px solid #27272A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '4px',
-                boxShadow: '0 2px 4px rgba(12, 102, 228, 0.25)'
+                boxShadow: '0 2px 4px rgba(14, 165, 233, 0.2)'
               }}
             >
               <img
@@ -246,27 +247,28 @@ function LoginScreen({ onLogin, showToast }) {
             style={{
               fontSize: '20px',
               fontWeight: '600',
-              color: '#172B4D',
+              color: '#09090B',
               letterSpacing: '-0.01em',
               margin: '0 0 4px 0'
             }}
           >
             Log in to your account
           </h1>
-          <p style={{ fontSize: '13px', color: '#626F86', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: '#71717A', margin: 0 }}>
             Aparaitech Enterprise Work Management
           </p>
         </div>
 
-        {/* Atlassian Segmented Control (Mode Switcher) */}
+        {/* Segmented Control (Mode Switcher) */}
         <div
           style={{
             display: 'flex',
-            background: '#EBECF0',
-            borderRadius: '3px',
+            background: '#F4F4F5',
+            borderRadius: '4px',
             padding: '2px',
             marginBottom: '1.5rem',
-            gap: '2px'
+            gap: '2px',
+            border: '1px solid #E4E4E7'
           }}
         >
           <button
@@ -277,13 +279,13 @@ function LoginScreen({ onLogin, showToast }) {
               padding: '6px 4px',
               borderRadius: '3px',
               border: 'none',
-              background: authMode === 'email' ? '#FFFFFF' : 'transparent',
-              color: authMode === 'email' ? '#0C66E4' : '#44546F',
+              background: authMode === 'email' ? '#0EA5E9' : 'transparent',
+              color: authMode === 'email' ? '#FFFFFF' : '#71717A',
               fontWeight: authMode === 'email' ? '600' : '500',
               fontSize: '12px',
               cursor: 'pointer',
-              boxShadow: authMode === 'email' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
-              transition: 'all 0.1s ease'
+              boxShadow: authMode === 'email' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+              transition: 'all 0.12s ease'
             }}
           >
             Password
@@ -297,13 +299,13 @@ function LoginScreen({ onLogin, showToast }) {
               padding: '6px 4px',
               borderRadius: '3px',
               border: 'none',
-              background: authMode === 'passcode' ? '#FFFFFF' : 'transparent',
-              color: authMode === 'passcode' ? '#0C66E4' : '#44546F',
+              background: authMode === 'passcode' ? '#0EA5E9' : 'transparent',
+              color: authMode === 'passcode' ? '#FFFFFF' : '#71717A',
               fontWeight: authMode === 'passcode' ? '600' : '500',
               fontSize: '12px',
               cursor: 'pointer',
-              boxShadow: authMode === 'passcode' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
-              transition: 'all 0.1s ease'
+              boxShadow: authMode === 'passcode' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+              transition: 'all 0.12s ease'
             }}
           >
             PIN Pad
@@ -317,13 +319,13 @@ function LoginScreen({ onLogin, showToast }) {
               padding: '6px 4px',
               borderRadius: '3px',
               border: 'none',
-              background: authMode === 'face' ? '#FFFFFF' : 'transparent',
-              color: authMode === 'face' ? '#0C66E4' : '#44546F',
+              background: authMode === 'face' ? '#0EA5E9' : 'transparent',
+              color: authMode === 'face' ? '#FFFFFF' : '#71717A',
               fontWeight: authMode === 'face' ? '600' : '500',
               fontSize: '12px',
               cursor: 'pointer',
-              boxShadow: authMode === 'face' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
-              transition: 'all 0.1s ease'
+              boxShadow: authMode === 'face' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+              transition: 'all 0.12s ease'
             }}
           >
             Face ID
@@ -340,13 +342,13 @@ function LoginScreen({ onLogin, showToast }) {
               padding: '6px 4px',
               borderRadius: '3px',
               border: 'none',
-              background: authMode === 'biometric' ? '#FFFFFF' : 'transparent',
-              color: authMode === 'biometric' ? '#0C66E4' : '#44546F',
+              background: authMode === 'biometric' ? '#0EA5E9' : 'transparent',
+              color: authMode === 'biometric' ? '#FFFFFF' : '#71717A',
               fontWeight: authMode === 'biometric' ? '600' : '500',
               fontSize: '12px',
               cursor: 'pointer',
-              boxShadow: authMode === 'biometric' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
-              transition: 'all 0.1s ease'
+              boxShadow: authMode === 'biometric' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
+              transition: 'all 0.12s ease'
             }}
           >
             Touch
@@ -394,7 +396,7 @@ function LoginScreen({ onLogin, showToast }) {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#0C66E4',
+                    color: '#0284C7',
                     fontSize: '12px',
                     fontWeight: '500',
                     cursor: 'pointer',
@@ -538,8 +540,9 @@ function LoginScreen({ onLogin, showToast }) {
                 width: '64px',
                 height: '64px',
                 borderRadius: '50%',
-                background: '#E9F2FF',
-                color: '#0C66E4',
+                background: '#F0F9FF',
+                color: '#0EA5E9',
+                border: '1px solid #BAE6FD',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -550,7 +553,7 @@ function LoginScreen({ onLogin, showToast }) {
               <i className="fas fa-camera"></i>
             </div>
 
-            <div style={{ fontWeight: '600', fontSize: '14px', color: '#172B4D', marginBottom: '4px' }}>
+            <div style={{ fontWeight: '600', fontSize: '14px', color: '#09090B', marginBottom: '4px' }}>
               Facial Biometric Authentication
             </div>
             <p style={{ fontSize: '12px', color: '#626F86', marginBottom: '1.25rem', lineHeight: 1.4 }}>
@@ -640,7 +643,7 @@ function LoginScreen({ onLogin, showToast }) {
             href="/aparaitech-hrms.apk"
             download="Aparaitech-HRMS.apk"
             style={{
-              color: '#0C66E4',
+              color: '#0284C7',
               textDecoration: 'none',
               fontWeight: '500'
             }}
@@ -650,13 +653,13 @@ function LoginScreen({ onLogin, showToast }) {
         </div>
       </div>
 
-      {/* ── Atlassian Account Footer ───────────────────────────────────────── */}
+      {/* ── Enterprise Account Footer ───────────────────────────────────────── */}
       <footer
         style={{
           marginTop: '1.5rem',
           textAlign: 'center',
           fontSize: '12px',
-          color: '#626F86',
+          color: '#71717A',
           lineHeight: 1.6
         }}
       >
@@ -664,11 +667,11 @@ function LoginScreen({ onLogin, showToast }) {
           <span>Aparaitech Software Company</span> • <span>Work Management Platform</span>
         </div>
         <div style={{ marginTop: '2px' }}>
-          <a href="https://aparaitech.org" target="_blank" rel="noreferrer" style={{ color: '#0C66E4', textDecoration: 'none', marginRight: '8px' }}>
+          <a href="https://aparaitech.org" target="_blank" rel="noreferrer" style={{ color: '#0284C7', textDecoration: 'none', marginRight: '8px' }}>
             Website
           </a>
           •
-          <a href="mailto:info@aparaitech.org" style={{ color: '#0C66E4', textDecoration: 'none', margin: '0 8px' }}>
+          <a href="mailto:info@aparaitech.org" style={{ color: '#0284C7', textDecoration: 'none', margin: '0 8px' }}>
             Support
           </a>
           •

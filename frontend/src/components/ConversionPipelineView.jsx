@@ -207,7 +207,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                 padding: '9px 16px',
                 borderRadius: '10px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                background: 'linear-gradient(135deg, #0284c7, #0EA5E9)',
                 color: '#ffffff',
                 fontWeight: '800',
                 fontSize: '0.88rem',
@@ -305,8 +305,8 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                 style={{
                   padding: '7px 14px',
                   borderRadius: '8px',
-                  border: isActive ? '1px solid #2563eb' : '1px solid #e2e8f0',
-                  background: isActive ? '#2563eb' : (tab.highlight ? '#fee2e2' : '#f8fafc'),
+                  border: isActive ? '1px solid #0EA5E9' : '1px solid #e2e8f0',
+                  background: isActive ? '#0EA5E9' : (tab.highlight ? '#fee2e2' : '#f8fafc'),
                   color: isActive ? '#ffffff' : (tab.highlight ? '#dc2626' : '#475569'),
                   fontWeight: '700',
                   fontSize: '0.82rem',
@@ -489,9 +489,9 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                               style={{
                                 padding: '3px 8px',
                                 borderRadius: '6px',
-                                background: '#eff6ff',
+                                background: '#F0F9FF',
                                 border: '1px solid #93c5fd',
-                                color: '#1d4ed8',
+                                color: '#0284C7',
                                 fontSize: '0.72rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
@@ -746,7 +746,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                       onChange={handleFinalizeFileChange}
                       style={{ display: 'none' }}
                     />
-                    <i className="fas fa-camera" style={{ color: '#2563eb' }}></i>
+                    <i className="fas fa-camera" style={{ color: '#0EA5E9' }}></i>
                     <span>Attach ₹4,500 receipt screenshot</span>
                   </label>
                 ) : (
@@ -873,7 +873,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
             }}>
               <div>
                 <div style={{ fontWeight: '800', color: '#0f172a', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <i className="fas fa-file-invoice-dollar" style={{ color: '#2563eb' }}></i>
+                  <i className="fas fa-file-invoice-dollar" style={{ color: '#0EA5E9' }}></i>
                   <span>Payment Receipt / Screenshot</span>
                 </div>
                 <div style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '2px' }}>
@@ -904,7 +904,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
             {/* Info Strip */}
             <div style={{
               padding: '10px 20px',
-              background: '#eff6ff',
+              background: '#F0F9FF',
               borderBottom: '1px solid #bfdbfe',
               display: 'flex',
               alignItems: 'center',
@@ -983,7 +983,7 @@ export default function ConversionPipelineView({ currentUser, showToast, onOpenA
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px',
-                    background: '#2563eb',
+                    background: '#0EA5E9',
                     color: '#ffffff',
                     fontWeight: '700',
                     fontSize: '0.82rem',
