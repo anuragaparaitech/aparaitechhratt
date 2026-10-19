@@ -4,13 +4,8 @@ import AparaitechLogo from './AparaitechLogo'
 import WebcamCaptureModal from './WebcamCaptureModal'
 
 /**
- * Enterprise Work Portal Login Screen for Aparaitech Software.
- * Features 4 Authentication Modes:
- * 1. Email + Password
- * 2. 4-Digit Passcode PIN
- * 3. Face Recognition Login
- * 4. Biometric Authentication (WebAuthn / Fingerprint)
- * + Forgot Password (OTP Verification)
+ * Atlassian Jira / Atlassian Account Enterprise Login Screen
+ * Clean, Trustworthy, Professional Enterprise Authentication
  */
 function LoginScreen({ onLogin, showToast }) {
   const [authMode, setAuthMode] = useState('email') // 'email' | 'passcode' | 'face' | 'biometric'
@@ -100,12 +95,11 @@ function LoginScreen({ onLogin, showToast }) {
     }
 
     setLoading(true)
-    showToast('🔍 Analyzing facial biometrics...', '#2563eb')
+    showToast('🔍 Analyzing facial biometrics...', '#0C66E4')
     try {
       const res = await faceAPI.verifyFace(faceEmail.trim(), imageDataUrl)
       if (res.verified) {
         showToast(`✅ Face Authenticated! Welcome, ${res.employeeName || faceEmail}`, '#10b981')
-        // Automatically retrieve employee session
         const empRes = await employeeAPI.getAll()
         const targetFace = faceEmail.trim().toLowerCase()
         const matchedUser = empRes.employees?.find(e => {
@@ -198,576 +192,489 @@ function LoginScreen({ onLogin, showToast }) {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #07101e 0%, #0b192c 45%, #082f38 100%)',
-      padding: 'calc(env(safe-area-inset-top, 0px) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.25rem) 1.25rem',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: "'Inter', sans-serif"
-    }}>
-      {/* Background Glowing Ambient Orbs */}
-      <div style={{
-        position: 'absolute',
-        top: '-15%',
-        right: '-10%',
-        width: '550px',
-        height: '550px',
-        background: 'radial-gradient(circle, rgba(13, 148, 136, 0.22) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-15%',
-        left: '-10%',
-        width: '500px',
-        height: '500px',
-        background: 'radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        borderRadius: '50%'
-      }} />
-
-      {/* Main Container */}
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#F4F5F7',
+        padding: '2rem 1rem',
+        boxSizing: 'border-box'
+      }}
+    >
+      {/* ── Atlassian Account Centered Authentication Card ─────────────────── */}
       <div
-        className="login-card-container"
+        className="auth-card"
         style={{
-          maxWidth: '1080px',
+          maxWidth: '440px',
           width: '100%',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          background: 'rgba(15, 23, 42, 0.75)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-          overflow: 'hidden',
-          zIndex: 10
+          background: '#FFFFFF',
+          borderRadius: '4px',
+          border: '1px solid #DFE1E6',
+          boxShadow: '0 8px 24px -4px rgba(9, 30, 66, 0.12), 0 0 1px 0 rgba(9, 30, 66, 0.25)',
+          padding: '2.5rem 2.25rem',
+          boxSizing: 'border-box'
         }}
       >
-        {/* Left Hero Branding Panel */}
+        {/* Header: Company Brand & Purpose */}
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '4px',
+                background: '#0C66E4',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px',
+                boxShadow: '0 2px 4px rgba(12, 102, 228, 0.25)'
+              }}
+            >
+              <img
+                src="/aparaitech-logo.png"
+                alt="Aparaitech Logo"
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </div>
+          </div>
+
+          <h1
+            style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#172B4D',
+              letterSpacing: '-0.01em',
+              margin: '0 0 4px 0'
+            }}
+          >
+            Log in to your account
+          </h1>
+          <p style={{ fontSize: '13px', color: '#626F86', margin: 0 }}>
+            Aparaitech Enterprise Work Management
+          </p>
+        </div>
+
+        {/* Atlassian Segmented Control (Mode Switcher) */}
         <div
-          className="login-hero-panel"
           style={{
-            padding: '2.5rem 2rem',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            background: 'linear-gradient(180deg, rgba(11, 25, 44, 0.9) 0%, rgba(13, 148, 136, 0.15) 100%)',
-            borderRight: '1px solid rgba(255, 255, 255, 0.08)'
+            background: '#EBECF0',
+            borderRadius: '3px',
+            padding: '2px',
+            marginBottom: '1.5rem',
+            gap: '2px'
           }}
         >
-          <div>
-            <div style={{
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 12px 28px rgba(0, 0, 0, 0.35)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              marginBottom: '1.75rem',
-              background: '#0a192f'
-            }}>
-              <img
-                src="/aparaitech-banner.png"
-                alt="Aparaitech Corporate Banner"
-                style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
+          <button
+            type="button"
+            onClick={() => setAuthMode('email')}
+            style={{
+              flex: 1,
+              padding: '6px 4px',
+              borderRadius: '3px',
+              border: 'none',
+              background: authMode === 'email' ? '#FFFFFF' : 'transparent',
+              color: authMode === 'email' ? '#0C66E4' : '#44546F',
+              fontWeight: authMode === 'email' ? '600' : '500',
+              fontSize: '12px',
+              cursor: 'pointer',
+              boxShadow: authMode === 'email' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
+              transition: 'all 0.1s ease'
+            }}
+          >
+            Password
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAuthMode('passcode')}
+            style={{
+              flex: 1,
+              padding: '6px 4px',
+              borderRadius: '3px',
+              border: 'none',
+              background: authMode === 'passcode' ? '#FFFFFF' : 'transparent',
+              color: authMode === 'passcode' ? '#0C66E4' : '#44546F',
+              fontWeight: authMode === 'passcode' ? '600' : '500',
+              fontSize: '12px',
+              cursor: 'pointer',
+              boxShadow: authMode === 'passcode' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
+              transition: 'all 0.1s ease'
+            }}
+          >
+            PIN Pad
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAuthMode('face')}
+            style={{
+              flex: 1,
+              padding: '6px 4px',
+              borderRadius: '3px',
+              border: 'none',
+              background: authMode === 'face' ? '#FFFFFF' : 'transparent',
+              color: authMode === 'face' ? '#0C66E4' : '#44546F',
+              fontWeight: authMode === 'face' ? '600' : '500',
+              fontSize: '12px',
+              cursor: 'pointer',
+              boxShadow: authMode === 'face' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
+              transition: 'all 0.1s ease'
+            }}
+          >
+            Face ID
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('biometric')
+              handleBiometricLogin()
+            }}
+            style={{
+              flex: 1,
+              padding: '6px 4px',
+              borderRadius: '3px',
+              border: 'none',
+              background: authMode === 'biometric' ? '#FFFFFF' : 'transparent',
+              color: authMode === 'biometric' ? '#0C66E4' : '#44546F',
+              fontWeight: authMode === 'biometric' ? '600' : '500',
+              fontSize: '12px',
+              cursor: 'pointer',
+              boxShadow: authMode === 'biometric' ? '0 1px 2px rgba(9, 30, 66, 0.12)' : 'none',
+              transition: 'all 0.1s ease'
+            }}
+          >
+            Touch
+          </button>
+        </div>
+
+        {/* ── Mode 1: Email + Password ─────────────────────────────────────── */}
+        {authMode === 'email' && (
+          <form onSubmit={handleEmailSubmit}>
+            <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#44546F',
+                  marginBottom: '4px'
+                }}
+              >
+                Work Email or Employee ID
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. name@aparaitech.org or AP7099"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="auth-input"
+                style={{
+                  width: '100%',
+                  height: '38px',
+                  borderRadius: '3px'
+                }}
               />
             </div>
 
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 14px',
-              background: 'rgba(13, 148, 136, 0.15)',
-              border: '1px solid rgba(13, 148, 136, 0.35)',
-              borderRadius: '999px',
-              color: '#2dd4bf',
-              fontSize: '0.78rem',
-              fontWeight: '700',
-              letterSpacing: '0.04em',
-              marginBottom: '1rem'
-            }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2dd4bf', boxShadow: '0 0 8px #2dd4bf' }} />
-              ENTERPRISE WORK PORTAL 2.0
+            <div style={{ marginBottom: '1.25rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#44546F' }}>
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsForgotModalOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#0C66E4',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="auth-input"
+                  style={{
+                    width: '100%',
+                    height: '38px',
+                    borderRadius: '3px',
+                    paddingRight: '36px'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(v => !v)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#626F86',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                >
+                  <i className={`fas ${showPwd ? 'fa-eye-slash' : 'fa-eye'}`} />
+                </button>
+              </div>
             </div>
 
-            <h1 style={{
-              fontSize: '1.75rem',
-              fontWeight: '900',
-              lineHeight: 1.25,
-              color: '#ffffff',
-              letterSpacing: '-0.02em',
-              marginBottom: '0.75rem'
-            }}>
-              Software Engineering <br />
-              <span style={{
-                background: 'linear-gradient(135deg, #2dd4bf 0%, #38bdf8 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}>
-                Work & Operations Portal
-              </span>
-            </h1>
+            <button
+              type="submit"
+              disabled={loading}
+              className="auth-btn"
+              style={{
+                width: '100%',
+                height: '40px',
+                borderRadius: '3px',
+                fontWeight: '500',
+                fontSize: '14px'
+              }}
+            >
+              {loading ? (
+                <>
+                  <i className="fas fa-circle-notch fa-spin"></i>
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <span>Log in</span>
+              )}
+            </button>
+          </form>
+        )}
 
-            <p style={{
-              fontSize: '0.92rem',
-              color: '#94a3b8',
-              lineHeight: 1.65,
-              marginBottom: '1.75rem'
-            }}>
-              Manage daily tasks, projects, code commits, attendance face verification, and engineering reports in one unified portal.
+        {/* ── Mode 2: 4-Digit Passcode PIN ─────────────────────────────────── */}
+        {authMode === 'passcode' && (
+          <form onSubmit={handlePasscodeSubmit}>
+            <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#44546F', marginBottom: '4px' }}>
+                Work Email or Employee ID
+              </label>
+              <input
+                type="text"
+                placeholder="name@aparaitech.org or AP7099"
+                value={passcodeEmail}
+                onChange={(e) => setPasscodeEmail(e.target.value)}
+                required
+                className="auth-input"
+                style={{ width: '100%', height: '38px', borderRadius: '3px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.25rem', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#44546F', marginBottom: '4px' }}>
+                4-Digit Passcode PIN
+              </label>
+              <input
+                type="password"
+                maxLength={4}
+                placeholder="••••"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
+                required
+                className="auth-input"
+                style={{
+                  width: '100%',
+                  height: '46px',
+                  borderRadius: '3px',
+                  fontSize: '20px',
+                  textAlign: 'center',
+                  letterSpacing: '10px',
+                  fontWeight: '700'
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="auth-btn"
+              style={{ width: '100%', height: '40px', borderRadius: '3px' }}
+            >
+              {loading ? 'Verifying PIN...' : 'Log in with PIN'}
+            </button>
+          </form>
+        )}
+
+        {/* ── Mode 3: Face Recognition ─────────────────────────────────────── */}
+        {authMode === 'face' && (
+          <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+            <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#44546F', marginBottom: '4px' }}>
+                Work Email or Employee ID for Face Verification
+              </label>
+              <input
+                type="text"
+                placeholder="name@aparaitech.org or AP7099"
+                value={faceEmail}
+                onChange={(e) => setFaceEmail(e.target.value)}
+                className="auth-input"
+                style={{ width: '100%', height: '38px', borderRadius: '3px' }}
+              />
+            </div>
+
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: '#E9F2FF',
+                color: '#0C66E4',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                marginBottom: '0.75rem'
+              }}
+            >
+              <i className="fas fa-camera"></i>
+            </div>
+
+            <div style={{ fontWeight: '600', fontSize: '14px', color: '#172B4D', marginBottom: '4px' }}>
+              Facial Biometric Authentication
+            </div>
+            <p style={{ fontSize: '12px', color: '#626F86', marginBottom: '1.25rem', lineHeight: 1.4 }}>
+              Authenticate securely using AI biometric facial recognition.
             </p>
-          </div>
-
-          <div style={{
-            marginTop: '2rem',
-            paddingTop: '1.25rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.75rem',
-            color: '#64748b'
-          }}>
-            <a href="https://aparaitech.org" target="_blank" rel="noreferrer" style={{ color: '#93c5fd', textDecoration: 'none' }}>
-              🌐 aparaitech.org
-            </a>
-            <span>•</span>
-            <a href="mailto:info@aparaitech.org" style={{ color: '#93c5fd', textDecoration: 'none' }}>
-              ✉️ info@aparaitech.org
-            </a>
-          </div>
-        </div>
-
-        {/* Right Authentication Card */}
-        <div style={{
-          padding: '2.25rem 2rem',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          background: '#ffffff'
-        }}>
-          {/* Logo & Header */}
-          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <div style={{ display: 'inline-block', marginBottom: '0.5rem' }}>
-              <AparaitechLogo size={65} animate={true} variant="badge" />
-            </div>
-            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#0f172a', letterSpacing: '0.02em' }}>
-              APARAITECH SOFTWARE
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#0d9488', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Official Employee Access
-            </div>
-          </div>
-
-          {/* Authentication Mode Switcher Tabs */}
-          <div style={{
-            display: 'flex',
-            background: '#f1f5f9',
-            borderRadius: '12px',
-            padding: '4px',
-            marginBottom: '1.25rem',
-            gap: '4px'
-          }}>
-            <button
-              type="button"
-              onClick={() => setAuthMode('email')}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                borderRadius: '8px',
-                border: 'none',
-                background: authMode === 'email' ? '#ffffff' : 'transparent',
-                color: authMode === 'email' ? '#0f172a' : '#64748b',
-                fontWeight: '800',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                boxShadow: authMode === 'email' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
-              }}
-            >
-              <i className="fas fa-key" style={{ marginRight: '4px' }}></i> Password
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setAuthMode('passcode')}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                borderRadius: '8px',
-                border: 'none',
-                background: authMode === 'passcode' ? '#ffffff' : 'transparent',
-                color: authMode === 'passcode' ? '#0f172a' : '#64748b',
-                fontWeight: '800',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                boxShadow: authMode === 'passcode' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
-              }}
-            >
-              <i className="fas fa-th" style={{ marginRight: '4px' }}></i> PIN Pad
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setAuthMode('face')}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                borderRadius: '8px',
-                border: 'none',
-                background: authMode === 'face' ? '#ffffff' : 'transparent',
-                color: authMode === 'face' ? '#0f172a' : '#64748b',
-                fontWeight: '800',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                boxShadow: authMode === 'face' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
-              }}
-            >
-              <i className="fas fa-camera" style={{ marginRight: '4px' }}></i> Face ID
-            </button>
 
             <button
               type="button"
               onClick={() => {
-                setAuthMode('biometric')
-                handleBiometricLogin()
+                if (!faceEmail) {
+                  showToast('⚠️ Please enter your work email first', '#f59e0b')
+                  return
+                }
+                setIsFaceModalOpen(true)
               }}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                borderRadius: '8px',
-                border: 'none',
-                background: authMode === 'biometric' ? '#ffffff' : 'transparent',
-                color: authMode === 'biometric' ? '#0f172a' : '#64748b',
-                fontWeight: '800',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                boxShadow: authMode === 'biometric' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
-              }}
+              disabled={loading}
+              className="auth-btn"
+              style={{ width: '100%', height: '40px', borderRadius: '3px' }}
             >
-              <i className="fas fa-fingerprint" style={{ marginRight: '4px' }}></i> Touch
+              <i className="fas fa-camera" style={{ marginRight: '6px' }}></i>
+              Open Face Scanner
             </button>
           </div>
+        )}
 
-          {/* 1. EMAIL + PASSWORD LOGIN FORM */}
-          {authMode === 'email' && (
-            <form onSubmit={handleEmailSubmit}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  📧 Work Email or Employee ID
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    placeholder="name@aparaitech.com or AP7098"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '11px 14px 11px 38px',
-                      borderRadius: '10px',
-                      border: '1.5px solid #cbd5e1',
-                      fontSize: '0.9rem',
-                      outline: 'none',
-                      background: '#f8fafc'
-                    }}
-                  />
-                  <i className="fas fa-envelope" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: '700', color: '#334155' }}>
-                    🔒 Password
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setIsForgotModalOpen(true)}
-                    style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPwd ? 'text' : 'password'}
-                    placeholder="••••••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '11px 40px 11px 38px',
-                      borderRadius: '10px',
-                      border: '1.5px solid #cbd5e1',
-                      fontSize: '0.9rem',
-                      outline: 'none',
-                      background: '#f8fafc'
-                    }}
-                  />
-                  <i className="fas fa-lock" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd(v => !v)}
-                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
-                  >
-                    <i className={`fas ${showPwd ? 'fa-eye-slash' : 'fa-eye'}`} />
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #0d9488 0%, #0369a1 100%)',
-                  color: '#ffffff',
-                  fontWeight: '800',
-                  fontSize: '0.95rem',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: '0 8px 18px -4px rgba(13, 148, 136, 0.4)'
-                }}
-              >
-                {loading ? <i className="fas fa-circle-notch fa-spin" /> : <i className="fas fa-shield-alt" />}
-                Sign In to Work Portal
-              </button>
-            </form>
-          )}
-
-          {/* 2. PASSCODE PIN LOGIN FORM */}
-          {authMode === 'passcode' && (
-            <form onSubmit={handlePasscodeSubmit}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  📧 Work Email or Employee ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="name@aparaitech.com or AP7098"
-                  value={passcodeEmail}
-                  onChange={(e) => setPasscodeEmail(e.target.value)}
-                  required
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  🔢 4-Digit Passcode PIN
-                </label>
-                <input
-                  type="password"
-                  maxLength={4}
-                  placeholder="••••"
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '1.4rem',
-                    textAlign: 'center',
-                    letterSpacing: '8px',
-                    outline: 'none',
-                    fontWeight: '900'
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: '#ffffff',
-                  fontWeight: '800',
-                  fontSize: '0.95rem',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                {loading ? <i className="fas fa-circle-notch fa-spin" /> : <i className="fas fa-unlock" />}
-                Unlock with Passcode
-              </button>
-            </form>
-          )}
-
-          {/* 3. FACE RECOGNITION LOGIN FORM */}
-          {authMode === 'face' && (
-            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-              <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  📧 Work Email or Employee ID for Face Match
-                </label>
-                <input
-                  type="text"
-                  placeholder="name@aparaitech.com or AP7098"
-                  value={faceEmail}
-                  onChange={(e) => setFaceEmail(e.target.value)}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                />
-              </div>
-
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                background: '#eff6ff',
-                color: '#2563eb',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem',
-                marginBottom: '1rem',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.2)'
-              }}>
-                <i className="fas fa-camera"></i>
-              </div>
-
-              <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#0f172a', marginBottom: '4px' }}>
-                Biometric Facial Recognition
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '1.25rem' }}>
-                Verifies 128-dimensional biometric facial descriptors stored in Aparaitech Cloud.
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (!faceEmail) {
-                    showToast('⚠️ Please enter your work email first', '#f59e0b')
-                    return
-                  }
-                  setIsFaceModalOpen(true)
-                }}
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: '#ffffff',
-                  fontWeight: '800',
-                  fontSize: '0.95rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                <i className="fas fa-camera"></i> Open Face Scanner
-              </button>
-            </div>
-          )}
-
-          {/* 4. BIOMETRIC TOUCH LOGIN */}
-          {authMode === 'biometric' && (
-            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                background: '#ecfdf5',
-                color: '#059669',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.2rem',
-                marginBottom: '1rem'
-              }}>
-                <i className="fas fa-fingerprint"></i>
-              </div>
-              <div style={{ fontWeight: '800', fontSize: '1rem', color: '#0f172a', marginBottom: '4px' }}>
-                One-Touch Biometric Sign In
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '1.25rem' }}>
-                Fast authentication via WebAuthn, fingerprint sensor, or saved biometric passkey.
-              </div>
-
-              <button
-                type="button"
-                onClick={handleBiometricLogin}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#059669',
-                  color: '#ffffff',
-                  fontWeight: '800',
-                  fontSize: '0.95rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                <i className="fas fa-fingerprint"></i> Authenticate Biometrics
-              </button>
-            </div>
-          )}
-
-          {/* Mobile APK Download Button */}
-          <div style={{
-            marginTop: '1.25rem',
-            padding: '0.75rem 1rem',
-            borderRadius: '12px',
-            background: '#f0fdf4',
-            border: '1.5px solid #a7f3d0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <i className="fab fa-android" style={{ fontSize: '1.2rem', color: '#10b981' }}></i>
-              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#065f46' }}>
-                Aparaitech Mobile App APK
-              </div>
-            </div>
-            <a
-              href="/aparaitech-hrms.apk"
-              download="Aparaitech-HRMS.apk"
+        {/* ── Mode 4: Biometric WebAuthn Touch ─────────────────────────────── */}
+        {authMode === 'biometric' && (
+          <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+            <div
               style={{
-                textDecoration: 'none',
-                background: '#059669',
-                color: '#ffffff',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '0.75rem',
-                fontWeight: '700'
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: '#DCFFF1',
+                color: '#216E4E',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                marginBottom: '0.75rem'
               }}
             >
-              Install APK
-            </a>
+              <i className="fas fa-fingerprint"></i>
+            </div>
+
+            <div style={{ fontWeight: '600', fontSize: '14px', color: '#172B4D', marginBottom: '4px' }}>
+              One-Touch Biometric Sign In
+            </div>
+            <p style={{ fontSize: '12px', color: '#626F86', marginBottom: '1.25rem', lineHeight: 1.4 }}>
+              Fast authentication via saved device passkey or fingerprint sensor.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleBiometricLogin}
+              className="auth-btn"
+              style={{
+                width: '100%',
+                height: '40px',
+                borderRadius: '3px',
+                background: '#1F845A'
+              }}
+            >
+              <i className="fas fa-fingerprint" style={{ marginRight: '6px' }}></i>
+              Authenticate Touch Sensor
+            </button>
           </div>
+        )}
+
+        {/* ── Mobile Android APK Quick Access ──────────────────────────────── */}
+        <div
+          style={{
+            marginTop: '1.5rem',
+            paddingTop: '1rem',
+            borderTop: '1px solid #DFE1E6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '12px'
+          }}
+        >
+          <span style={{ color: '#626F86', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <i className="fab fa-android" style={{ color: '#216E4E', fontSize: '14px' }}></i>
+            Android App
+          </span>
+          <a
+            href="/aparaitech-hrms.apk"
+            download="Aparaitech-HRMS.apk"
+            style={{
+              color: '#0C66E4',
+              textDecoration: 'none',
+              fontWeight: '500'
+            }}
+          >
+            Download .APK
+          </a>
         </div>
       </div>
+
+      {/* ── Atlassian Account Footer ───────────────────────────────────────── */}
+      <footer
+        style={{
+          marginTop: '1.5rem',
+          textAlign: 'center',
+          fontSize: '12px',
+          color: '#626F86',
+          lineHeight: 1.6
+        }}
+      >
+        <div>
+          <span>Aparaitech Software Company</span> • <span>Work Management Platform</span>
+        </div>
+        <div style={{ marginTop: '2px' }}>
+          <a href="https://aparaitech.org" target="_blank" rel="noreferrer" style={{ color: '#0C66E4', textDecoration: 'none', marginRight: '8px' }}>
+            Website
+          </a>
+          •
+          <a href="mailto:info@aparaitech.org" style={{ color: '#0C66E4', textDecoration: 'none', margin: '0 8px' }}>
+            Support
+          </a>
+          •
+          <span style={{ marginLeft: '8px' }}>Version 2.4.0</span>
+        </div>
+      </footer>
 
       {/* Face Capture Modal */}
       <WebcamCaptureModal
@@ -775,38 +682,16 @@ function LoginScreen({ onLogin, showToast }) {
         onClose={() => setIsFaceModalOpen(false)}
         onCapture={handleFaceCaptured}
         title="Face Biometric Verification"
-        instructions="Position your face inside the circle in good lighting."
+        instructions="Position your face inside the frame with good lighting."
       />
 
       {/* Forgot Password OTP Modal */}
       {isForgotModalOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(10, 25, 47, 0.75)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1100,
-          padding: '1.25rem'
-        }}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '20px',
-            maxWidth: '440px',
-            width: '100%',
-            padding: '1.75rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#0f172a' }}>
-                Password Recovery (Email OTP)
-              </h3>
-              <button onClick={() => setIsForgotModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', width: '28px', height: '28px', cursor: 'pointer' }}>
+        <div className="modal">
+          <div className="modal-content" style={{ maxWidth: '420px', borderRadius: '4px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Password Recovery</h3>
+              <button className="close-modal" onClick={() => setIsForgotModalOpen(false)}>
                 ✕
               </button>
             </div>
@@ -814,31 +699,24 @@ function LoginScreen({ onLogin, showToast }) {
             {!otpSent ? (
               <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
-                    Enter Registered Work Email
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#44546F', marginBottom: '4px' }}>
+                    Registered Work Email
                   </label>
                   <input
                     type="email"
-                    placeholder="name@aparaitech.com"
+                    placeholder="name@aparaitech.org"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     required
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem' }}
+                    className="auth-input"
+                    style={{ width: '100%', height: '36px' }}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={resetting}
-                  style={{
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    padding: '10px',
-                    fontWeight: '800',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer'
-                  }}
+                  className="auth-btn"
+                  style={{ width: '100%', height: '36px', borderRadius: '3px' }}
                 >
                   {resetting ? 'Sending OTP...' : 'Send Verification OTP'}
                 </button>
@@ -846,8 +724,8 @@ function LoginScreen({ onLogin, showToast }) {
             ) : (
               <form onSubmit={handleVerifyOtpAndReset} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
-                    Enter 6-Digit OTP Code
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#44546F', marginBottom: '4px' }}>
+                    Enter 6-Digit Verification Code
                   </label>
                   <input
                     type="text"
@@ -856,37 +734,31 @@ function LoginScreen({ onLogin, showToast }) {
                     value={forgotOtp}
                     onChange={(e) => setForgotOtp(e.target.value)}
                     required
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '1.2rem', textAlign: 'center', letterSpacing: '4px' }}
+                    className="auth-input"
+                    style={{ width: '100%', height: '40px', fontSize: '18px', textAlign: 'center', letterSpacing: '6px' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#44546F', marginBottom: '4px' }}>
                     New Password
                   </label>
                   <input
                     type="password"
-                    placeholder="••••••••••••"
+                    placeholder="Enter new password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem' }}
+                    className="auth-input"
+                    style={{ width: '100%', height: '36px' }}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={resetting}
-                  style={{
-                    background: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    padding: '10px',
-                    fontWeight: '800',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer'
-                  }}
+                  className="auth-btn"
+                  style={{ width: '100%', height: '36px', borderRadius: '3px' }}
                 >
-                  {resetting ? 'Resetting Password...' : 'Verify & Set Password'}
+                  {resetting ? 'Updating...' : 'Set New Password'}
                 </button>
               </form>
             )}

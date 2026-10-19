@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aparaitech Email Campaign & Outreach Hub 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090e17;
+      --card-bg: #111a2e;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --teal-primary: #0D9488;
+      --teal-light: #14B8A6;
+      --teal-glow: rgba(13, 148, 136, 0.25);
+      --amber-accent: #F59E0B;
+      --blue-accent: #38BDF8;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      padding: 24px 32px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* TOP HEADER */
+    .hub-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0d9488 100%);
+      padding: 26px 32px;
+      border-radius: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    .hub-brand {
+      display: flex;
+      flex-direction: column;
+    }
+    .hub-title {
+      font-size: 24px;
+      font-weight: 900;
+      font-family: 'Space Grotesk', sans-serif;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hub-badge {
+      background: #0d9488;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .hub-sub {
+      color: #cbd5e1;
+      font-size: 13.5px;
+      margin-top: 4px;
+    }
+    .header-stats {
+      display: flex;
+      gap: 16px;
+    }
+    .stat-pill {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 16px;
+      border-radius: 12px;
+      text-align: right;
+    }
+    .stat-label { font-size: 10.5px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+    .stat-val { font-size: 14px; font-weight: 800; color: #38bdf8; }
+
+    /* LAYOUT SPLIT */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+    }
+
+    /* SIDEBAR */
+    .sidebar-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .panel-heading {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--teal-light);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* TEMPLATE LIST NAV */
+    .tpl-btn {
+      width: 100%;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .tpl-btn:hover {
+      background: rgba(13, 148, 136, 0.15);
+      border-color: var(--teal-light);
+      color: #ffffff;
+      transform: translateX(3px);
+    }
+    .tpl-btn.active {
+      background: linear-gradient(90deg, rgba(13, 148, 136, 0.3) 0%, rgba(13, 148, 136, 0.1) 100%);
+      border-color: var(--teal-light);
+      color: #ffffff;
+      border-left: 4px solid var(--teal-light);
+    }
+    .tpl-num {
+      background: rgba(255, 255, 255, 0.1);
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+      color: var(--teal-light);
+    }
+    .tpl-btn.active .tpl-num {
+      background: var(--teal-primary);
+      color: #ffffff;
+    }
+    .tpl-text-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .tpl-sub {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    /* VARIABLES INJECTOR FORM */
+    .var-group {
+      margin-bottom: 12px;
+    }
+    .var-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .var-input {
+      width: 100%;
+      background: #080d16;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #ffffff;
+      font-size: 12.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .var-input:focus {
+      border-color: var(--teal-light);
+      box-shadow: 0 0 0 2px var(--teal-glow);
+    }
+
+    /* MAIN PREVIEW AREA */
+    .main-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* TOOLBAR CONTROLS */
+    .toolbar-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    .tabs-group {
+      display: flex;
+      background: #080d16;
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--teal-primary);
+      color: #ffffff;
+    }
+    .device-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .device-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .device-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    /* ACTIONS BUTTONS */
+    .action-btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-teal {
+      background: var(--teal-primary);
+      color: #ffffff;
+    }
+    .btn-teal:hover {
+      background: var(--teal-light);
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* SUBJECT LINE STRIP */
+    .subject-strip {
+      background: #101c33;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .subject-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .subject-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .subject-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+      color: #f1f5f9;
+    }
+    .subject-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+      text-transform: uppercase;
+    }
+    .badge-a { background: #0284c7; color: #fff; }
+    .badge-b { background: #059669; color: #fff; }
+    .badge-c { background: #d97706; color: #fff; }
+
+    .copy-sm-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-left: 10px;
+    }
+    .copy-sm-btn:hover {
+      background: var(--teal-primary);
+      color: #ffffff;
+      border-color: var(--teal-primary);
+    }
+
+    /* PREVIEW CONTAINER */
+    .preview-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .iframe-wrapper {
+      width: 100%;
+      height: 640px;
+      background: #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 auto;
+      transition: width 0.3s ease;
+      border: 1px solid #cbd5e1;
+    }
+    .iframe-wrapper.mobile-view {
+      width: 375px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* CODE & TEXT VIEWER */
+    .text-viewer, .code-viewer {
+      width: 100%;
+      height: 640px;
+      background: #080d16;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12.5px;
+      color: #cbd5e1;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 32px;
+      background: #0d9488;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MASTER HUB HEADER -->
+  <header class="hub-header">
+    <div class="hub-brand">
+      <div class="hub-title">
+        ⚡ APARAITECH EMAIL OUTREACH HUB
+        <span class="hub-badge">Batch 2026</span>
+      </div>
+      <div class="hub-sub">
+        High-Converting Cold Email Campaign Suite & Interactive Previewer for College MoUs, TPOs & Student Cohorts
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill">
+        <div class="stat-label">Stipend Model</div>
+        <div class="stat-val">₹8,000 – ₹15,000</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Audience Focus</div>
+        <div class="stat-val">Institutions & Students</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Standard Format</div>
+        <div class="stat-val">Bulletproof HTML + Text</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- WORKSPACE GRID -->
+  <div class="workspace-grid">
+
+    <!-- LEFT COLUMN: TEMPLATE SELECTOR & LIVE INJECTOR -->
+    <div class="sidebar-panel">
+      
+      <!-- TEMPLATES NAV -->
+      <div class="panel-card">
+        <div class="panel-heading">
+          <span>Outreach Email Templates</span>
+          <span style="font-size: 11px; color: var(--text-muted);">5 Designed</span>
+        </div>
+
+        <button class="tpl-btn active" onclick="selectTemplate(0)">
+          <span class="tpl-num">01</span>
+          <div class="tpl-text-wrap">
+            <span>TPO Collaboration Proposal</span>
+            <span class="tpl-sub">Target: TPO, Principal, HODs</span>
+          </div>
+        </button>
+
+        <button class="tpl-btn" onclick="selectTemplate(1)">
+          <span class="tpl-num">02</span>
+          <div class="tpl-text-wrap">
+            <span>TPO 10-Min Briefing Follow-up</span>
+            <span class="tpl-sub">Target: Follow-up after 3-4 days</span>
+          </div>
+        </button>
+
+        <button class="tpl-btn" onclick="selectTemplate(2)">
+          <span class="tpl-num">03</span>
+          <div class="tpl-text-wrap">
+            <span>Student Live Project Invite</span>
+            <span class="tpl-sub">Target: 3rd & 4th Year / CRs</span>
+          </div>
+        </button>
+
+        <button class="tpl-btn" onclick="selectTemplate(3)">
+          <span class="tpl-num">04</span>
+          <div class="tpl-text-wrap">
+            <span>Student Final 48-Hour Urgency</span>
+            <span class="tpl-sub">Target: Closing cohort deadline</span>
+          </div>
+        </button>
+
+        <button class="tpl-btn" onclick="selectTemplate(4)">
+          <span class="tpl-num">05</span>
+          <div class="tpl-text-wrap">
+            <span>Complimentary Tech Masterclass</span>
+            <span class="tpl-sub">Target: Campus Seminar / Webinar</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- LIVE VARIABLES INJECTOR -->
+      <div class="panel-card">
+        <div class="panel-heading">
+          <span>Live Token Customizer</span>
+          <span style="font-size: 11px; color: #38bdf8;">Auto-updates</span>
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Recipient Name</label>
+          <input type="text" id="var-recipient-name" class="var-input" value="Dr. S. K. Patil" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Recipient Designation</label>
+          <input type="text" id="var-recipient-desig" class="var-input" value="Training & Placement Officer" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Target College / Institute</label>
+          <input type="text" id="var-college-name" class="var-input" value="PDEA's College of Engineering, Hadapsar, Pune" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Target Department</label>
+          <input type="text" id="var-department" class="var-input" value="Computer Engineering & IT" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Student Name (for student emails)</label>
+          <input type="text" id="var-student-name" class="var-input" value="Rahul Sharma" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Sender Name</label>
+          <input type="text" id="var-sender-name" class="var-input" value="Anurag Nand" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Sender Phone</label>
+          <input type="text" id="var-sender-phone" class="var-input" value="8805213600" oninput="updateRender()">
+        </div>
+
+        <div class="var-group">
+          <label class="var-label">Sender Email</label>
+          <input type="text" id="var-sender-email" class="var-input" value="anurag@aparaitech.com" oninput="updateRender()">
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: INTERACTIVE PREVIEW & COPY CONTROLS -->
+    <div class="main-workspace">
+      
+      <!-- TOOLBAR -->
+      <div class="toolbar-bar">
+        
+        <!-- VIEW TABS -->
+        <div class="tabs-group">
+          <button id="tab-visual" class="tab-btn active" onclick="switchView('visual')">Rendered View</button>
+          <button id="tab-text" class="tab-btn" onclick="switchView('text')">Plain Text Copy</button>
+          <button id="tab-html" class="tab-btn" onclick="switchView('html')">Raw HTML Code</button>
+        </div>
+
+        <!-- RESPONSIVE TOGGLES (Visual mode only) -->
+        <div id="device-controls" class="device-group">
+          <button id="dev-desktop" class="device-btn active" onclick="setDevice('desktop')">🖥️ Desktop (620px)</button>
+          <button id="dev-mobile" class="device-btn" onclick="setDevice('mobile')">📱 Mobile (375px)</button>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-btn-group">
+          <button class="btn btn-outline" onclick="copyCurrentView()">📋 Copy Body</button>
+          <button class="btn btn-teal" onclick="copyRawHtmlFile()">⚡ Copy Full HTML</button>
+        </div>
+
+      </div>
+
+      <!-- SUBJECT LINE PICKER STRIP -->
+      <div class="subject-strip">
+        <div class="subject-title">
+          <span>Subject Line Testing Variations (Choose One)</span>
+          <span style="font-size: 10.5px; color: var(--text-muted);">Spam-Proof Tested</span>
+        </div>
+        <div id="subject-options-container" class="subject-options">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- PREVIEW PANE -->
+      <div class="preview-card">
+        
+        <!-- VISUAL IFRAME -->
+        <div id="visual-container" class="iframe-wrapper">
+          <iframe id="preview-iframe" title="Email Preview"></iframe>
+        </div>
+
+        <!-- PLAIN TEXT VIEWER -->
+        <div id="text-container" class="text-viewer" style="display: none;"></div>
+
+        <!-- RAW HTML VIEWER -->
+        <div id="html-container" class="code-viewer" style="display: none;"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast">Copied to clipboard!</div>
+
+  <script>
+    // Templates metadata and content pointers
+    const templates = [
+      {
+        id: "01_tpo_institutional_pitch",
+        name: "TPO Collaboration Proposal",
+        file: "01_tpo_institutional_pitch.html",
+        subjects: [
+          { tag: "Formal", text: "Collaboration Proposal: Industry-Led Live Project Program 2026 for {{CollegeName}} Students" },
+          { tag: "Accreditation", text: "Aparaitech x {{CollegeName}}: Enhancing NIRF & NAAC Criteria 1.3.3 via Live Industry Projects" },
+          { tag: "Stipend Angle", text: "Industry Mentorship & ₹8k–₹15k Performance Stipend Projects for {{Department}} Students" }
+        ],
+        textBody: `Dear {{RecipientName}} ({{RecipientDesignation}}, {{CollegeName}}),
+
+I am writing to you on behalf of Aparaitech Software. With the upcoming 2026 placement cycle placing increased emphasis on verified, production-grade engineering over routine academic projects, we actively partner with engineering institutions across Maharashtra and Karnataka to bridge this gap.
+
+We would like to propose the Aparaitech Live Project Program 2026 for students of {{CollegeName}}.
+
+Key Highlights of the Model:
+1. Production Software Architecture: Students build real-world modules in AI/LLMs, Cloud Microservices, Full-Stack Enterprise, and Data Pipelines—not copied tutorial clones.
+2. Overall Performance Stipend (₹8,000 – ₹15,000): A merit-based incentive rewarding milestone delivery, clean code reviews, and product deployment across their tenure.
+3. Verifiable Credentials & Live URLs: Every student completes the program with production URLs, verifiable QR certificates, and corporate recommendation letters for their placement resumes.
+4. Zero Financial Overhead on the Institution: The program operates with full institutional alignment and zero cost to the college, satisfying NAAC Criteria 1.3.3 and NIRF guidelines.
+
+We have successfully formalized institutional dossiers with leading colleges including PDEA’s College of Engineering (Pune) and SSBT’s College of Engineering & Technology (Jalgaon).
+
+Attached is our official institutional dossier: "Aparaitech_Live_Project_Program_2026_Pitch.pdf" detailing the syllabus, mentorship framework, and MoU structure.
+
+Could we schedule a brief 10-minute briefing call this week to explore how we can roll this out for {{CollegeName}} students?
+
+Kindly reply with your preferred date and time, or let us know if we should connect via telephone.
+
+Warm regards,
+
+{{SenderName}}
+{{SenderDesignation}} | Institutional Partnerships
+Aparaitech Software & Innovation
+Bangalore Hub: 360, Neeladri Rd, Electronic City Phase I, Bengaluru 560100
+Maharashtra Hub: Anand Nagar Colony, Baramati 413102
+Phone: +91 {{SenderPhone}} | Email: {{SenderEmail}}
+Website: www.aparaitech.com`
+      },
+      {
+        id: "02_tpo_follow_up",
+        name: "TPO 10-Min Briefing Follow-up",
+        file: "02_tpo_follow_up.html",
+        subjects: [
+          { tag: "Direct Follow-up", text: "Re: Industry-Led Live Project Program 2026 for {{CollegeName}}" },
+          { tag: "10-Min Briefing", text: "Quick 10-Min Briefing / MoU Discussion — Aparaitech Live Projects" },
+          { tag: "Cohort Update", text: "Update: Live Project Program 2026 Cohort Allocation for {{CollegeName}}" }
+        ],
+        textBody: `Dear {{RecipientName}},
+
+I wanted to follow up briefly on the collaboration proposal I shared earlier regarding the Aparaitech Live Project Program 2026 for {{CollegeName}}.
+
+As placement drives approach, students with real production experience—verified by live URLs, active GitHub commit history, and performance stipends (₹8k–₹15k)—have demonstrated a 3x higher shortlisting rate in technical interviews.
+
+Quick recap of our zero-overhead collaboration:
+• Zero financial commitment required from the institution.
+• Direct mentorship by senior AI and Full-Stack industry engineers.
+• Performance-based stipend (₹8,000 to ₹15,000 overall tenure) for top student contributors.
+• Fulfills NAAC criteria & major project / internship curriculum requirements.
+
+Could we connect for a quick 10-minute briefing call this Thursday or Friday between 2:00 PM – 4:30 PM?
+
+Alternatively, we would be delighted to deliver a complimentary 45-minute virtual technical orientation on "Current AI & Industry Deployment Standards" for your pre-final and final year students.
+
+Looking forward to hearing from you.
+
+Best regards,
+
+{{SenderName}}
+{{SenderDesignation}} | Aparaitech Software
+Phone: +91 {{SenderPhone}} | Email: {{SenderEmail}}`
+      },
+      {
+        id: "03_student_live_project_invite",
+        name: "Student Live Project Invite",
+        file: "03_student_live_project_invite.html",
+        subjects: [
+          { tag: "High CTR", text: "[Selection Open] Aparaitech Live Project Program 2026 | Industry Projects & Performance Stipend" },
+          { tag: "Emotional Reality", text: "Beyond College Clones: Build & Deploy Live AI / Full-Stack Products (Batch 2026)" },
+          { tag: "ROI Focused", text: "Aparaitech Live Project 2026: Earn ₹8k–₹15k Performance Stipend + Verifiable Experience" }
+        ],
+        textBody: `Hey {{StudentName}} 👋,
+
+Here is an honest reality about the upcoming 2026 campus and off-campus tech placements:
+
+Recruiters are rejecting thousands of candidates whose resumes feature the exact same YouTube tutorial clones (weather apps, basic e-commerce, clone portals). What top engineering teams actually look for is:
+1. Deployed production software with live links.
+2. Clean Git commit histories and pull requests.
+3. Hands-on architectural problem solving.
+
+The Aparaitech Live Project Program 2026 is designed specifically to give you real corporate engineering experience before you graduate:
+
+What You Get:
+• Real Industry Tech Tracks: Full-Stack Enterprise, AI/LLM Workflows, Cloud Microservices, and Scalable Databases.
+• ₹8,000 – ₹15,000 Performance Stipend: An overall tenure stipend awarded to top contributors based on milestone delivery, code quality, and deployed features.
+• Verifiable Corporate Credentials: Live project URL, verifiable QR-authenticated certificate, and corporate recommendation letter for placement drives.
+• Flexible Hybrid Schedule: Designed around your college lectures, internal exams, and academic calendar.
+
+Who Can Apply:
+Students from 3rd & 4th Year Engineering (CS, IT, ENTC, AI, Data Science, Allied), BCA, and MCA looking for authentic technical credentials.
+
+👉 Apply for Screening Here: https://forms.gle/sucrxqA8c7oZhnQQ7
+(Application takes under 2 minutes. Cohort slots are limited per college).
+
+Build real software. Stand out in technical interviews.
+
+Best,
+Team Aparaitech Software
+Bangalore & Baramati | www.aparaitech.com
+Support: contact@aparaitech.com`
+      },
+      {
+        id: "04_student_urgency_last_chance",
+        name: "Student Final 48-Hour Urgency",
+        file: "04_student_urgency_last_chance.html",
+        subjects: [
+          { tag: "Urgency", text: "[Final Call] Last 48 Hours: Aparaitech Live Project Batch 2026 Screening" },
+          { tag: "FOMO", text: "Closing Soon: Application Window for Aparaitech Live Project Cohort 2026" },
+          { tag: "Direct Alert", text: "Don't wait until 8th semester to realize your portfolio lacks live projects" }
+        ],
+        textBody: `Hi {{StudentName}},
+
+Quick heads-up: The screening window for the upcoming Aparaitech Live Project Program 2026 cohort officially closes in 48 hours.
+
+Once regional team quotas are filled, all remaining submissions will be placed on the waitlist for subsequent cycles.
+
+Quick Reality Check:
+❌ Routine tutorial clones = Filtered out by tech screeners.
+✅ Live deployed systems + ₹8k–₹15k performance stipend + verifiable corporate proof = Instant recruiter confidence.
+
+Take 2 minutes to submit your profile before the portal closes:
+
+👉 Complete Application Form: https://forms.gle/sucrxqA8c7oZhnQQ7
+
+See you in the screening round!
+
+Aparaitech Software & Innovation
+Industry Mentorship Team`
+      },
+      {
+        id: "05_webinar_campus_workshop_invite",
+        name: "Complimentary Tech Masterclass",
+        file: "05_webinar_campus_workshop_invite.html",
+        subjects: [
+          { tag: "Department Pitch", text: "Invitation: 60-Minute Industry Tech Masterclass for {{CollegeName}} Students" },
+          { tag: "Curriculum Synergy", text: "Complimentary Workshop: 'Production Systems & The 2026 Developer Blueprint' for {{CollegeName}}" },
+          { tag: "Executive Offer", text: "Industry Speaker Session: AI & Cloud Deployment Standards for {{Department}} Students" }
+        ],
+        textBody: `Respected {{RecipientName}} ({{RecipientDesignation}}, {{CollegeName}}),
+
+As part of Aparaitech Software’s industry-academia initiative, we would like to offer a complimentary 60-minute technical masterclass for pre-final and final-year engineering students of {{CollegeName}}.
+
+Session Title: "The 2026 Developer Blueprint: Building Production Systems & Navigating Tech Placements"
+Mode: Interactive Virtual Webinar (Zoom/Google Meet) or On-Campus Seminar
+Cost: Completely Free (Zero financial obligation for college or students)
+
+What the Session Delivers:
+1. The 2026 Tech Hiring Shift: What top tech interviewers test beyond college marks and DSA.
+2. Live Architecture Demo: Real-world breakdown of microservices, cloud deployments, and AI integration.
+3. GitHub Resume Audits: Transforming routine academic projects into verified industry-grade portfolios.
+4. Live Project Program Roadmap: How students can qualify for industry-guided projects and ₹8k–₹15k performance-based stipends.
+
+All slide materials, code samples, and Q&A will be provided by Aparaitech’s senior engineering team.
+
+Could you let us know 2 convenient dates and time slots over the coming two weeks to conduct this session for your students?
+
+We look forward to empowering the students of {{CollegeName}}.
+
+Sincerely,
+
+{{SenderName}}
+{{SenderDesignation}} | Academic Outreach
+Aparaitech Software & Innovation
+Phone: +91 {{SenderPhone}} | Email: {{SenderEmail}}`
+      }
+    ];
+
+    let currentTplIndex = 0;
+    let currentView = 'visual';
+    let currentRawHtmlMap = {};
+
+    // Load templates HTML files asynchronously
+    async function loadAllTemplates() {
+      for (const tpl of templates) {
+        try {
+          const res = await fetch(tpl.file);
+          if (res.ok) {
+            currentRawHtmlMap[tpl.id] = await res.text();
+          }
+        } catch (e) {
+          console.warn("Could not fetch " + tpl.file, e);
+        }
+      }
+      updateRender();
+    }
+
+    function getVariables() {
+      return {
+        "{{RecipientName}}": document.getElementById('var-recipient-name').value || "Dr. S. K. Patil",
+        "{{RecipientDesignation}}": document.getElementById('var-recipient-desig').value || "Training & Placement Officer",
+        "{{CollegeName}}": document.getElementById('var-college-name').value || "PDEA's College of Engineering",
+        "{{Department}}": document.getElementById('var-department').value || "Computer Engineering & IT",
+        "{{StudentName}}": document.getElementById('var-student-name').value || "Rahul Sharma",
+        "{{SenderName}}": document.getElementById('var-sender-name').value || "Anurag Nand",
+        "{{SenderPhone}}": document.getElementById('var-sender-phone').value || "8805213600",
+        "{{SenderEmail}}": document.getElementById('var-sender-email').value || "anurag@aparaitech.com"
+      };
+    }
+
+    function injectVars(text) {
+      if (!text) return "";
+      const vars = getVariables();
+      let res = text;
+      for (const [k, v] of Object.entries(vars)) {
+        res = res.replaceAll(k, v);
+      }
+      return res;
+    }
+
+    function selectTemplate(idx) {
+      currentTplIndex = idx;
+      document.querySelectorAll('.tpl-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === idx);
+      });
+      renderSubjectLines();
+      updateRender();
+    }
+
+    function renderSubjectLines() {
+      const container = document.getElementById('subject-options-container');
+      const tpl = templates[currentTplIndex];
+      const badges = ['badge-a', 'badge-b', 'badge-c'];
+      
+      container.innerHTML = tpl.subjects.map((sub, i) => {
+        const text = injectVars(sub.text);
+        return `
+          <div class="subject-item">
+            <div>
+              <span class="subject-badge ${badges[i % badges.length]}">${sub.tag}</span>
+              <span>${text}</span>
+            </div>
+            <button class="copy-sm-btn" onclick="copyText('${escapeHtml(text)}')">Copy Subject</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function updateRender() {
+      renderSubjectLines();
+      const tpl = templates[currentTplIndex];
+      const rawHtml = currentRawHtmlMap[tpl.id] || "";
+      const processedHtml = injectVars(rawHtml);
+      const processedText = injectVars(tpl.textBody);
+
+      // 1. Update Visual iframe
+      const iframe = document.getElementById('preview-iframe');
+      iframe.srcdoc = processedHtml;
+
+      // 2. Update Text container
+      document.getElementById('text-container').textContent = processedText;
+
+      // 3. Update HTML container
+      document.getElementById('html-container').textContent = processedHtml;
+    }
+
+    function switchView(view) {
+      currentView = view;
+      document.getElementById('tab-visual').classList.toggle('active', view === 'visual');
+      document.getElementById('tab-text').classList.toggle('active', view === 'text');
+      document.getElementById('tab-html').classList.toggle('active', view === 'html');
+
+      document.getElementById('visual-container').style.display = view === 'visual' ? 'block' : 'none';
+      document.getElementById('text-container').style.display = view === 'text' ? 'block' : 'none';
+      document.getElementById('html-container').style.display = view === 'html' ? 'block' : 'none';
+      document.getElementById('device-controls').style.display = view === 'visual' ? 'flex' : 'none';
+    }
+
+    function setDevice(device) {
+      const wrapper = document.getElementById('visual-container');
+      const devDesk = document.getElementById('dev-desktop');
+      const devMob = document.getElementById('dev-mobile');
+
+      if (device === 'mobile') {
+        wrapper.classList.add('mobile-view');
+        devMob.classList.add('active');
+        devDesk.classList.remove('active');
+      } else {
+        wrapper.classList.remove('mobile-view');
+        devDesk.classList.add('active');
+        devMob.classList.remove('active');
+      }
+    }
+
+    function copyText(str) {
+      navigator.clipboard.writeText(str).then(() => {
+        showToast("Copied subject line to clipboard!");
+      });
+    }
+
+    function copyCurrentView() {
+      let content = "";
+      if (currentView === 'visual' || currentView === 'html') {
+        const tpl = templates[currentTplIndex];
+        content = injectVars(currentRawHtmlMap[tpl.id] || "");
+        showToast("HTML email code copied to clipboard!");
+      } else {
+        const tpl = templates[currentTplIndex];
+        content = injectVars(tpl.textBody);
+        showToast("Plain text email copied to clipboard!");
+      }
+      navigator.clipboard.writeText(content);
+    }
+
+    function copyRawHtmlFile() {
+      const tpl = templates[currentTplIndex];
+      const content = injectVars(currentRawHtmlMap[tpl.id] || "");
+      navigator.clipboard.writeText(content).then(() => {
+        showToast("Full responsive HTML code copied!");
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    // Initialize
+    loadAllTemplates();
+  </script>
+
+</body>
+</html>

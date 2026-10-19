@@ -31,3 +31,14 @@ Thumbs.db
 *.dll
 assets/
 mobile/node_modules/
+
+# Media & Video files
+*.mkv
+*.mp4
+*.avi
+*.mov
+*.webm
+
+# Temporary generated caches & locks
+temp_chrome_profile_*/
+*.conf.lock

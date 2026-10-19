@@ -246,197 +246,117 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
   return (
     <div id="employeePanel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-      {/* ── Today Special: Mandatory 2-Slot Daily Report Notice Banner ── */}
+      {/* ── MANDATORY NOTICE (Atlassian Warning Banner) ─────────── */}
       {isTwoReportsToday && (
         <div style={{
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
-          borderRadius: '16px',
-          padding: '1.1rem 1.5rem',
-          color: '#ffffff',
-          boxShadow: '0 8px 24px -4px rgba(49, 46, 129, 0.4)',
-          border: '1px solid rgba(165, 180, 252, 0.3)',
+          background: '#FFF7D6',
+          borderRadius: '3px',
+          padding: '12px 16px',
+          color: '#172B4D',
+          border: '1px solid #F5CD47',
+          borderLeft: '4px solid #E2B203',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '1rem',
-          animation: 'pulse 3s infinite alternate'
+          gap: '12px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', maxWidth: '750px' }}>
-            <div style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '12px',
-              background: 'rgba(255, 255, 255, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.4rem',
-              flexShrink: 0
-            }}>
-              📢
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '750px' }}>
+            <span style={{ fontSize: '18px', color: '#7F5F01' }}>⚠️</span>
             <div>
-              <div style={{ fontSize: '0.98rem', fontWeight: 800, letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>MANDATORY NOTICE: 2 Daily Reports Required (Today Only - 13 Oct 2026)</span>
-                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: '#ef4444', color: '#fff', fontWeight: 700 }}>
-                  URGENT
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#172B4D', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>MANDATORY DIRECTIVE: 2 Daily Work Reports Required (Today Only)</span>
+                <span className="status-badge badge-danger" style={{ fontSize: '10px' }}>
+                  REQUIRED
                 </span>
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#c7d2fe', lineHeight: 1.45 }}>
+              <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#44546F', lineHeight: 1.4 }}>
                 All BDA team members must submit their daily report <strong>twice today</strong>:
-                <br />
-                🍱 <strong>Slot 1 (Pre-Lunch):</strong> Before going for lunch break &nbsp;|&nbsp;
-                🚪 <strong>Slot 2 (On Logout):</strong> Final report before checking out.
+                <strong> Slot 1 (Pre-Lunch)</strong> before lunch break &nbsp;|&nbsp;
+                <strong> Slot 2 (On Logout)</strong> before checkout.
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setDailyModalOpen(true)}
+            className="auth-btn"
             style={{
-              padding: '10px 18px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-              color: '#78350f',
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)',
-              whiteSpace: 'nowrap'
+              padding: '6px 14px',
+              borderRadius: '3px',
+              fontSize: '13px',
+              fontWeight: '500',
+              background: '#0C66E4',
+              color: '#FFFFFF',
+              boxShadow: 'none'
             }}
           >
-            ✍️ Open Daily Report
+            Open Daily Report
           </button>
         </div>
       )}
 
-      {/* ── Executive Employee Header Banner ─────────────────────────── */}
+      {/* ── Atlassian Jira User Profile Card ─────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(135deg, #07101e 0%, #0b192c 50%, #0d9488 100%)',
-        borderRadius: '20px',
-        padding: '1.25rem 1.75rem',
-        color: '#ffffff',
+        background: '#FFFFFF',
+        borderRadius: '4px',
+        padding: '16px 20px',
+        color: '#172B4D',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '1rem',
-        boxShadow: '0 12px 28px -6px rgba(7, 16, 30, 0.45)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid #DFE1E6',
+        boxShadow: '0 1px 1px rgba(9, 30, 66, 0.08)'
       }}>
-        {/* Subtle Background Glow */}
-        <div style={{
-          position: 'absolute',
-          right: '0',
-          top: '0',
-          bottom: '0',
-          width: '40%',
-          opacity: 0.15,
-          pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(circle at right, #38bdf8 0%, transparent 70%)'
-        }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
-            width: '54px',
-            height: '54px',
-            borderRadius: '16px',
-            background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '4px',
+            background: '#0C66E4',
+            color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)',
-            border: '2px solid rgba(255, 255, 255, 0.5)',
-            flexShrink: 0,
-            padding: '4px'
+            fontSize: '16px',
+            fontWeight: '700',
+            flexShrink: 0
           }}>
-            <img
-              src="/aparaitech-logo.png"
-              alt="Aparaitech Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
+            {currentUser.name ? currentUser.name.slice(0, 2).toUpperCase() : 'AP'}
           </div>
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '1.3rem',
-                fontWeight: '900',
-                letterSpacing: '0.03em',
-                background: 'linear-gradient(135deg, #ffffff 40%, #5eead4 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}>
-                Welcome, {currentUser.name || 'Associate'}
+              <span style={{ fontSize: '16px', fontWeight: '600', color: '#172B4D' }}>
+                {currentUser.name || 'Associate'}
               </span>
-              <span style={{
-                background: 'rgba(56, 189, 248, 0.2)',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                borderRadius: '6px',
-                padding: '2px 8px',
-                fontSize: '0.68rem',
-                fontWeight: '800',
-                color: '#7dd3fc',
-                letterSpacing: '0.04em'
-              }}>
+              <span className="status-badge badge-info">
                 {currentUser.department || 'BDA'} • {currentUser.empId || 'EMP'}
               </span>
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: '500', marginTop: '3px' }}>
-              APARAITECH SOFTWARE COMPANY • GEOFENCE: 18.596077, 73.718054 (200m)
+            <div style={{ fontSize: '12px', color: '#626F86', marginTop: '2px' }}>
+              Aparaitech Software Company • Geofence Verification Active
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1, flexWrap: 'wrap' }}>
-          {/* Profile & Credentials Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <button
             onClick={() => {
               setProfileTab('details')
               setIsProfileOpen(true)
             }}
-            style={{
-              background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '9px 14px',
-              fontSize: '0.8rem',
-              fontWeight: '800',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
-            }}
+            className="btn-secondary"
           >
             <i className="fas fa-user-circle"></i>
-            My Profile
+            Profile
           </button>
 
           <button
             onClick={() => setIsPinOpen(true)}
-            style={{
-              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '9px 14px',
-              fontSize: '0.8rem',
-              fontWeight: '800',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
-            }}
+            className="btn-secondary"
           >
             <i className="fas fa-th"></i>
             Edit PIN
@@ -444,19 +364,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
 
           <button
             onClick={() => setIsPwdOpen(true)}
-            style={{
-              background: 'rgba(255, 255, 255, 0.12)',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              borderRadius: '12px',
-              padding: '9px 12px',
-              fontSize: '0.8rem',
-              fontWeight: '700',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
+            className="btn-secondary"
           >
             <i className="fas fa-key"></i>
             Password
@@ -464,20 +372,8 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
 
           <button
             onClick={() => setDailyModalOpen(true)}
-            style={{
-              background: 'linear-gradient(135deg, #0d9488, #059669)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '9px 14px',
-              fontSize: '0.8rem',
-              fontWeight: '800',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(13, 148, 136, 0.35)'
-            }}
+            className="auth-btn"
+            style={{ borderRadius: '3px', fontSize: '13px', padding: '6px 12px' }}
           >
             <i className="fas fa-clipboard-list"></i>
             Daily Report
@@ -486,20 +382,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
           {onNavigate && (
             <button
               onClick={() => onNavigate('leave')}
-              style={{
-                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '9px 14px',
-                fontSize: '0.8rem',
-                fontWeight: '800',
-                color: '#ffffff',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
-              }}
+              className="btn-secondary"
             >
               <i className="fas fa-calendar-alt"></i>
               Leaves
@@ -509,20 +392,7 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
           {isBda && (
             <button
               onClick={() => setAddConversionOpen(true)}
-              style={{
-                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '9px 14px',
-                fontSize: '0.8rem',
-                fontWeight: '800',
-                color: '#ffffff',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.35)'
-              }}
+              className="btn-secondary"
             >
               <i className="fas fa-user-plus"></i>
               Log Conversion

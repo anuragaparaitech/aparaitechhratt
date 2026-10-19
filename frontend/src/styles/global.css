@@ -1,9 +1,62 @@
 /* ==========================================================================
-   Enterprise SaaS Core Design System (Vanilla CSS Implementation)
-   Inspired by Stripe, Linear, and modern SaaS dashboards.
+   Atlassian Jira / Atlassian Design System (ADS) Enterprise UI
+   Clean, Professional, Information-Dense Enterprise Work Management
    ========================================================================== */
 
-/* Global Reset & Native Mobile App Baseline */
+/* ── Atlassian Design Tokens ─────────────────────────────────────────────── */
+:root {
+  /* Brand & Action Colors */
+  --ds-brand: #0C66E4;
+  --ds-brand-hover: #0055CC;
+  --ds-brand-active: #0047B3;
+  --ds-brand-subtle: #E9F2FF;
+  --ds-brand-text: #0055CC;
+
+  /* Neutrals & Surfaces */
+  --ds-canvas: #F4F5F7;
+  --ds-surface: #FFFFFF;
+  --ds-surface-sunken: #FAFBFC;
+  --ds-surface-hovered: #F1F2F4;
+  --ds-surface-pressed: #E9F2FF;
+  --ds-surface-overlay: #FFFFFF;
+
+  /* Borders */
+  --ds-border: #DFE1E6;
+  --ds-border-subtle: #EBECF0;
+  --ds-border-bold: #8590A2;
+  --ds-border-focused: #388BFF;
+
+  /* Typography Colors */
+  --ds-text: #172B4D;
+  --ds-text-subtle: #44546F;
+  --ds-text-subtlest: #626F86;
+  --ds-text-inverse: #FFFFFF;
+  --ds-text-brand: #0C66E4;
+
+  /* Status Lozenges (Atlassian Issue Status Badges) */
+  --ds-success-bg: #DCFFF1;
+  --ds-success-text: #216E4E;
+  --ds-warning-bg: #FFF7D6;
+  --ds-warning-text: #7F5F01;
+  --ds-danger-bg: #FFEDEB;
+  --ds-danger-text: #AE2E24;
+  --ds-info-bg: #E9F2FF;
+  --ds-info-text: #0055CC;
+  --ds-neutral-bg: #F1F2F4;
+  --ds-neutral-text: #44546F;
+
+  /* Elevation Shadows */
+  --ds-shadow-card: 0 1px 1px rgba(9, 30, 66, 0.25), 0 0 1px 0 rgba(9, 30, 66, 0.31);
+  --ds-shadow-raised: 0 3px 5px -1px rgba(9, 30, 66, 0.15), 0 0 1px 0 rgba(9, 30, 66, 0.31);
+  --ds-shadow-modal: 0 8px 16px -4px rgba(9, 30, 66, 0.25), 0 0 1px 0 rgba(9, 30, 66, 0.31);
+
+  /* Radius (Enterprise standard 3px/4px, no bulbous bubble styling) */
+  --ds-radius-sm: 3px;
+  --ds-radius-md: 4px;
+  --ds-radius-lg: 6px;
+}
+
+/* ── Global Baseline Reset ───────────────────────────────────────────────── */
 * {
   margin: 0;
   padding: 0;
@@ -12,305 +65,178 @@
 }
 
 html, body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #f8fafc; /* Corporate Background */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', Ubuntu, 'Fira Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--ds-canvas);
   min-height: 100vh;
-  color: #0f172a; /* Text Primary */
-  line-height: 1.5;
+  color: var(--ds-text);
+  line-height: 1.45;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior: none;
-  overscroll-behavior-y: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
 
-/* Allow text selection only in user editable inputs */
-input, textarea, [contenteditable="true"], .selectable-text {
-  user-select: text !important;
-  -webkit-user-select: text !important;
+input, textarea, select, button {
+  font-family: inherit;
 }
 
-/* Scrollbar Styling */
+/* Scrollbar (Jira Compact Neutral Scrollbar) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C1C7D0;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #A5ADBA;
 }
 
-/* Authentication Page Styles (Deep Corporate Dark Accent) */
-.auth-container {
+/* ── Atlassian Master Layout Framework ───────────────────────────────────── */
+.app-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: #0f172a; /* Deep Charcoal/Navy */
-  position: relative;
-  overflow: hidden;
+  flex-direction: column;
 }
 
-.auth-container::before {
-  content: '';
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
-  top: -50px;
-  right: -50px;
-}
-
-.auth-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 3rem 2.5rem;
-  max-width: 480px;
-  width: 100%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  text-align: center;
-  border: 1px solid #e2e8f0;
-  z-index: 10;
-}
-
-.company-logo {
-  font-size: 2.8rem;
-  margin-bottom: 8px;
-  display: inline-block;
-}
-
-.company-name {
-  font-size: 1.6rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #2563eb, #0f172a);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  letter-spacing: -0.5px;
-}
-
-.auth-title {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #64748b; /* Text Secondary */
-  margin-top: 0.4rem;
-}
-
-.role-selector {
+.main-layout {
   display: flex;
-  gap: 0.4rem;
-  margin: 2rem 0;
-  background: #f1f5f9;
-  padding: 0.4rem;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-}
-
-.role-btn {
-  flex: 1;
-  padding: 10px 14px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.88rem;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  color: #64748b;
-}
-
-.role-btn.active {
-  background: #ffffff;
-  color: #2563eb;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-}
-
-.input-group {
-  margin-bottom: 1.4rem;
-  text-align: left;
-}
-
-.input-group label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #64748b;
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
-}
-
-.auth-input,
-.filter-input,
-select.auth-input {
+  gap: 0;
   width: 100%;
-  padding: 11px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 0.92rem;
-  background: #ffffff;
-  color: #0f172a;
-  transition: all 0.2s ease;
-  font-family: inherit;
+  min-height: calc(100vh - 56px);
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.auth-input:focus,
-.filter-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.auth-btn {
-  width: 100%;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  margin-top: 0.8rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-}
-
-.auth-btn:hover {
-  background: #1d4ed8;
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-}
-
-/* Master Layout Framework */
-.app-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  background: transparent;
-}
-
-/* Corporate Top Navigation Header */
+/* ── Atlassian Jira Global Top Navigation Bar ────────────────────────────── */
 .navbar {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.1rem 2.2rem;
-  margin-bottom: 1.8rem;
+  height: 56px;
+  background: var(--ds-surface);
+  border-bottom: 1px solid var(--ds-border);
+  padding: 0 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1.2rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.05);
 }
 
 .logo-area {
-  font-weight: 800;
-  font-size: 1.45rem;
-  background: linear-gradient(135deg, #2563eb, #0f172a);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ds-text);
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  color: #0f172a;
+  gap: 12px;
 }
 
 .logout-btn {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  padding: 8px 18px;
-  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--ds-border);
+  padding: 6px 12px;
+  border-radius: var(--ds-radius-sm);
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #475569;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ds-text-subtle);
+  transition: all 0.15s ease;
 }
 
 .logout-btn:hover {
-  background: #cbd5e1;
-  color: #0f172a;
+  background: var(--ds-surface-hovered);
+  color: var(--ds-text);
+  border-color: var(--ds-border-bold);
 }
 
-/* Premium Navigation Sidebar (Admin Panel Split Layout) */
+/* ── Atlassian Jira Project Sidebar Navigation ───────────────────────────── */
+.desktop-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: var(--ds-surface-sunken);
+  border-right: 1px solid var(--ds-border);
+  padding: 1rem 0.6rem 2rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+  min-height: calc(100vh - 56px);
+  height: auto;
+}
+
 .sidebar-nav-btn {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  border-radius: 12px !important;
-  font-weight: 600 !important;
+  background: transparent;
+  color: var(--ds-text-subtle);
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  transition: background-color 0.1s ease, color 0.1s ease;
+  position: relative;
+  text-decoration: none;
 }
 
 .sidebar-nav-btn:hover {
-  background: #f8fafc !important;
-  color: #1e5a7a !important;
-  transform: translateX(4px);
+  background: var(--ds-surface-hovered);
+  color: var(--ds-text);
 }
 
-.sidebar-nav-btn.active:hover {
-  background: linear-gradient(135deg, #1e5a7a, #0f2b3d) !important;
-  color: #ffffff !important;
-  transform: none;
-  opacity: 0.96;
+.sidebar-nav-btn.active {
+  background: var(--ds-brand-subtle);
+  color: var(--ds-brand-text);
+  font-weight: 600;
 }
 
-/* SaaS KPI Cards */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.2rem;
-  margin-bottom: 1.8rem;
+.sidebar-nav-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--ds-brand);
+  border-radius: 2px;
 }
 
-.stat-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.4rem;
-  text-align: center;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+/* ── Content Canvas ──────────────────────────────────────────────────────── */
+.content-pane {
+  flex: 1;
+  background: var(--ds-canvas);
+  padding: 1.5rem 2rem 3rem 2rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-}
-
-.stat-card .icon {
-  font-size: 1.9rem;
-  margin-bottom: 6px;
-}
-
-.stat-card .value {
-  font-size: 1.9rem;
-  font-weight: 800;
-  color: #2563eb;
-  letter-spacing: -0.5px;
-}
-
-/* Premium Dashboard Card Panels */
+/* ── Atlassian Cards & Panels (Crisp, Flat, Hairline Borders) ─────────────── */
 .section-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.8rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.8rem;
+  background: var(--ds-surface);
+  border-radius: var(--ds-radius-md);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.08);
+  margin-bottom: 1.25rem;
 }
 
 .section-header {
@@ -318,292 +244,295 @@ select.auth-input {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 0.85rem;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--ds-border-subtle);
+  padding-bottom: 0.75rem;
 }
 
 .section-header h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.3px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-text);
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
+/* ── Atlassian Metric Stat Cards ─────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-card {
+  background: var(--ds-surface);
+  border-radius: var(--ds-radius-md);
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.08);
+  transition: border-color 0.15s ease;
+  text-align: left;
+}
+
+.stat-card:hover {
+  border-color: var(--ds-border-bold);
+}
+
+.stat-card .label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-text-subtlest);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.stat-card .value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ds-text);
+  line-height: 1.2;
+}
+
+/* ── Jira Issue Tables ───────────────────────────────────────────────────── */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+  margin-bottom: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.data-table th {
+  background: var(--ds-surface-sunken);
+  color: var(--ds-text-subtlest);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--ds-border);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--ds-surface-hovered);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Atlassian Lozenges (Issue Status Badges) ────────────────────────────── */
+.status-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.status-full,
+.badge-success,
+.status-done {
+  background: var(--ds-success-bg);
+  color: var(--ds-success-text);
+}
+
+.status-half,
+.badge-warning {
+  background: var(--ds-warning-bg);
+  color: var(--ds-warning-text);
+}
+
+.status-quarter,
+.badge-info,
+.status-inprogress {
+  background: var(--ds-info-bg);
+  color: var(--ds-info-text);
+}
+
+.status-absent,
+.badge-danger,
+.status-error {
+  background: var(--ds-danger-bg);
+  color: var(--ds-danger-text);
+}
+
+.status-neutral {
+  background: var(--ds-neutral-bg);
+  color: var(--ds-neutral-text);
+}
+
+/* ── Jira-Style Form Controls & Inputs ──────────────────────────────────── */
 .filter-bar {
   display: flex;
-  gap: 0.8rem;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-/* Enterprise Data Tables styling */
-.data-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow-x: auto;
-  display: block;
+.auth-input,
+.filter-input,
+select.auth-input,
+select.filter-input {
+  background: var(--ds-surface-sunken);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--ds-text);
+  transition: all 0.15s ease;
+  height: 34px;
+  box-sizing: border-box;
 }
 
-.data-table th,
-.data-table td {
-  padding: 14px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-  font-size: 0.88rem;
+.auth-input:hover,
+.filter-input:hover {
+  background: var(--ds-surface-hovered);
 }
 
-.data-table th {
-  background: #f8fafc;
-  font-weight: 700;
-  color: #475569;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-top: 1px solid #e2e8f0;
+.auth-input:focus,
+.filter-input:focus {
+  outline: none;
+  background: var(--ds-surface);
+  border-color: var(--ds-border-focused);
+  box-shadow: 0 0 0 1px var(--ds-border-focused);
 }
 
-.data-table th:first-child {
-  border-top-left-radius: 8px;
-}
-
-.data-table th:last-child {
-  border-top-right-radius: 8px;
-}
-
-.data-table tr:hover {
-  background: #f8fafc;
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-/* Status Badges */
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  display: inline-block;
-  text-transform: uppercase;
-}
-
-.status-full {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.status-half {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-.status-quarter {
-  background: #f3e8ff;
-  color: #6b21a8;
-}
-
-.status-pending {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-}
-
-.status-active {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.status-inactive {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.status-checkedin {
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-/* Unified Enterprise Buttons */
-.g-button {
-  background: #2563eb;
-  color: #ffffff;
+/* ── Atlassian Buttons (Solid, Clean, Non-Bubbly) ────────────────────────── */
+.auth-btn,
+.btn-primary {
+  background: var(--ds-brand);
+  color: #FFFFFF;
   border: none;
-  padding: 9px 18px;
-  border-radius: 10px;
-  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: var(--ds-radius-sm);
+  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.12s ease;
+  box-shadow: none;
 }
 
-.g-button:hover {
-  background: #1d4ed8;
+.auth-btn:hover,
+.btn-primary:hover {
+  background: var(--ds-brand-hover);
+  box-shadow: none;
 }
 
-.g-button.excel {
-  background: #10b981;
-}
-.g-button.excel:hover {
-  background: #059669;
+.auth-btn:active,
+.btn-primary:active {
+  background: var(--ds-brand-active);
 }
 
-.g-button.danger {
-  background: #ef4444;
-}
-.g-button.danger:hover {
-  background: #dc2626;
+.btn-secondary {
+  background: #091E420F;
+  color: var(--ds-text);
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--ds-radius-sm);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.12s ease;
 }
 
-.g-button.success {
-  background: #22c55e;
-}
-.g-button.success:hover {
-  background: #16a34a;
-}
-
-.g-button.warning {
-  background: #f59e0b;
-}
-.g-button.warning:hover {
-  background: #d97706;
+.btn-secondary:hover {
+  background: #091E4224;
 }
 
 .btn-checkin {
-  background: #22c55e;
-  color: #ffffff;
+  background: var(--ds-brand);
+  color: #FFFFFF;
   border: none;
-  padding: 12px 30px;
-  border-radius: 10px;
-  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: var(--ds-radius-sm);
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2);
+  transition: background 0.15s ease;
 }
 
 .btn-checkin:hover:not(:disabled) {
-  background: #16a34a;
-}
-
-.btn-checkin:disabled {
-  background: #cbd5e1;
-  color: #94a3b8;
-  cursor: not-allowed;
-  box-shadow: none;
+  background: var(--ds-brand-hover);
 }
 
 .btn-checkout {
-  background: #ef4444;
-  color: #ffffff;
+  background: #C9372C;
+  color: #FFFFFF;
   border: none;
-  padding: 12px 30px;
-  border-radius: 10px;
-  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: var(--ds-radius-sm);
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+  transition: background 0.15s ease;
 }
 
 .btn-checkout:hover:not(:disabled) {
-  background: #dc2626;
+  background: #AE2E24;
 }
 
-.btn-checkout:disabled {
-  background: #cbd5e1;
-  color: #94a3b8;
+.btn-checkout:disabled,
+.btn-checkin:disabled {
+  background: #091E420F;
+  color: #A5ADBA;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
-/* Today Action Card (Employee Portal Hero) */
+/* ── Today Action Hero (Clean Atlassian Surface) ─────────────────────────── */
 .today-card {
-  background: linear-gradient(135deg, #0f172a, #2563eb);
-  color: #ffffff;
-  border-radius: 18px;
-  padding: 2.2rem;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  background: var(--ds-surface);
+  color: var(--ds-text);
+  border-radius: var(--ds-radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.08);
 }
 
 .rule-card {
-  background: #fffbeb;
-  border-left: 4px solid #f59e0b;
-  padding: 1.2rem;
-  border-radius: 12px;
-  margin-top: 1.2rem;
-  color: #78350f;
-  border-top: 1px solid #fef3c7;
-  border-right: 1px solid #fef3c7;
-  border-bottom: 1px solid #fef3c7;
+  background: #FFF7D6;
+  border-left: 3px solid #E2B203;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--ds-radius-sm);
+  margin-top: 1rem;
+  color: #7F5F01;
+  font-size: 13px;
 }
 
-/* Modern Notification Alert Banner */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #0f172a;
-  color: #ffffff;
-  padding: 12px 28px;
-  border-radius: 10px;
-  z-index: 2000;
-  animation: fadeOut 2.5s ease;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.live-badge {
-  background: #22c55e;
-  color: #ffffff;
-  font-size: 0.62rem;
-  padding: 3px 10px;
-  border-radius: 12px;
-  margin-left: 8px;
-  font-weight: 700;
-  text-transform: uppercase;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
-  }
-}
-
-.mark-btn {
-  background: #8b5cf6;
-  color: #ffffff;
-  border: none;
-  padding: 5px 14px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mark-btn:hover {
-  background: #7c3aed;
-}
-
-/* SaaS Modals */
+/* ── Atlassian Modals ────────────────────────────────────────────────────── */
 .modal {
   display: flex;
   position: fixed;
@@ -611,429 +540,81 @@ select.auth-input {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.6); /* Soft Slate Backdrop */
-  backdrop-filter: blur(4px);
+  background: rgba(9, 30, 66, 0.54);
   justify-content: center;
   align-items: center;
   z-index: 10000;
 }
 
 .modal-content {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 2.2rem;
-  max-width: 580px;
+  background: var(--ds-surface);
+  border-radius: var(--ds-radius-md);
+  padding: 1.5rem 1.75rem;
+  max-width: 600px;
   width: 90%;
   max-height: 85vh;
   overflow-y: auto;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  animation: modalScaleUp 0.15s ease-out;
-}
-
-@keyframes modalScaleUp {
-  from {
-    transform: scale(0.96);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  color: var(--ds-text);
+  border: 1px solid var(--ds-border);
+  box-shadow: var(--ds-shadow-modal);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--ds-border);
   padding-bottom: 0.75rem;
 }
 
 .modal-header h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-text);
 }
 
 .close-modal {
   background: none;
   border: none;
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   cursor: pointer;
-  color: #94a3b8;
-  transition: all 0.2s ease;
+  color: var(--ds-text-subtlest);
+  border-radius: var(--ds-radius-sm);
+  padding: 4px 8px;
+  transition: all 0.15s ease;
 }
 
 .close-modal:hover {
-  color: #ef4444;
+  background: var(--ds-surface-hovered);
+  color: var(--ds-text);
 }
 
-.chart-container {
-  max-width: 320px;
-  margin: 0 auto 1rem;
-}
-
-.profile-icon {
-  cursor: pointer;
-  background: #eff6ff;
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2563eb;
-  font-weight: bold;
-  border: 1px solid #dbeafe;
-  transition: all 0.2s ease;
-}
-
-.profile-icon:hover {
-  background: #dbeafe;
-}
-
-.dept-filter {
-  min-width: 150px;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.05rem;
-  padding: 6px 10px;
-  border-radius: 6px;
-  color: #64748b;
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.action-buttons-group {
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
-}
-
-/* Smooth fade-in row animation for expanded records */
-.data-table tbody tr {
-  animation: fadeInRow 0.25s ease-out;
-}
-
-@keyframes fadeInRow {
-  from {
-    opacity: 0;
-    transform: translateY(3px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Mobile, Tablet & Laptop Responsiveness System */
-.desktop-sidebar {
-  display: flex;
-}
-
-.mobile-bottom-nav {
-  display: none;
-}
-
-.mobile-hamburger-btn {
-  display: none;
-}
-
-/* Touch-friendly Table Container */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 1rem;
-  border-radius: 12px;
-}
-
-/* Mobile Slide-Out Drawer Navigation */
-.mobile-drawer-overlay {
+/* ── Atlassian Flag / Toast Notification ─────────────────────────────────── */
+.toast {
   position: fixed;
-  inset: 0;
-  background: rgba(10, 25, 47, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 2500;
-  animation: fadeIn 0.2s ease-out;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #172B4D;
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: var(--ds-radius-sm);
+  z-index: 20000;
+  font-weight: 500;
+  font-size: 13px;
+  box-shadow: var(--ds-shadow-raised);
 }
 
-.mobile-drawer {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: min(84vw, 320px);
-  background: #ffffff;
-  z-index: 2600;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 10px 0 25px rgba(0, 0, 0, 0.2);
-  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Mobile Bottom Navigation Bar - Native App Style */
-.bottom-nav-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: calc(62px + env(safe-area-inset-bottom, 0px));
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-start;
-  z-index: 2000;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
-  padding: 6px 6px calc(env(safe-area-inset-bottom, 0px) + 4px) 6px;
-  box-sizing: border-box;
-}
-
-.bottom-nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: transparent;
-  border: none;
-  color: #64748b;
-  font-size: 0.68rem;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 4px 2px;
-  border-radius: 10px;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: inherit;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.bottom-nav-item:active {
-  transform: scale(0.92);
-  background: rgba(37, 99, 235, 0.08);
-}
-
-.bottom-nav-item.active {
-  color: #2563eb;
-}
-
-.bottom-nav-item.active i {
-  transform: translateY(-1px);
-  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
-}
-
-.bottom-nav-item i {
-  font-size: 1.15rem;
-  transition: transform 0.2s ease;
-}
-
-/* Screen size adjustments */
+/* ── Responsive Rules ────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .desktop-sidebar {
     display: none !important;
   }
-
-  .mobile-bottom-nav {
-    display: flex !important;
-  }
-
-  .mobile-hamburger-btn {
-    display: flex !important;
-  }
-
   .main-layout {
     display: block !important;
-    padding: 0.85rem !important;
   }
-
   .content-pane {
-    width: 100% !important;
-    padding-bottom: 74px !important; /* Space for bottom nav */
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
-    gap: 0.75rem !important;
-  }
-
-  .stat-card {
-    padding: 1rem 0.8rem !important;
-  }
-
-  .stat-card .value {
-    font-size: 1.5rem !important;
+    padding: 1rem 1rem 5rem 1rem !important;
   }
 }
-
-@media (max-width: 640px) {
-  .app-container {
-    padding: 0;
-  }
-
-  .navbar {
-    padding: 0.75rem 1rem !important;
-  }
-
-  .auth-card {
-    padding: 2rem 1.5rem;
-    margin: 1rem;
-    border-radius: 14px;
-  }
-
-  .company-name {
-    font-size: 1.3rem;
-  }
-
-  .today-card {
-    padding: 1.4rem;
-    border-radius: 16px;
-  }
-
-  .today-info {
-    gap: 0.8rem !important;
-    font-size: 0.84rem;
-  }
-
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .action-buttons button {
-    width: 100% !important;
-    margin-right: 0 !important;
-  }
-
-  .data-table {
-    font-size: 0.78rem;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 8px 6px;
-    white-space: nowrap;
-  }
-
-  .modal-content {
-    padding: 1.25rem;
-    width: 95%;
-    max-height: 92vh;
-    border-radius: 16px;
-  }
-
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .filter-input {
-    width: 100% !important;
-  }
-
-  .toast {
-    width: 90%;
-    text-align: center;
-    font-size: 0.82rem;
-    padding: 10px 16px;
-    bottom: 80px;
-  }
-}
-
-/* Small Smartphone Screen Polish (<= 480px) */
-@media (max-width: 480px) {
-  .navbar-user-text div:last-child {
-    display: none;
-  }
-  .logout-text {
-    display: none;
-  }
-  .logout-btn {
-    padding: 7px 10px !important;
-  }
-  .section-card {
-    padding: 1.1rem !important;
-    border-radius: 14px !important;
-  }
-  .company-dashboard {
-    gap: 1rem !important;
-  }
-  .bottom-nav-bar {
-    height: 60px;
-  }
-  .bottom-nav-item {
-    font-size: 0.64rem;
-  }
-  .bottom-nav-item i {
-    font-size: 1.05rem;
-  }
-}
-
-/* Touch Device Target Optimization */
-@media (hover: none) and (pointer: coarse) {
-  button, .sidebar-nav-btn, .role-btn, .auth-btn, .g-button {
-    min-height: 42px;
-  }
-  input, select, textarea {
-    font-size: 16px !important; /* Prevents auto-zoom on iOS */
-  }
-}
-
-/* Responsive Native Mobile Login */
-.login-hero-panel {
-  display: flex !important;
-}
-
-@media (max-width: 860px) {
-  .login-hero-panel {
-    display: none !important;
-  }
-  .login-card-container {
-    max-width: 440px !important;
-    border-radius: 20px !important;
-    margin: 0 auto !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-  }
-}
-
-

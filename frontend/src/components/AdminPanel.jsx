@@ -702,45 +702,30 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
   return (
     <div id="adminPanel" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
 
-      {/* ── Executive Corporate Header Banner ─────────────────────────── */}
+      {/* ── Atlassian Executive Corporate Header ─────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(135deg, #07101e 0%, #0b192c 50%, #0d9488 100%)',
-        borderRadius: '20px',
-        padding: '1.25rem 1.75rem',
-        color: '#ffffff',
+        background: '#FFFFFF',
+        borderRadius: '3px',
+        padding: '14px 20px',
+        color: '#172B4D',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '1rem',
-        boxShadow: '0 12px 28px -6px rgba(7, 16, 30, 0.45)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        position: 'relative',
-        overflow: 'hidden'
+        gap: '12px',
+        border: '1px solid #DFE1E6',
+        boxShadow: '0 1px 1px rgba(9, 30, 66, 0.08)'
       }}>
-        {/* Subtle Background Art */}
-        <div style={{
-          position: 'absolute',
-          right: '0',
-          top: '0',
-          bottom: '0',
-          width: '45%',
-          opacity: 0.15,
-          pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(circle at right, #2dd4bf 0%, transparent 70%)'
-        }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%)',
+            width: '42px',
+            height: '42px',
+            borderRadius: '3px',
+            background: '#F4F5F7',
+            border: '1px solid #DFE1E6',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)',
-            border: '2px solid rgba(255, 255, 255, 0.5)',
             flexShrink: 0,
             padding: '4px'
           }}>
@@ -753,69 +738,28 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '1.35rem',
-                fontWeight: '900',
-                letterSpacing: '0.04em',
-                background: 'linear-gradient(135deg, #ffffff 40%, #5eead4 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#172B4D' }}>
                 APARAITECH SOFTWARE
               </span>
-              <span style={{
-                background: isHRMode ? 'rgba(192, 132, 252, 0.2)' : 'rgba(45, 212, 191, 0.2)',
-                border: isHRMode ? '1px solid rgba(192, 132, 252, 0.4)' : '1px solid rgba(45, 212, 191, 0.4)',
-                borderRadius: '6px',
-                padding: '2px 8px',
-                fontSize: '0.68rem',
-                fontWeight: '800',
-                color: isHRMode ? '#c084fc' : '#5eead4',
-                letterSpacing: '0.04em'
-              }}>
+              <span className={`badge ${isHRMode ? 'badge-purple' : 'badge-brand'}`} style={{ fontSize: '11px' }}>
                 {isHRMode ? 'HR & WORKFORCE DESK' : (currentUser?.role === 'admin' ? 'SUPER ADMIN' : 'MANAGEMENT LEAD')}
               </span>
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500', marginTop: '3px' }}>
-              {isHRMode ? 'HUMAN RESOURCES OPERATIONS • WORKFORCE DIRECTORY, ATTENDANCE & LEAVES' : 'INNOVATING SOFTWARE DEVELOPMENT FOR THE FUTURE • PUNE GEOFENCE ACTIVE'}
+            <div style={{ fontSize: '12px', color: '#626F86', marginTop: '2px' }}>
+              {isHRMode ? 'Human Resources Operations • Workforce Directory, Attendance & Leaves' : 'Unified Administration Suite • Pune Office Geofence Active (200m)'}
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', zIndex: 1 }}>
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.14)',
-            borderRadius: '12px',
-            padding: '8px 14px',
-            textAlign: 'right'
-          }}>
-            <div style={{ fontSize: '0.68rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>
-              Cloud Database
-            </div>
-            <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span>
-              Cloud Database Connected
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="badge badge-success" style={{ fontSize: '11px' }}>
+            ● CLOUD DATABASE CONNECTED
+          </span>
           <button
             onClick={fetchData}
             title="Refresh All Records"
-            style={{
-              background: 'linear-gradient(135deg, #0d9488, #0284c7)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '10px 16px',
-              fontSize: '0.82rem',
-              fontWeight: '800',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 14px rgba(13, 148, 136, 0.35)',
-              transition: 'all 0.2s ease'
-            }}
+            className="btn btn-primary"
+            style={{ fontSize: '13px', padding: '6px 14px' }}
           >
             <i className={`fas fa-sync-alt ${loadingLogs ? 'fa-spin' : ''}`}></i>
             Sync Live
@@ -823,65 +767,72 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         </div>
       </div>
 
-      {/* ── Section Breadcrumb with Live IST Clock ───────────────────────────── */}
+      {/* ── Section Header with Live Status ──────────────────────────────────── */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 20px',
-        background: '#ffffff',
-        border: '1px solid #e2e8f0', borderRadius: '16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 16px',
+        background: '#FFFFFF',
+        border: '1px solid #DFE1E6',
+        borderRadius: '3px',
+        boxShadow: '0 1px 1px rgba(9, 30, 66, 0.05)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: '36px', height: '36px', borderRadius: '10px',
-            background: 'linear-gradient(135deg, #1e5a7a, #0f2b3d)',
-            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1rem'
+            width: '28px',
+            height: '28px',
+            borderRadius: '3px',
+            background: '#E9F2FF',
+            color: '#0C66E4',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px'
           }}>
             <i className={`fas ${currentSection.icon}`}></i>
           </div>
           <div>
-            <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.05rem' }}>{currentSection.label}</div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Aparaitech Software Administrator Control Suite</div>
+            <div style={{ fontWeight: 600, color: '#172B4D', fontSize: '14px' }}>{currentSection.label}</div>
+            <div style={{ fontSize: '11px', color: '#626F86' }}>Aparaitech Software Administrator Control Suite</div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={fetchData}
             title="Refresh All Database Records"
-            style={{
-              background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px',
-              padding: '7px 14px', fontSize: '0.8rem', fontWeight: '700', color: '#334155',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
-            }}
+            className="btn btn-secondary"
+            style={{ fontSize: '12px', padding: '4px 10px' }}
           >
             <i className={`fas fa-sync-alt ${loadingLogs ? 'fa-spin' : ''}`}></i> Refresh
           </button>
         </div>
       </div>
 
-      {/* ── Top Interactive Navigation Pill Bar ──────────────────────────────── */}
+      {/* ── Top Jira Horizontal Tab Navigation ───────────────────────────────── */}
       <div className="admin-quick-pills" style={{
         display: 'flex',
-        gap: '8px',
+        gap: '4px',
+        background: '#EBECF0',
+        padding: '3px',
+        borderRadius: '3px',
         overflowX: 'auto',
-        paddingBottom: '4px',
         scrollbarWidth: 'none'
       }}>
         {[
           { id: 'overview', icon: 'fa-tachometer-alt', label: 'Overview' },
-          { id: 'aiDataDistribution', icon: 'fa-brain', label: 'AI Lead Distribution', badge: 'AI', badgeColor: '#8b5cf6' },
-          { id: 'live', icon: 'fa-eye', label: 'Live Check-Ins', badge: liveSessions.length ? `${liveSessions.length} Active` : null, badgeColor: '#22c55e' },
-          { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null, badgeColor: '#ef4444' },
+          { id: 'aiDataDistribution', icon: 'fa-brain', label: 'AI Leads', badge: 'AI' },
+          { id: 'live', icon: 'fa-eye', label: 'Live Check-Ins', badge: liveSessions.length ? `${liveSessions.length} Active` : null },
+          { id: 'dailyReports', icon: 'fa-clipboard-check', label: 'Daily Reports', badge: teamOverview?.metrics?.reportsPending ? `${teamOverview.metrics.reportsPending} Pending` : null },
           { id: 'mailBlast', icon: 'fa-mail-bulk', label: 'Mail Blasts' },
-          { id: 'idCards', icon: 'fa-id-card', label: 'ID Cards & Onboarding', badge: 'HR Mail', badgeColor: '#7c3aed' },
+          { id: 'idCards', icon: 'fa-id-card', label: 'ID Cards & Onboarding' },
           { id: 'revenue', icon: 'fa-rupee-sign', label: 'Revenue' },
-          { id: 'bdaSalary', icon: 'fa-briefcase', label: 'Monthly Criteria & BDA Salary', badge: 'Criteria', badgeColor: '#059669' },
-          { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Monthly Targets', badge: 'Goal', badgeColor: '#2563eb' },
+          { id: 'bdaSalary', icon: 'fa-briefcase', label: 'BDA Salary Criteria' },
+          { id: 'internTarget', icon: 'fa-bullseye', label: 'Intern Targets' },
           { id: 'employees', icon: 'fa-users', label: 'Employees' },
           { id: 'attendance', icon: 'fa-calendar-check', label: 'Attendance Logs' },
-          { id: 'missing', icon: 'fa-exclamation-triangle', label: 'Missing Checkouts', badge: missingCheckouts.length ? `${missingCheckouts.length}` : null, badgeColor: '#ea580c' },
+          { id: 'missing', icon: 'fa-exclamation-triangle', label: 'Missing Checkouts', badge: missingCheckouts.length ? `${missingCheckouts.length}` : null },
           { id: 'autocheckout', icon: 'fa-robot', label: 'Auto Checkout' },
           { id: 'holidays', icon: 'fa-umbrella-beach', label: 'Holidays' },
           { id: 'data', icon: 'fa-database', label: 'Data Management' }
@@ -890,33 +841,26 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
             key={pill.id}
             onClick={() => setSection(pill.id)}
             style={{
-              padding: '9px 15px',
-              borderRadius: '12px',
-              border: activeSection === pill.id ? '1px solid #1e5a7a' : '1px solid #e2e8f0',
-              background: activeSection === pill.id ? 'linear-gradient(135deg, #1e5a7a, #0f2b3d)' : '#ffffff',
-              color: activeSection === pill.id ? '#ffffff' : '#475569',
-              fontWeight: '700',
-              fontSize: '0.82rem',
+              padding: '6px 12px',
+              borderRadius: '3px',
+              border: activeSection === pill.id ? '1px solid #DFE1E6' : '1px solid transparent',
+              background: activeSection === pill.id ? '#FFFFFF' : 'transparent',
+              color: activeSection === pill.id ? '#0C66E4' : '#44546F',
+              fontWeight: activeSection === pill.id ? 600 : 500,
+              fontSize: '12px',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: activeSection === pill.id ? '0 4px 12px rgba(30, 90, 122, 0.25)' : 'none',
-              transition: 'all 0.2s'
+              boxShadow: activeSection === pill.id ? '0 1px 2px rgba(9, 30, 66, 0.15)' : 'none',
+              transition: 'all 0.1s ease'
             }}
           >
             <i className={`fas ${pill.icon}`}></i>
             {pill.label}
             {pill.badge && (
-              <span style={{
-                background: pill.badgeColor || '#ef4444',
-                color: '#ffffff',
-                padding: '2px 7px',
-                borderRadius: '10px',
-                fontSize: '0.68rem',
-                fontWeight: '800'
-              }}>
+              <span className={`badge ${activeSection === pill.id ? 'badge-brand' : 'badge-neutral'}`} style={{ fontSize: '10px', padding: '0 5px' }}>
                 {pill.badge}
               </span>
             )}
@@ -926,65 +870,62 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
 
       {/* ── 1. EXECUTIVE OVERVIEW (When activeSection === 'overview') ─────────── */}
       {show('overview') && (<>
-        {/* Executive Real-Time Operations Banner */}
+        {/* Atlassian Operations Overview Card */}
         <div style={{
-          background: 'linear-gradient(135deg, #0a192f 0%, #1e3a8a 60%, #2563eb 100%)',
-          borderRadius: '24px',
-          padding: '2rem 2.25rem',
-          color: '#ffffff',
+          background: '#FFFFFF',
+          borderRadius: '3px',
+          padding: '20px 24px',
+          color: '#172B4D',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '1.5rem',
-          boxShadow: '0 20px 35px -10px rgba(10, 25, 47, 0.3)'
+          gap: '16px',
+          border: '1px solid #DFE1E6',
+          boxShadow: '0 1px 1px rgba(9, 30, 66, 0.08)'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{
-                background: '#22c55e', color: '#ffffff', padding: '3px 10px',
-                borderRadius: '20px', fontSize: '0.72rem', fontWeight: '800', letterSpacing: '0.05em'
-              }}>
-                ● SYSTEM OPERATIONAL
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span className="badge badge-success" style={{ fontSize: '11px' }}>
+                SYSTEM OPERATIONAL
               </span>
-              <span style={{ color: '#93c5fd', fontSize: '0.78rem' }}>
-                Aparaitech Software Geofence (200m) Active • Shift Automation Active
+              <span style={{ color: '#626F86', fontSize: '12px' }}>
+                Geofence Active (200m) • Shift Automation Engine Active
               </span>
             </div>
-            <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: '800', letterSpacing: '-0.02em' }}>
-              Aparaitech Executive Command Center
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#172B4D' }}>
+              Executive Command Center
             </h1>
-            <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: '#cbd5e1' }}>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#626F86' }}>
               Unified management for live attendance, daily performance submissions, outreach campaigns, and revenue tracking
             </p>
           </div>
 
           <div style={{
             display: 'flex',
-            gap: '1.5rem',
-            background: 'rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(10px)',
-            padding: '12px 22px',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.15)'
+            gap: '16px',
+            background: '#FAFBFC',
+            padding: '10px 18px',
+            borderRadius: '3px',
+            border: '1px solid #DFE1E6'
           }}>
             <div>
-              <div style={{ fontSize: '0.7rem', color: '#93c5fd', textTransform: 'uppercase', fontWeight: '700' }}>Active Workforce</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#ffffff' }}>
-                {activeEmployees} <span style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>/ {totalEmployees}</span>
+              <div style={{ fontSize: '11px', color: '#626F86', textTransform: 'uppercase', fontWeight: 700 }}>Active Workforce</div>
+              <div style={{ fontSize: '20px', fontWeight: 600, color: '#172B4D' }}>
+                {activeEmployees} <span style={{ fontSize: '13px', color: '#626F86', fontWeight: 400 }}>/ {totalEmployees}</span>
               </div>
             </div>
-            <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
+            <div style={{ width: '1px', background: '#DFE1E6' }} />
             <div>
-              <div style={{ fontSize: '0.7rem', color: '#93c5fd', textTransform: 'uppercase', fontWeight: '700' }}>Checked In Now</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#4ade80' }}>
+              <div style={{ fontSize: '11px', color: '#626F86', textTransform: 'uppercase', fontWeight: 700 }}>Checked In Now</div>
+              <div style={{ fontSize: '20px', fontWeight: 600, color: '#216E4E' }}>
                 {checkedInNow}
               </div>
             </div>
-            <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
+            <div style={{ width: '1px', background: '#DFE1E6' }} />
             <div>
-              <div style={{ fontSize: '0.7rem', color: '#93c5fd', textTransform: 'uppercase', fontWeight: '700' }}>Total Revenue</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#38bdf8' }}>
+              <div style={{ fontSize: '11px', color: '#626F86', textTransform: 'uppercase', fontWeight: 700 }}>Total Revenue</div>
+              <div style={{ fontSize: '20px', fontWeight: 600, color: '#0C66E4' }}>
                 ₹{(revenueData?.summary?.totalRevenue || 0).toLocaleString('en-IN')}
               </div>
             </div>
@@ -994,30 +935,24 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
         {/* Pending Daily Reports Alert Banner */}
         {teamOverview && teamOverview.metrics?.reportsPending > 0 && (
           <div style={{
-            background: '#fef2f2',
-            borderLeft: '5px solid #ef4444',
-            borderRadius: '16px',
-            padding: '14px 20px',
+            background: '#FFF7D6',
+            border: '1px solid #F5CD47',
+            borderLeft: '4px solid #AE2E24',
+            borderRadius: '3px',
+            padding: '12px 16px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '12px',
-            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)'
+            gap: '12px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{
-                width: '42px', height: '42px', borderRadius: '12px',
-                background: '#fee2e2', color: '#dc2626', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem'
-              }}>
-                <i className="fas fa-exclamation-triangle"></i>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <i className="fas fa-exclamation-triangle" style={{ fontSize: '16px', color: '#AE2E24' }}></i>
               <div>
-                <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#991b1b' }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', color: '#AE2E24' }}>
                   Compliance Oversight: {teamOverview.metrics.reportsPending} Active Employees Have Pending Daily Reports
                 </div>
-                <div style={{ fontSize: '0.82rem', color: '#b91c1c' }}>
+                <div style={{ fontSize: '12px', color: '#7F5F01' }}>
                   {teamOverview.metrics.reportsSubmitted} submitted today • Today's Revenue: ₹{(teamOverview.metrics.todayRevenue || 0).toLocaleString('en-IN')}
                 </div>
               </div>
