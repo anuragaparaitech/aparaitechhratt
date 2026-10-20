@@ -407,7 +407,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
       case 'success': return { background: '#f0fdf4', border: '1px solid #86efac', color: '#166534' }
       case 'error':   return { background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c' }
       case 'warn':    return { background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }
-      default:        return { background: '#F0F9FF', border: '1px solid #bfdbfe', color: '#0284C7' }
+      default:        return { background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }
     }
   }
 
@@ -424,10 +424,10 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
             </h3>
             {/* Step indicator */}
             <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 700, color: step >= 1 ? '#0EA5E9' : '#94a3b8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 700, color: step >= 1 ? '#2563eb' : '#94a3b8' }}>
                 <div style={{
                   width: '22px', height: '22px', borderRadius: '50%',
-                  background: step >= 1 ? '#0EA5E9' : '#e2e8f0',
+                  background: step >= 1 ? '#2563eb' : '#e2e8f0',
                   color: step >= 1 ? '#fff' : '#94a3b8',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.7rem', fontWeight: 800
@@ -437,10 +437,10 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
                 Employee Details
               </div>
               <div style={{ color: '#cbd5e1', fontWeight: 400, alignSelf: 'center', fontSize: '0.8rem' }}>→</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 700, color: step >= 2 ? '#0EA5E9' : '#94a3b8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 700, color: step >= 2 ? '#2563eb' : '#94a3b8' }}>
                 <div style={{
                   width: '22px', height: '22px', borderRadius: '50%',
-                  background: step >= 2 ? '#0EA5E9' : '#e2e8f0',
+                  background: step >= 2 ? '#2563eb' : '#e2e8f0',
                   color: step >= 2 ? '#fff' : '#94a3b8',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.7rem', fontWeight: 800
@@ -577,7 +577,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
             </div>
 
             {/* Info: next step notice */}
-            <div style={{ background: '#F0F9FF', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.7rem 1rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#0284C7' }}>
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.7rem 1rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#1d4ed8' }}>
               📌 After filling in details, you will be asked to <strong>capture the employee's face</strong>. This is mandatory for attendance verification.
             </div>
 
@@ -598,7 +598,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
               padding: '0.7rem 1rem', marginBottom: '1rem',
               display: 'flex', alignItems: 'center', gap: '10px'
             }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0EA5E9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: '1rem', flexShrink: 0 }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: '1rem', flexShrink: 0 }}>
                 {name.charAt(0).toUpperCase()}
               </div>
               <div>
@@ -694,7 +694,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
                       <div style={{ display: 'flex', gap: '6px' }}>
                         {[0, 1, 2].map(i => (
                           <div key={i} style={{
-                            width: '7px', height: '7px', borderRadius: '50%', background: '#0EA5E9',
+                            width: '7px', height: '7px', borderRadius: '50%', background: '#2563eb',
                             animation: `pulse 1.2s ease-in-out ${i * 0.3}s infinite`
                           }} />
                         ))}
@@ -717,7 +717,7 @@ function AddEmployeeModal({ isOpen, onClose, onEmployeeAdded, showToast }) {
                       type="button"
                       onClick={startCamera}
                       style={{
-                        flex: 1, background: '#0EA5E9', color: '#fff', border: 'none',
+                        flex: 1, background: '#2563eb', color: '#fff', border: 'none',
                         borderRadius: '8px', padding: '10px 16px', fontWeight: 700,
                         fontSize: '0.88rem', cursor: 'pointer', display: 'flex',
                         alignItems: 'center', justifyContent: 'center', gap: '6px'

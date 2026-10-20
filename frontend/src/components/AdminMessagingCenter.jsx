@@ -334,7 +334,7 @@ function AdminMessagingCenter({ currentUser, showToast }) {
                           gap: '12px',
                           padding: '10px 14px',
                           borderRadius: '12px',
-                          background: isSelected ? '#F0F9FF' : '#ffffff',
+                          background: isSelected ? '#eff6ff' : '#ffffff',
                           border: isSelected ? '1px solid #3b82f6' : '1px solid #e2e8f0',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease-in-out',

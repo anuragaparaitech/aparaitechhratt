@@ -139,7 +139,7 @@ function RevenueTrackerView({ currentUser, showToast }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b', fontSize: '0.78rem', fontWeight: '700' }}>
             <span>TOTAL CONVERSIONS</span>
-            <i className="fas fa-user-graduate" style={{ color: '#0EA5E9' }}></i>
+            <i className="fas fa-user-graduate" style={{ color: '#2563eb' }}></i>
           </div>
           <div style={{ fontSize: '2.1rem', fontWeight: '900', color: '#0a192f', margin: '8px 0 4px' }}>
             {summary.totalConversions || 0}
@@ -261,7 +261,7 @@ function RevenueTrackerView({ currentUser, showToast }) {
             <div key={idx} style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <strong style={{ color: '#064e3b', fontSize: '0.85rem' }}>{item.label}</strong>
-                <span style={{ fontSize: '0.72rem', color: '#0EA5E9', fontWeight: '800' }}>{item.convs}</span>
+                <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: '800' }}>{item.convs}</span>
               </div>
               <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0a192f', marginBottom: '6px' }}>
                 {item.target}
@@ -289,7 +289,7 @@ function RevenueTrackerView({ currentUser, showToast }) {
           boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.03)'
         }}>
           <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', fontWeight: '700', color: '#0a192f' }}>
-            <i className="fas fa-sitemap" style={{ marginRight: '8px', color: '#0EA5E9' }}></i>
+            <i className="fas fa-sitemap" style={{ marginRight: '8px', color: '#2563eb' }}></i>
             Team-wise Revenue Generation
           </h3>
 

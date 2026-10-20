@@ -668,7 +668,7 @@ export default function IdCardTab({ currentUser, showToast }) {
                       fontSize: '0.74rem',
                       fontWeight: '800',
                       background: isSent ? '#dbeafe' : '#f3e8ff',
-                      color: isSent ? '#0284C7' : '#7c3aed'
+                      color: isSent ? '#1d4ed8' : '#7c3aed'
                     }}>
                       {isSent ? '✅ ID Card Sent' : '⏳ ID Pending Approval'}
                     </span>

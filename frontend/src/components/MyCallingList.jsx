@@ -379,7 +379,7 @@ function MyCallingList({ currentUser, showToast }) {
   const handleCallClick = async (lead) => {
     if (lead.status === 'Not Called') {
       if (showToast) {
-        showToast(`📞 Calling ${lead.name}... moving to History as "Called"`, '#0EA5E9')
+        showToast(`📞 Calling ${lead.name}... moving to History as "Called"`, '#2563eb')
       }
       setTimeout(() => {
         handleStatusChange(lead._id, 'Called')
@@ -395,7 +395,7 @@ function MyCallingList({ currentUser, showToast }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
       {/* ── Employee Header Banner ─────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0EA5E9 100%)',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%)',
         borderRadius: '20px',
         padding: '1.4rem 1.75rem',
         color: '#ffffff',
@@ -724,7 +724,7 @@ function MyCallingList({ currentUser, showToast }) {
             <form onSubmit={handleSubmitDailyReport} style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Notice */}
               <div style={{
-                background: '#F0F9FF',
+                background: '#eff6ff',
                 border: '1px solid #bfdbfe',
                 borderRadius: '10px',
                 padding: '10px 14px',
@@ -938,10 +938,10 @@ function MyCallingList({ currentUser, showToast }) {
         {/* Called Count */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#0EA5E9' }}>TOTAL CALLED</span>
-            <i className="fas fa-phone-alt" style={{ color: '#0EA5E9' }}></i>
+            <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#2563eb' }}>TOTAL CALLED</span>
+            <i className="fas fa-phone-alt" style={{ color: '#2563eb' }}></i>
           </div>
-          <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#0EA5E9', marginTop: '4px' }}>
+          <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#2563eb', marginTop: '4px' }}>
             {stats?.calledCount || 0}
           </div>
           <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
@@ -999,9 +999,9 @@ function MyCallingList({ currentUser, showToast }) {
             minWidth: '200px',
             padding: '11px 16px',
             borderRadius: '12px',
-            border: activeListTab === 'active' ? '2px solid #0EA5E9' : '1px solid transparent',
-            background: activeListTab === 'active' ? '#F0F9FF' : 'transparent',
-            color: activeListTab === 'active' ? '#0284C7' : '#475569',
+            border: activeListTab === 'active' ? '2px solid #2563eb' : '1px solid transparent',
+            background: activeListTab === 'active' ? '#eff6ff' : 'transparent',
+            color: activeListTab === 'active' ? '#1d4ed8' : '#475569',
             fontWeight: '800',
             fontSize: '0.86rem',
             cursor: 'pointer',
@@ -1012,10 +1012,10 @@ function MyCallingList({ currentUser, showToast }) {
             transition: 'all 0.15s'
           }}
         >
-          <i className="fas fa-phone-volume" style={{ color: activeListTab === 'active' ? '#0EA5E9' : '#64748b' }}></i>
+          <i className="fas fa-phone-volume" style={{ color: activeListTab === 'active' ? '#2563eb' : '#64748b' }}></i>
           <span>⚡ Active Calling Leads</span>
           <span style={{
-            background: activeListTab === 'active' ? '#0EA5E9' : '#cbd5e1',
+            background: activeListTab === 'active' ? '#2563eb' : '#cbd5e1',
             color: '#ffffff',
             borderRadius: '999px',
             padding: '2px 9px',
@@ -1223,7 +1223,7 @@ function MyCallingList({ currentUser, showToast }) {
                 padding: '9px 14px',
                 borderRadius: '10px',
                 border: 'none',
-                background: '#0EA5E9',
+                background: '#2563eb',
                 color: '#ffffff',
                 fontWeight: '700',
                 fontSize: '0.85rem',
@@ -1415,9 +1415,9 @@ function MyCallingList({ currentUser, showToast }) {
                         {lead.college}
                       </span>
                       <span style={{
-                        background: '#F0F9FF',
+                        background: '#eff6ff',
                         border: '1px solid #bfdbfe',
-                        color: '#0284C7',
+                        color: '#1d4ed8',
                         fontSize: '0.72rem',
                         fontWeight: '700',
                         padding: '2px 8px',
@@ -1501,9 +1501,9 @@ function MyCallingList({ currentUser, showToast }) {
                               gap: '4px',
                               padding: '2px 8px',
                               borderRadius: '6px',
-                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#F0F9FF' : '#fef2f2'),
+                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#eff6ff' : '#fef2f2'),
                               border: lead.status === 'Interested' ? '1px solid #86efac' : (lead.status === 'Called' ? '1px solid #bfdbfe' : '1px solid #fecaca'),
-                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#0284C7' : '#b91c1c'),
+                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#1d4ed8' : '#b91c1c'),
                               fontWeight: '800',
                               fontSize: '0.72rem'
                             }}>
@@ -1560,9 +1560,9 @@ function MyCallingList({ currentUser, showToast }) {
 
                       {/* Email */}
                       {lead.email && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#0EA5E9' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#2563eb' }}>
                           <i className="fas fa-envelope"></i>
-                          <a href={`mailto:${lead.email}`} style={{ color: '#0EA5E9', textDecoration: 'none' }}>
+                          <a href={`mailto:${lead.email}`} style={{ color: '#2563eb', textDecoration: 'none' }}>
                             {lead.email}
                           </a>
                         </div>
@@ -1584,7 +1584,7 @@ function MyCallingList({ currentUser, showToast }) {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
                         {[
                           { val: 'Not Called', label: '⚪ Not Called', bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' },
-                          { val: 'Called', label: '🔵 Called', bg: '#F0F9FF', color: '#0284C7', border: '#bfdbfe' },
+                          { val: 'Called', label: '🔵 Called', bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
                           { val: 'Interested', label: '🟢 Interested', bg: '#f0fdf4', color: '#15803d', border: '#86efac' },
                           { val: 'Not Interested', label: '🔴 Not Interested', bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' }
                         ].map(st => {
@@ -1657,7 +1657,7 @@ function MyCallingList({ currentUser, showToast }) {
                             padding: '7px 12px',
                             borderRadius: '8px',
                             border: 'none',
-                            background: '#0EA5E9',
+                            background: '#2563eb',
                             color: '#ffffff',
                             fontWeight: '700',
                             fontSize: '0.75rem',
@@ -1674,7 +1674,7 @@ function MyCallingList({ currentUser, showToast }) {
                       <div style={{
                         marginTop: '10px',
                         padding: '10px 12px',
-                        background: '#F0F9FF',
+                        background: '#eff6ff',
                         borderRadius: '12px',
                         border: '1.5px dashed #93c5fd',
                         display: 'flex',
@@ -1683,10 +1683,10 @@ function MyCallingList({ currentUser, showToast }) {
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.74rem', fontWeight: '800', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fas fa-check-circle" style={{ color: '#0EA5E9' }}></i>
+                            <i className="fas fa-check-circle" style={{ color: '#2563eb' }}></i>
                             <span>Mark Work Complete • Move to History:</span>
                           </span>
-                          <span style={{ fontSize: '0.67rem', color: '#0EA5E9', fontWeight: '700' }}>
+                          <span style={{ fontSize: '0.67rem', color: '#2563eb', fontWeight: '700' }}>
                             (Card moves to History)
                           </span>
                         </div>
@@ -1700,7 +1700,7 @@ function MyCallingList({ currentUser, showToast }) {
                               borderRadius: '8px',
                               border: '1px solid #bfdbfe',
                               background: '#ffffff',
-                              color: '#0284C7',
+                              color: '#1d4ed8',
                               fontSize: '0.74rem',
                               fontWeight: '800',
                               cursor: 'pointer',
@@ -1861,7 +1861,7 @@ function MyCallingList({ currentUser, showToast }) {
                   padding: '10px 22px',
                   borderRadius: '12px',
                   border: 'none',
-                  background: '#0EA5E9',
+                  background: '#2563eb',
                   color: '#ffffff',
                   fontWeight: '800',
                   fontSize: '0.86rem',
@@ -1939,11 +1939,11 @@ function MyCallingList({ currentUser, showToast }) {
                           <span style={{ fontFamily: 'monospace', fontWeight: '800', color: '#0f172a' }}>
                             {lead.mobile || '—'}
                           </span>
-                          {lead.email && <div style={{ fontSize: '0.72rem', color: '#0EA5E9' }}>{lead.email}</div>}
+                          {lead.email && <div style={{ fontSize: '0.72rem', color: '#2563eb' }}>{lead.email}</div>}
                         </td>
                         <td>
                           <div style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lead.college}</div>
-                          <span style={{ background: '#F0F9FF', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
+                          <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
                             {lead.domain}
                           </span>
                         </td>
@@ -1993,8 +1993,8 @@ function MyCallingList({ currentUser, showToast }) {
                               borderRadius: '6px',
                               fontSize: '0.72rem',
                               fontWeight: '800',
-                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#F0F9FF' : '#fef2f2'),
-                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#0284C7' : '#b91c1c'),
+                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#eff6ff' : '#fef2f2'),
+                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#1d4ed8' : '#b91c1c'),
                               border: lead.status === 'Interested' ? '1px solid #86efac' : (lead.status === 'Called' ? '1px solid #bfdbfe' : '1px solid #fecaca'),
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -2025,8 +2025,8 @@ function MyCallingList({ currentUser, showToast }) {
                               fontSize: '0.75rem',
                               fontWeight: '700',
                               border: '1px solid #cbd5e1',
-                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#F0F9FF' : (lead.status === 'Not Interested' ? '#fef2f2' : '#ffffff')),
-                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#0284C7' : (lead.status === 'Not Interested' ? '#b91c1c' : '#475569'))
+                              background: lead.status === 'Interested' ? '#f0fdf4' : (lead.status === 'Called' ? '#eff6ff' : (lead.status === 'Not Interested' ? '#fef2f2' : '#ffffff')),
+                              color: lead.status === 'Interested' ? '#15803d' : (lead.status === 'Called' ? '#1d4ed8' : (lead.status === 'Not Interested' ? '#b91c1c' : '#475569'))
                             }}
                           >
                             <option value="Not Called">⚪ Not Called</option>
@@ -2047,7 +2047,7 @@ function MyCallingList({ currentUser, showToast }) {
                               type="button"
                               onClick={() => handleSaveNote(lead._id)}
                               disabled={isSaving}
-                              style={{ padding: '4px 8px', background: '#0EA5E9', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}
+                              style={{ padding: '4px 8px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}
                             >
                               Save
                             </button>

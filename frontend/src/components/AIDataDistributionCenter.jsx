@@ -594,8 +594,8 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                     padding: '8px 14px',
                     borderRadius: '10px',
                     border: '1px solid #cbd5e1',
-                    background: manualFormOpen ? '#F0F9FF' : '#ffffff',
-                    color: '#0284C7',
+                    background: manualFormOpen ? '#eff6ff' : '#ffffff',
+                    color: '#1d4ed8',
                     fontSize: '0.8rem',
                     fontWeight: '700',
                     cursor: 'pointer',
@@ -681,7 +681,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                       padding: '8px 14px',
                       borderRadius: '8px',
                       border: 'none',
-                      background: '#0EA5E9',
+                      background: '#2563eb',
                       color: '#ffffff',
                       fontWeight: '700',
                       cursor: 'pointer',
@@ -796,7 +796,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                       padding: '8px 18px',
                       borderRadius: '10px',
                       border: 'none',
-                      background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
+                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                       color: '#ffffff',
                       fontWeight: '800',
                       fontSize: '0.85rem',
@@ -887,7 +887,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                           </td>
                           <td>
                             {lead.email ? (
-                              <span style={{ color: '#0EA5E9' }}>{lead.email}</span>
+                              <span style={{ color: '#2563eb' }}>{lead.email}</span>
                             ) : (
                               <span style={{ color: '#f59e0b', fontSize: '0.75rem', fontStyle: 'italic' }}>— Missing</span>
                             )}
@@ -897,8 +897,8 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                           </td>
                           <td>
                             <span style={{
-                              background: '#F0F9FF',
-                              color: '#0284C7',
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
                               padding: '3px 8px',
                               borderRadius: '6px',
                               fontSize: '0.72rem',
@@ -980,7 +980,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
           <div className="section-card">
             <div className="section-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
               <div>
-                <h2><i className="fas fa-share-alt" style={{ color: '#0EA5E9', marginRight: '8px' }}></i> Distribute Leads to Team Members</h2>
+                <h2><i className="fas fa-share-alt" style={{ color: '#2563eb', marginRight: '8px' }}></i> Distribute Leads to Team Members</h2>
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                   Select single, multiple, or all employees and assign clean calling data with one click. Associates will immediately see these in "Company Assign Data".
                 </p>
@@ -1021,11 +1021,11 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
                   <label style={{ fontSize: '0.84rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <i className="fas fa-users-cog" style={{ color: '#0EA5E9' }}></i>
+                    <i className="fas fa-users-cog" style={{ color: '#2563eb' }}></i>
                     Target Associates / Employees <span style={{ color: '#ef4444' }}>*</span>
                     <span style={{
-                      background: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#dcfce7' : '#F0F9FF',
-                      color: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#15803d' : '#0284C7',
+                      background: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#dcfce7' : '#eff6ff',
+                      color: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#15803d' : '#1d4ed8',
                       fontSize: '0.72rem',
                       fontWeight: '800',
                       padding: '2px 8px',
@@ -1045,8 +1045,8 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                       style={{
                         padding: '5px 12px',
                         borderRadius: '8px',
-                        border: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '1.5px solid #0EA5E9' : '1px solid #cbd5e1',
-                        background: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#0EA5E9' : '#ffffff',
+                        border: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                        background: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#2563eb' : '#ffffff',
                         color: selectedEmployeeEmails.length === employees.length && employees.length > 0 ? '#ffffff' : '#1e293b',
                         fontSize: '0.78rem',
                         fontWeight: '700',
@@ -1167,7 +1167,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                             justifyContent: 'space-between',
                             padding: '7px 10px',
                             borderRadius: '8px',
-                            background: isSelected ? '#F0F9FF' : 'transparent',
+                            background: isSelected ? '#eff6ff' : 'transparent',
                             cursor: 'pointer',
                             transition: 'background 0.15s',
                             borderBottom: '1px solid #f1f5f9'
@@ -1181,7 +1181,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                               style={{ cursor: 'pointer' }}
                             />
                             <div>
-                              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: isSelected ? '#0284C7' : '#0f172a' }}>
+                              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: isSelected ? '#1d4ed8' : '#0f172a' }}>
                                 {emp.name}
                               </div>
                               <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
@@ -1264,9 +1264,9 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                         flex: 1,
                         padding: '9px 10px',
                         borderRadius: '10px',
-                        border: distributionStrategy === 'split' ? '2px solid #0EA5E9' : '1px solid #cbd5e1',
-                        background: distributionStrategy === 'split' ? '#F0F9FF' : '#ffffff',
-                        color: distributionStrategy === 'split' ? '#0284C7' : '#475569',
+                        border: distributionStrategy === 'split' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                        background: distributionStrategy === 'split' ? '#eff6ff' : '#ffffff',
+                        color: distributionStrategy === 'split' ? '#1d4ed8' : '#475569',
                         fontWeight: '700',
                         fontSize: '0.8rem',
                         cursor: 'pointer',
@@ -1284,9 +1284,9 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                         flex: 1,
                         padding: '9px 10px',
                         borderRadius: '10px',
-                        border: distributionStrategy === 'all' ? '2px solid #0EA5E9' : '1px solid #cbd5e1',
-                        background: distributionStrategy === 'all' ? '#F0F9FF' : '#ffffff',
-                        color: distributionStrategy === 'all' ? '#0284C7' : '#475569',
+                        border: distributionStrategy === 'all' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                        background: distributionStrategy === 'all' ? '#eff6ff' : '#ffffff',
+                        color: distributionStrategy === 'all' ? '#1d4ed8' : '#475569',
                         fontWeight: '700',
                         fontSize: '0.8rem',
                         cursor: 'pointer',
@@ -1327,7 +1327,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
 
                 {/* Calculation & Summary Box */}
                 <div style={{
-                  background: '#F0F9FF',
+                  background: '#eff6ff',
                   border: '1px solid #bfdbfe',
                   borderRadius: '12px',
                   padding: '10px 14px'
@@ -1335,7 +1335,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                   <div style={{ fontSize: '0.7rem', color: '#1e40af', fontWeight: '800', textTransform: 'uppercase' }}>
                     READY TO DISTRIBUTE
                   </div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0284C7' }}>
+                  <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#1d4ed8' }}>
                     {getLeadsToDistribute().length} <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#3b82f6' }}>Leads</span>
                     <span style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 6px' }}>→</span>
                     {selectedEmployeeEmails.length} <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#3b82f6' }}>Staff</span>
@@ -1362,7 +1362,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                       padding: '12px 18px',
                       borderRadius: '12px',
                       border: 'none',
-                      background: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                       color: '#ffffff',
                       fontWeight: '800',
                       fontSize: '0.92rem',
@@ -1429,7 +1429,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                       <td>{l.email || '—'}</td>
                       <td>{l.college}</td>
                       <td>
-                        <span style={{ background: '#F0F9FF', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '700' }}>
+                        <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 7px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: '700' }}>
                           {l.domain}
                         </span>
                       </td>
@@ -1489,8 +1489,8 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
             </div>
 
             <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#0EA5E9', textTransform: 'uppercase' }}>TOTAL CALLED</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#0EA5E9', marginTop: '4px' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#2563eb', textTransform: 'uppercase' }}>TOTAL CALLED</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#2563eb', marginTop: '4px' }}>
                 {reportsData?.stats?.calledCount || 0}
               </div>
             </div>
@@ -1515,7 +1515,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
             <div className="section-header" style={{ flexWrap: 'wrap', gap: '8px' }}>
               <div>
                 <h2>
-                  <i className="fas fa-boxes" style={{ color: '#0EA5E9', marginRight: '8px' }}></i>
+                  <i className="fas fa-boxes" style={{ color: '#2563eb', marginRight: '8px' }}></i>
                   Company Data Distribution Batches & Allocation Tracker
                 </h2>
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
@@ -1587,8 +1587,8 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxWidth: '240px' }}>
                               {batch.assignedEmployees?.slice(0, 3).map((name, idx) => (
                                 <span key={idx} style={{
-                                  background: '#F0F9FF',
-                                  color: '#0284C7',
+                                  background: '#eff6ff',
+                                  color: '#1d4ed8',
                                   padding: '2px 7px',
                                   borderRadius: '6px',
                                   fontSize: '0.7rem',
@@ -1613,7 +1613,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                               <span style={{ color: '#ea580c' }}>{batch.pendingCount} Pending</span>
                             </div>
                             <div style={{ width: '100%', background: '#e2e8f0', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div style={{ width: `${percent}%`, background: percent === 100 ? '#16a34a' : '#0EA5E9', height: '100%' }} />
+                              <div style={{ width: `${percent}%`, background: percent === 100 ? '#16a34a' : '#2563eb', height: '100%' }} />
                             </div>
                             <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '2px' }}>
                               {percent}% Complete • {batch.interestedCount} Interested
@@ -1642,7 +1642,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                                 padding: '5px 10px',
                                 borderRadius: '8px',
                                 border: 'none',
-                                background: isFilteringThis ? '#0f172a' : '#0EA5E9',
+                                background: isFilteringThis ? '#0f172a' : '#2563eb',
                                 color: '#ffffff',
                                 fontWeight: '700',
                                 fontSize: '0.72rem',
@@ -1713,7 +1713,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                           <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{dr.reportTime}</div>
                         </td>
                         <td>
-                          <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#0EA5E9' }}>
+                          <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#2563eb' }}>
                             {dr.connectedCalls || dr.callsAbove3Min || 0}
                           </span>
                         </td>
@@ -1741,7 +1741,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
           {/* ── 3. EMPLOYEE-WISE DISTRIBUTION ROSTER ─────────────────── */}
           <div className="section-card">
             <div className="section-header">
-              <h2><i className="fas fa-users-cog" style={{ color: '#0EA5E9', marginRight: '8px' }}></i> Employee-wise Calling Distribution Breakdown</h2>
+              <h2><i className="fas fa-users-cog" style={{ color: '#2563eb', marginRight: '8px' }}></i> Employee-wise Calling Distribution Breakdown</h2>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -1772,7 +1772,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                           </span>
                         </td>
                         <td><strong>{emp.totalAssigned}</strong></td>
-                        <td><span style={{ color: '#0EA5E9', fontWeight: '700' }}>{emp.calledCount}</span></td>
+                        <td><span style={{ color: '#2563eb', fontWeight: '700' }}>{emp.calledCount}</span></td>
                         <td><span style={{ color: '#ea580c', fontWeight: '700' }}>{emp.pendingCount}</span></td>
                         <td><span style={{ color: '#16a34a', fontWeight: '800' }}>{emp.interestedCount}</span></td>
                         <td><span style={{ color: '#94a3b8' }}>{emp.notInterestedCount}</span></td>
@@ -1807,7 +1807,7 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                 <h2><i className="fas fa-list-ul" style={{ color: '#0f766e', marginRight: '8px' }}></i> Master Leads Calling Registry</h2>
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                   Search and inspect live lead statuses, employee call remarks, and outcomes
-                  {reportFilterBatch !== 'All' && <strong style={{ color: '#0EA5E9', marginLeft: '6px' }}>(Filtered by {reportFilterBatch})</strong>}
+                  {reportFilterBatch !== 'All' && <strong style={{ color: '#2563eb', marginLeft: '6px' }}>(Filtered by {reportFilterBatch})</strong>}
                 </p>
               </div>
 
@@ -1952,11 +1952,11 @@ Pooja Patil 9890123456 poojap@gmail.com MIT WPU (Duplicate Row)`
                         </td>
                         <td>
                           <div style={{ fontFamily: 'monospace', fontWeight: '700', color: '#0f172a' }}>{lead.mobile || '—'}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#0EA5E9' }}>{lead.email || '—'}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#2563eb' }}>{lead.email || '—'}</div>
                         </td>
                         <td>
                           <div style={{ fontWeight: '600', fontSize: '0.82rem' }}>{lead.college}</div>
-                          <span style={{ background: '#F0F9FF', color: '#0284C7', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
+                          <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
                             {lead.domain}
                           </span>
                         </td>

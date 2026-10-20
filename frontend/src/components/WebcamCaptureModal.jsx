@@ -183,7 +183,7 @@ function WebcamCaptureModal({ isOpen, onClose, onCapture, title = 'Take a Photo'
             <p style={{ color: '#dc2626', fontSize: '0.82rem' }}>{cameraError}</p>
             <button
               onClick={startCamera}
-              style={{ marginTop: '10px', background: '#0EA5E9', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 16px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+              style={{ marginTop: '10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 16px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
             >
               Try Again
             </button>
@@ -258,7 +258,7 @@ function WebcamCaptureModal({ isOpen, onClose, onCapture, title = 'Take a Photo'
           {phase === 'camera' && !cameraError && !cameraStarting && (
             <button
               onClick={capturePhoto}
-              style={{ background: '#0EA5E9', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 20px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 20px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               📷 Capture
             </button>

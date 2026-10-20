@@ -177,7 +177,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
           <button
             onClick={() => setIsCreateOpen(true)}
             style={{
-              background: '#0EA5E9',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
@@ -188,7 +188,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 4px 12px rgba(14, 165, 233, 0.35)'
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
             }}
           >
             <i className="fas fa-plus-circle"></i>
@@ -200,7 +200,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
       {/* Projects Grid */}
       {loading ? (
         <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-          <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#0EA5E9', marginBottom: '10px' }}></i>
+          <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.8rem', color: '#2563eb', marginBottom: '10px' }}></i>
           <div>Loading software projects...</div>
         </div>
       ) : projects.length === 0 ? (
@@ -248,9 +248,9 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   <span style={{
                     fontSize: '0.72rem',
                     fontWeight: '800',
-                    color: '#0284C7',
-                    background: '#F0F9FF',
-                    border: '1px solid #BAE6FD',
+                    color: '#2563eb',
+                    background: '#eff6ff',
+                    border: '1px solid #bfdbfe',
                     padding: '3px 8px',
                     borderRadius: '6px'
                   }}>
@@ -260,8 +260,8 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   <span style={{
                     fontSize: '0.72rem',
                     fontWeight: '800',
-                    color: project.status === 'Completed' ? '#059669' : '#0284C7',
-                    background: project.status === 'Completed' ? '#ecfdf5' : '#F0F9FF',
+                    color: project.status === 'Completed' ? '#059669' : '#2563eb',
+                    background: project.status === 'Completed' ? '#ecfdf5' : '#eff6ff',
                     padding: '3px 10px',
                     borderRadius: '999px'
                   }}>
@@ -302,13 +302,13 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: '800', marginBottom: '4px' }}>
                     <span style={{ color: '#475569' }}>Completion Progress</span>
-                    <span style={{ color: '#0284C7' }}>{progress}%</span>
+                    <span style={{ color: '#2563eb' }}>{progress}%</span>
                   </div>
                   <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
                     <div style={{
                       width: `${progress}%`,
                       height: '100%',
-                      background: progress === 100 ? '#10b981' : '#0EA5E9',
+                      background: progress === 100 ? '#10b981' : 'linear-gradient(90deg, #2563eb, #38bdf8)',
                       borderRadius: '999px',
                       transition: 'width 0.3s ease'
                     }} />
@@ -392,7 +392,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
               alignItems: 'flex-start'
             }}>
               <div>
-                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#0284C7', background: '#F0F9FF', padding: '2px 8px', borderRadius: '6px' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>
                   {selectedProject.code}
                 </span>
                 <h3 style={{ margin: '4px 0 0 0', fontSize: '1.2rem', fontWeight: '900', color: '#0f172a' }}>
@@ -421,7 +421,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   </label>
                   <button
                     onClick={() => setIsAddMilestoneOpen(v => !v)}
-                    style={{ background: '#F0F9FF', color: '#0284C7', border: '1px solid #BAE6FD', borderRadius: '6px', padding: '5px 10px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                    style={{ background: '#eff6ff', color: '#2563eb', border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
                   >
                     + Add Milestone
                   </button>
@@ -444,7 +444,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                       required
                       style={{ flex: 1, padding: '7px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.82rem' }}
                     />
-                    <button type="submit" style={{ background: '#0EA5E9', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}>
+                    <button type="submit" style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}>
                       Add
                     </button>
                   </form>
@@ -554,7 +554,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                     href={selectedProject.repositoryUrl}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ background: '#0EA5E9', color: '#fff', textDecoration: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700' }}
+                    style={{ background: '#2563eb', color: '#fff', textDecoration: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700' }}
                   >
                     Open Repo ↗
                   </a>
@@ -570,7 +570,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
         <div style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(9, 9, 11, 0.75)',
+          background: 'rgba(10, 25, 47, 0.75)',
           backdropFilter: 'blur(8px)',
           display: 'flex',
           alignItems: 'center',
@@ -593,7 +593,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#F0F9FF', color: '#0284C7', border: '1px solid #BAE6FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <i className="fas fa-folder-plus"></i>
                 </div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#0f172a' }}>
@@ -716,7 +716,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                 <button
                   type="submit"
                   disabled={creating}
-                  style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#0EA5E9', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
+                  style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
                 >
                   {creating ? 'Creating...' : 'Create Project'}
                 </button>

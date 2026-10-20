@@ -138,8 +138,8 @@ function PerformanceDashboard({ currentUser, showToast }) {
               width: '40px',
               height: '40px',
               borderRadius: '12px',
-              background: '#F0F9FF',
-              color: '#0EA5E9',
+              background: '#eff6ff',
+              color: '#2563eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -162,7 +162,7 @@ function PerformanceDashboard({ currentUser, showToast }) {
           <button
             onClick={() => setDailyModalOpen(true)}
             style={{
-              background: '#0EA5E9',
+              background: '#2563eb',
               color: '#ffffff',
               border: 'none',
               padding: '9px 16px',
@@ -337,7 +337,7 @@ function PerformanceDashboard({ currentUser, showToast }) {
             boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.03)'
           }}>
             <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', fontWeight: '700', color: '#0a192f' }}>
-              <i className="fas fa-chart-bar" style={{ marginRight: '8px', color: '#0EA5E9' }}></i>
+              <i className="fas fa-chart-bar" style={{ marginRight: '8px', color: '#2563eb' }}></i>
               Recent 7-Day Activity & Conversion Trend
             </h3>
 
@@ -349,14 +349,14 @@ function PerformanceDashboard({ currentUser, showToast }) {
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${perfData.trends.length}, 1fr)`, gap: '12px', alignItems: 'end', minHeight: '180px', paddingTop: '20px' }}>
                 {perfData.trends.map((t, idx) => (
                   <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0EA5E9' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#2563eb' }}>
                       {t.calls} calls
                     </div>
                     <div style={{
                       width: '100%',
                       maxWidth: '50px',
                       height: `${Math.max(25, Math.min(130, t.calls * 3))}px`,
-                      background: t.conversions > 0 ? 'linear-gradient(180deg, #10b981 0%, #059669 100%)' : 'linear-gradient(180deg, #3b82f6 0%, #0284C7 100%)',
+                      background: t.conversions > 0 ? 'linear-gradient(180deg, #10b981 0%, #059669 100%)' : 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)',
                       borderRadius: '8px 8px 0 0',
                       transition: 'height 0.3s'
                     }} />
@@ -457,7 +457,7 @@ function PerformanceDashboard({ currentUser, showToast }) {
                           {r.todayConversions}
                         </span>
                       </td>
-                      <td style={{ color: '#0EA5E9', fontWeight: '700' }}>
+                      <td style={{ color: '#2563eb', fontWeight: '700' }}>
                         ₹{(r.revenue || 0).toLocaleString('en-IN')}
                       </td>
                       <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -540,8 +540,8 @@ function PerformanceDashboard({ currentUser, showToast }) {
                       </td>
                       <td>
                         <span style={{
-                          background: m.targetType === 'College-wise' ? '#F0F9FF' : '#f1f5f9',
-                          color: m.targetType === 'College-wise' ? '#0EA5E9' : '#475569',
+                          background: m.targetType === 'College-wise' ? '#eff6ff' : '#f1f5f9',
+                          color: m.targetType === 'College-wise' ? '#2563eb' : '#475569',
                           padding: '3px 8px',
                           borderRadius: '6px',
                           fontWeight: '600'

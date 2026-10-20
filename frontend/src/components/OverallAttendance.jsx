@@ -668,8 +668,8 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
           <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>Late Today</div>
         </div>
         <div className="stat-card" style={{ padding: '1.25rem' }}>
-          <div className="icon" style={{ background: '#dbeafe', color: '#0EA5E9' }}>🏖️</div>
-          <div className="value" style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0EA5E9' }}>{leaveToday}</div>
+          <div className="icon" style={{ background: '#dbeafe', color: '#2563eb' }}>🏖️</div>
+          <div className="value" style={{ fontSize: '1.75rem', fontWeight: 800, color: '#2563eb' }}>{leaveToday}</div>
           <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>On Leave Today</div>
         </div>
         <div className="stat-card" style={{ padding: '1.25rem' }}>
@@ -858,7 +858,7 @@ function OverallAttendance({ employees, attendance, liveSessions, holidays, onRe
               <button onClick={handleExportExcel} className="sidebar-nav-btn" style={{ padding: '8px 12px', fontSize: '0.8rem', background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <i className="fas fa-file-excel"></i> Excel
               </button>
-              <button onClick={handleExportCSV} className="sidebar-nav-btn" style={{ padding: '8px 12px', fontSize: '0.8rem', background: '#0EA5E9', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <button onClick={handleExportCSV} className="sidebar-nav-btn" style={{ padding: '8px 12px', fontSize: '0.8rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <i className="fas fa-file-csv"></i> CSV
               </button>
               <button onClick={handlePrint} className="sidebar-nav-btn" style={{ padding: '8px 12px', fontSize: '0.8rem', background: '#475569', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>

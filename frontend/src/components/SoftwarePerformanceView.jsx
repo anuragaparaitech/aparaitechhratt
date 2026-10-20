@@ -139,7 +139,7 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
             <button
               onClick={exportPerformanceReport}
               style={{
-                background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '10px',
@@ -194,11 +194,11 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b' }}>PROJECTS ASSIGNED</span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F0F9FF', color: '#0EA5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="fas fa-cubes"></i>
             </div>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#0EA5E9' }}>{projects.length}</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#2563eb' }}>{projects.length}</div>
           <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
             Core software deliverables
           </div>
@@ -265,7 +265,7 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
               Overview of developer task throughput, pull request turnaround, and sprint completion rates.
             </p>
           </div>
-          <span style={{ background: '#F0F9FF', color: '#0EA5E9', padding: '4px 10px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: '800' }}>
+          <span style={{ background: '#eff6ff', color: '#2563eb', padding: '4px 10px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: '800' }}>
             {devLeaderboard.length} Developers Active
           </span>
         </div>
@@ -291,7 +291,7 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
                   </td>
                   <td style={{ padding: '12px 14px', fontWeight: '700', color: '#0f172a' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#0EA5E9', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.7rem' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#2563eb', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.7rem' }}>
                         {dev.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -300,7 +300,7 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '12px 14px', color: '#0EA5E9', fontWeight: '600' }}>
+                  <td style={{ padding: '12px 14px', color: '#2563eb', fontWeight: '600' }}>
                     {dev.designation}
                   </td>
                   <td style={{ padding: '12px 14px', color: '#10b981', fontWeight: '800' }}>
@@ -315,7 +315,7 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
                   <td style={{ padding: '12px 14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ width: '70px', height: '6px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
-                        <div style={{ width: `${dev.score}%`, height: '100%', background: '#0EA5E9', borderRadius: '999px' }} />
+                        <div style={{ width: `${dev.score}%`, height: '100%', background: '#2563eb', borderRadius: '999px' }} />
                       </div>
                       <span style={{ fontWeight: '800', color: '#0f172a' }}>{dev.score}%</span>
                     </div>

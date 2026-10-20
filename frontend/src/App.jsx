@@ -323,7 +323,7 @@ function App() {
               tag: 'new-task-assigned',
               onClick: () => setActiveTab('softwareTasks')
             })
-            showToast(`🚀 New sprint task assigned!`, '#0EA5E9')
+            showToast(`🚀 New sprint task assigned!`, '#2563eb')
           }
           prevTasksCountRef.current = count
           const pendingTasks = res.data.filter(t => t.status !== 'Done' && t.status !== 'Completed').length
@@ -402,7 +402,7 @@ function App() {
       }
     }
     const modeName = mode === 'software' ? 'Software Team' : (mode === 'hr' ? 'Human Resources (HR)' : 'BDA Calling')
-    showToast(`Switched to ${modeName} Portal`, '#0EA5E9')
+    showToast(`Switched to ${modeName} Portal`, '#2563eb')
   }
 
   // Navigate to an admin section or top-level tab
@@ -421,26 +421,24 @@ function App() {
   }
 
   const sidebarBtnStyle = (active) => ({
-    background: active ? '#F0F9FF' : 'transparent',
-    color: active ? '#0284C7' : '#52525B',
+    background: active ? 'linear-gradient(135deg, #1e5a7a, #0f2b3d)' : 'transparent',
+    color: active ? '#ffffff' : '#475569',
     border: 'none',
-    borderLeft: active ? '3px solid #0EA5E9' : '3px solid transparent',
-    borderRadius: '0 4px 4px 0',
-    padding: '8px 12px',
+    borderRadius: '12px',
+    padding: '10px 14px',
     textAlign: 'left',
-    fontWeight: active ? '600' : '500',
-    fontSize: '13px',
+    fontWeight: '600',
+    fontSize: '0.84rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    transition: 'background 0.1s ease, color 0.1s ease',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
     width: '100%',
-    boxSizing: 'border-box'
   })
 
   return (
-    <div style={{ background: '#FAFAFA', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       {!currentUser ? (
         <LoginScreen onLogin={handleLogin} showToast={showToast} />
@@ -458,133 +456,102 @@ function App() {
             onOpenChangePin={() => setIsGlobalPinOpen(true)}
           />
 
-          <div className="main-layout" style={{ display: 'flex', width: '100%', minHeight: 'calc(100vh - 56px)' }}>
+          <div className="main-layout" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', padding: '1.5rem' }}>
 
-            {/* ── Jira-Style Minimal Project Sidebar (Desktop) ─────────────────── */}
-            <aside className="sidebar-card desktop-sidebar" style={{
-              width: '240px',
-              minWidth: '240px',
-              background: '#FFFFFF',
-              borderRight: '1px solid #E4E4E7',
-              padding: '16px 8px 32px 8px',
+            {/* ── Desktop Sidebar Navigation Card (Hidden on mobile <1024px) ─────────────────── */}
+            <div className="sidebar-card desktop-sidebar" style={{
+              background: '#ffffff',
+              borderRadius: '24px',
+              padding: '1.5rem 1.2rem',
+              width: '260px',
+              minWidth: '260px',
+              boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 1px 0 rgba(0, 0, 0, 0.01)',
+              border: '1px solid #e2e8f0',
               display: 'flex',
               flexDirection: 'column',
-              gap: '2px',
-              minHeight: 'calc(100vh - 56px)',
-              height: 'auto',
-              boxSizing: 'border-box'
+              gap: '4px',
+              minHeight: '620px',
+              height: 'fit-content'
             }}>
 
-              {/* Project Identity Header */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '0 8px 12px 8px',
-                borderBottom: '1px solid #E4E4E7',
-                marginBottom: '10px'
-              }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '4px',
-                  background: '#09090B',
-                  color: '#38BDF8',
-                  border: '1px solid #27272A',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  flexShrink: 0
-                }}>
-                  <i className={`fas ${portalMode === 'software' ? 'fa-laptop-code' : (portalMode === 'hr' ? 'fa-users-cog' : 'fa-headset')}`}></i>
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    color: '#09090B',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
-                    {portalMode === 'software' ? 'Software Engineering' : (portalMode === 'hr' ? 'HR Operations' : 'BDA Business Desk')}
-                  </div>
-                  <div style={{
-                    fontSize: '11px',
-                    color: '#71717A',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em'
-                  }}>
-                    {portalMode === 'software' ? 'Software Project' : (portalMode === 'hr' ? 'Business Project' : 'Service Project')}
-                  </div>
-                </div>
-              </div>
-
-              {/* Portal Mode Segmented Switcher for Management & Admin */}
+              {/* Portal Mode Switcher in Desktop Sidebar for Management & Admin */}
               {canSwitchPortal && (
                 <div style={{
-                  background: '#F4F4F5',
-                  borderRadius: '4px',
-                  padding: '2px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '14px',
+                  padding: '4px',
                   display: 'flex',
-                  gap: '2px',
-                  marginBottom: '10px',
-                  border: '1px solid #E4E4E7'
+                  gap: '4px',
+                  marginBottom: '1rem'
                 }}>
                   <button
                     onClick={() => handleTogglePortal('software')}
                     style={{
                       flex: 1,
-                      padding: '5px 4px',
-                      borderRadius: '3px',
+                      padding: '8px 8px',
+                      borderRadius: '10px',
                       border: 'none',
-                      fontSize: '11px',
-                      fontWeight: 600,
+                      fontSize: '0.74rem',
+                      fontWeight: '700',
                       cursor: 'pointer',
-                      background: portalMode === 'software' ? '#0EA5E9' : 'transparent',
-                      color: portalMode === 'software' ? '#FFFFFF' : '#71717A',
-                      boxShadow: portalMode === 'software' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
-                      transition: 'all 0.12s ease'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
+                      color: portalMode === 'software' ? '#ffffff' : '#64748b',
+                      boxShadow: portalMode === 'software' ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
+                      transition: 'all 0.2s ease'
                     }}
                   >
+                    <i className="fas fa-laptop-code"></i>
                     Software
                   </button>
                   <button
                     onClick={() => handleTogglePortal('bda')}
                     style={{
                       flex: 1,
-                      padding: '5px 4px',
-                      borderRadius: '3px',
+                      padding: '8px 8px',
+                      borderRadius: '10px',
                       border: 'none',
-                      fontSize: '11px',
-                      fontWeight: 600,
+                      fontSize: '0.74rem',
+                      fontWeight: '700',
                       cursor: 'pointer',
-                      background: portalMode === 'bda' ? '#0EA5E9' : 'transparent',
-                      color: portalMode === 'bda' ? '#FFFFFF' : '#71717A',
-                      boxShadow: portalMode === 'bda' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
-                      transition: 'all 0.12s ease'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
+                      color: portalMode === 'bda' ? '#ffffff' : '#64748b',
+                      boxShadow: portalMode === 'bda' ? '0 2px 8px rgba(5,150,105,0.3)' : 'none',
+                      transition: 'all 0.2s ease'
                     }}
                   >
+                    <i className="fas fa-headset"></i>
                     BDA
                   </button>
                   <button
                     onClick={() => handleTogglePortal('hr')}
                     style={{
                       flex: 1,
-                      padding: '5px 4px',
-                      borderRadius: '3px',
+                      padding: '8px 8px',
+                      borderRadius: '10px',
                       border: 'none',
-                      fontSize: '11px',
-                      fontWeight: 600,
+                      fontSize: '0.74rem',
+                      fontWeight: '700',
                       cursor: 'pointer',
-                      background: portalMode === 'hr' ? '#0EA5E9' : 'transparent',
-                      color: portalMode === 'hr' ? '#FFFFFF' : '#71717A',
-                      boxShadow: portalMode === 'hr' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none',
-                      transition: 'all 0.12s ease'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                      color: portalMode === 'hr' ? '#ffffff' : '#64748b',
+                      boxShadow: portalMode === 'hr' ? '0 2px 8px rgba(124,58,237,0.3)' : 'none',
+                      transition: 'all 0.2s ease'
                     }}
                   >
+                    <i className="fas fa-users-cog"></i>
                     HR
                   </button>
                 </div>
@@ -594,8 +561,8 @@ function App() {
               {portalMode === 'hr' ? (
                 <>
                   {/* HR Group 1: Command Center */}
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                    Command Center
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#7c3aed', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                    👑 HR Command Center
                   </div>
                   {HR_NAV.filter(item => item.group === 'HR Command Center').map(item => (
                     <button
@@ -610,8 +577,8 @@ function App() {
                   ))}
 
                   {/* HR Group 2: Attendance & Workforce */}
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                    Workforce & Logs
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                    ⏱️ Attendance & Workforce
                   </div>
                   {HR_NAV.filter(item => item.group === 'Attendance & Workforce').map(item => (
                     <button
@@ -626,8 +593,8 @@ function App() {
                   ))}
 
                   {/* HR Group 3: Communications & Policies */}
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                    Communications
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                    📢 Communications
                   </div>
                   {HR_NAV.filter(item => item.group === 'HR Communications').map(item => (
                     <button
@@ -644,8 +611,8 @@ function App() {
               ) : portalMode === 'software' ? (
                 <>
                   {/* Group 1: Software Workspace */}
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                    Software Workspace
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                    💻 Software Workspace
                   </div>
                   {SOFTWARE_NAV.filter(item => item.group === 'Software Workspace').map(item => (
                     <button
@@ -657,7 +624,14 @@ function App() {
                       <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
                       <span style={{ flex: 1 }}>{item.label}</span>
                       {item.id === 'softwareTasks' && assignedTasksCount > 0 && (
-                        <span className="badge badge-brand" style={{ marginLeft: 'auto', fontSize: '11px', padding: '1px 6px' }}>
+                        <span style={{
+                          background: '#2563eb',
+                          color: '#ffffff',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: '800'
+                        }}>
                           {assignedTasksCount}
                         </span>
                       )}
@@ -665,8 +639,8 @@ function App() {
                   ))}
 
                   {/* Group 2: Attendance & HR */}
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                    Attendance & HR Desk
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
+                    ⏱️ Attendance & HR Desk
                   </div>
                   {SOFTWARE_NAV.filter(item => item.group === 'Attendance & HR').map(item => (
                     <button
@@ -681,8 +655,8 @@ function App() {
                   ))}
 
                   {/* Group 3: Communication & Settings */}
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                    Communication & Setup
+                  <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
+                    💬 Communication & Setup
                   </div>
                   {SOFTWARE_NAV.filter(item => item.group === 'Communication').map(item => (
                     <button
@@ -692,9 +666,17 @@ function App() {
                       onClick={() => setActiveTab(item.id)}
                     >
                       <i className={`fas ${item.icon}`} style={{ width: '16px', textAlign: 'center' }}></i>
-                      <span style={{ flex: 1 }}>{item.label}</span>
+                      {item.label}
                       {item.badge && unreadCount > 0 && (
-                        <span className="badge badge-danger" style={{ marginLeft: 'auto', fontSize: '11px', padding: '1px 6px' }}>
+                        <span style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          marginLeft: 'auto'
+                        }}>
                           {unreadCount}
                         </span>
                       )}
@@ -704,8 +686,8 @@ function App() {
                   {/* Group 4: Leadership & Oversight (Anurag & Admin) */}
                   {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7017') && (
                     <>
-                      <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                        Leadership & Oversight
+                      <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#0d9488', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '12px 0 4px', letterSpacing: '0.08em' }}>
+                        📊 Leadership & Oversight
                       </div>
                       <button
                         className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
@@ -717,7 +699,7 @@ function App() {
                       </button>
                       <button
                         className="sidebar-nav-btn"
-                        style={{ ...sidebarBtnStyle(false), color: '#0284C7', marginTop: '2px' }}
+                        style={{ ...sidebarBtnStyle(false), background: 'rgba(124,58,237,0.08)', color: '#7c3aed', marginTop: '4px' }}
                         onClick={() => handleTogglePortal('hr')}
                       >
                         <i className="fas fa-users-cog" style={{ width: '16px', textAlign: 'center' }}></i>
@@ -731,8 +713,8 @@ function App() {
                 (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) ? (
                   <>
                     {/* Admin Group 1: Command Center */}
-                    <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                      Command Center
+                    <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                      👑 Command Center
                     </div>
 
                     {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
@@ -749,8 +731,8 @@ function App() {
                     ))}
 
                     {/* Admin Group 2: Workforce & Logs */}
-                    <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                      Workforce & Logs
+                    <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                      👥 Workforce & Logs
                     </div>
 
                     {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
@@ -767,8 +749,8 @@ function App() {
                     ))}
 
                     {/* Admin Group 3: Portal Preview */}
-                    <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                      Working Portal
+                    <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                      🏢 Working Portal
                     </div>
 
                     {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
@@ -787,8 +769,8 @@ function App() {
                 ) : (
                   <>
                     {/* BDA Employee & Manager Navigation */}
-                    <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                      BDA Operations Desk
+                    <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
+                      💼 BDA Calling Portal
                     </div>
 
                     <button
@@ -817,7 +799,14 @@ function App() {
                       <i className="fas fa-headset" style={{ width: '16px', textAlign: 'center' }}></i>
                       <span style={{ flex: 1 }}>Company Assign Data</span>
                       {assignedLeadsCount > 0 && (
-                        <span className="badge badge-brand" style={{ marginLeft: 'auto', fontSize: '11px', padding: '1px 6px' }}>
+                        <span style={{
+                          background: '#0d9488',
+                          color: '#ffffff',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: '800'
+                        }}>
                           {assignedLeadsCount}
                         </span>
                       )}
@@ -869,9 +858,17 @@ function App() {
                       onClick={() => setActiveTab('inbox')}
                     >
                       <i className="fas fa-inbox" style={{ width: '16px', textAlign: 'center' }}></i>
-                      <span style={{ flex: 1 }}>Message Centre</span>
+                      Message Centre
                       {unreadCount > 0 && (
-                        <span className="badge badge-danger" style={{ marginLeft: 'auto', fontSize: '11px', padding: '1px 6px' }}>
+                        <span style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          borderRadius: '9999px',
+                          padding: '2px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          marginLeft: 'auto'
+                        }}>
                           {unreadCount}
                         </span>
                       )}
@@ -879,50 +876,10 @@ function App() {
                   </>
                 )
               )}
-            </aside>
+            </div>
 
-            {/* ── Main Content Canvas ──────────────────────────────────── */}
-            <main className="content-pane" style={{ flex: 1, minWidth: 0, padding: '20px 28px', background: '#FAFAFA' }}>
-
-              {/* Jira Project Breadcrumbs Header */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '16px',
-                paddingBottom: '10px',
-                borderBottom: '1px solid #E4E4E7',
-                flexWrap: 'wrap',
-                gap: '8px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#71717A' }}>
-                  <span style={{ fontWeight: 500 }}>Projects</span>
-                  <span style={{ color: '#A1A1AA' }}>/</span>
-                  <span style={{ fontWeight: 600, color: '#09090B' }}>
-                    {portalMode === 'software' ? 'Software Engineering' : (portalMode === 'hr' ? 'HR Operations' : 'BDA Business Desk')}
-                  </span>
-                  <span style={{ color: '#A1A1AA' }}>/</span>
-                  <span style={{ fontWeight: 600, color: '#0284C7' }}>
-                    {activeTab === 'softwareDashboard' ? 'Overview' :
-                     activeTab === 'softwareTasks' ? 'Sprint Board & Tasks' :
-                     activeTab === 'softwareDailyReports' ? 'Daily Reports' :
-                     activeTab === 'adminPanel' ? (adminSection ? adminSection.charAt(0).toUpperCase() + adminSection.slice(1) : 'Admin Panel') :
-                     activeTab === 'dashboard' ? 'Overview' :
-                     activeTab === 'attendance' ? 'Attendance & Logs' :
-                     activeTab === 'callingList' ? 'Assigned Leads Data' :
-                     activeTab === 'leave' || activeTab === 'softwareLeave' ? 'Leave Management' :
-                     activeTab === 'performance' ? 'Performance Metrics' :
-                     activeTab === 'revenue' ? 'Revenue Tracker' :
-                     activeTab === 'managerReports' ? 'Team Daily Reports' :
-                     activeTab === 'inbox' ? 'Message Centre' : activeTab}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="badge badge-success" style={{ fontSize: '11px', letterSpacing: '0.04em' }}>
-                    LIVE SYSTEM
-                  </span>
-                </div>
-              </div>
+            {/* ── Main Content Pane ────────────────────────────────────── */}
+            <div className="content-pane" style={{ flex: 1, minWidth: '320px' }}>
 
               {/* ────────────────── HR PORTAL VIEWS ────────────────── */}
               {portalMode === 'hr' && (
@@ -1217,7 +1174,7 @@ function App() {
                 </>
               )}
 
-            </main>
+            </div>
           </div>
 
           {/* ── Mobile Slide-Out Drawer Navigation ────────────────────────── */}
@@ -1225,33 +1182,31 @@ function App() {
             <div className="mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}>
               <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
                 <div style={{
-                  padding: '16px 20px',
-                  background: '#09090B',
+                  padding: '1.25rem 1.4rem',
+                  background: '#0a192f',
                   color: '#ffffff',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  borderBottom: '1px solid #27272A'
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '4px',
-                      background: 'rgba(14, 165, 233, 0.2)',
-                      border: '1px solid rgba(14, 165, 233, 0.4)',
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: '9px',
+                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#38BDF8',
-                      fontSize: '14px'
+                      color: '#ffffff'
                     }}>
-                      <i className="fas fa-cubes"></i>
+                      <i className="fas fa-building"></i>
                     </div>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: '14px' }}>Aparaitech Portal</div>
-                      <div style={{ fontSize: '11px', color: '#A1A1AA' }}>
-                        {currentUser.name} • {portalMode === 'software' ? 'Software' : (portalMode === 'hr' ? 'HR' : 'BDA')}
+                      <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>Aparaitech Software</div>
+                      <div style={{ fontSize: '0.72rem', color: '#93c5fd' }}>
+                        {currentUser.name} ({portalMode === 'software' ? 'Software Portal' : (portalMode === 'hr' ? 'HR Portal' : 'BDA Portal')})
                       </div>
                     </div>
                   </div>
@@ -1259,13 +1214,13 @@ function App() {
                     onClick={() => setMobileDrawerOpen(false)}
                     aria-label="Close navigation"
                     style={{
-                      background: '#18181B',
-                      border: '1px solid #27272A',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: 'none',
                       color: '#ffffff',
-                      width: '30px',
-                      height: '30px',
-                      borderRadius: '4px',
-                      fontSize: '14px',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -1276,18 +1231,18 @@ function App() {
                   </button>
                 </div>
 
-                <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, overflowY: 'auto' }}>
+                <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto' }}>
 
                   {/* Portal Switcher for Mobile Drawer (Management & Admin) */}
                   {canSwitchPortal && (
                     <div style={{
-                      background: '#F4F4F5',
-                      borderRadius: '4px',
-                      padding: '2px',
+                      background: '#f1f5f9',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '12px',
+                      padding: '4px',
                       display: 'flex',
-                      gap: '2px',
-                      marginBottom: '12px',
-                      border: '1px solid #E4E4E7'
+                      gap: '4px',
+                      marginBottom: '1rem'
                     }}>
                       <button
                         onClick={() => {
@@ -1296,18 +1251,21 @@ function App() {
                         }}
                         style={{
                           flex: 1,
-                          padding: '6px 4px',
-                          borderRadius: '3px',
+                          padding: '8px 6px',
+                          borderRadius: '8px',
                           border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
+                          fontSize: '0.74rem',
+                          fontWeight: '700',
                           cursor: 'pointer',
-                          background: portalMode === 'software' ? '#0EA5E9' : 'transparent',
-                          color: portalMode === 'software' ? '#FFFFFF' : '#71717A',
-                          boxShadow: portalMode === 'software' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none'
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '5px',
+                          background: portalMode === 'software' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
+                          color: portalMode === 'software' ? '#ffffff' : '#64748b'
                         }}
                       >
-                        Software
+                        <i className="fas fa-laptop-code"></i> Software
                       </button>
                       <button
                         onClick={() => {
@@ -1316,18 +1274,21 @@ function App() {
                         }}
                         style={{
                           flex: 1,
-                          padding: '6px 4px',
-                          borderRadius: '3px',
+                          padding: '8px 6px',
+                          borderRadius: '8px',
                           border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
+                          fontSize: '0.74rem',
+                          fontWeight: '700',
                           cursor: 'pointer',
-                          background: portalMode === 'bda' ? '#0EA5E9' : 'transparent',
-                          color: portalMode === 'bda' ? '#FFFFFF' : '#71717A',
-                          boxShadow: portalMode === 'bda' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none'
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '5px',
+                          background: portalMode === 'bda' ? 'linear-gradient(135deg, #059669, #047857)' : 'transparent',
+                          color: portalMode === 'bda' ? '#ffffff' : '#64748b'
                         }}
                       >
-                        BDA
+                        <i className="fas fa-headset"></i> BDA
                       </button>
                       <button
                         onClick={() => {
@@ -1336,18 +1297,21 @@ function App() {
                         }}
                         style={{
                           flex: 1,
-                          padding: '6px 4px',
-                          borderRadius: '3px',
+                          padding: '8px 6px',
+                          borderRadius: '8px',
                           border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
+                          fontSize: '0.74rem',
+                          fontWeight: '700',
                           cursor: 'pointer',
-                          background: portalMode === 'hr' ? '#0EA5E9' : 'transparent',
-                          color: portalMode === 'hr' ? '#FFFFFF' : '#71717A',
-                          boxShadow: portalMode === 'hr' ? '0 1px 2px rgba(14, 165, 233, 0.25)' : 'none'
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '5px',
+                          background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                          color: portalMode === 'hr' ? '#ffffff' : '#64748b'
                         }}
                       >
-                        HR
+                        <i className="fas fa-users-cog"></i> HR
                       </button>
                     </div>
                   )}
@@ -1355,8 +1319,8 @@ function App() {
                   {/* MOBILE DRAWER: HR MODE */}
                   {portalMode === 'hr' ? (
                     <>
-                      <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                        Command Center
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#7c3aed', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
+                        👑 HR Command Center
                       </div>
                       {HR_NAV.filter(item => item.group === 'HR Command Center').map(item => (
                         <button
@@ -1391,8 +1355,8 @@ function App() {
                         </button>
                       ))}
 
-                      <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                        Communications
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        📢 Communications
                       </div>
                       {HR_NAV.filter(item => item.group === 'HR Communications').map(item => (
                         <button
@@ -1411,8 +1375,8 @@ function App() {
                     </>
                   ) : portalMode === 'software' ? (
                     <>
-                      <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                        Software Workspace
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '6px', letterSpacing: '0.08em' }}>
+                        💻 Software Workspace
                       </div>
                       {SOFTWARE_NAV.filter(item => item.group === 'Software Workspace').map(item => (
                         <button
@@ -1429,8 +1393,8 @@ function App() {
                         </button>
                       ))}
 
-                      <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                        Attendance & HR Desk
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        ⏱️ Attendance & HR Desk
                       </div>
                       {SOFTWARE_NAV.filter(item => item.group === 'Attendance & HR').map(item => (
                         <button
@@ -1447,8 +1411,8 @@ function App() {
                         </button>
                       ))}
 
-                      <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                        Communication & Setup
+                      <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                        💬 Communication & Setup
                       </div>
                       {SOFTWARE_NAV.filter(item => item.group === 'Communication').map(item => (
                         <button
@@ -1463,7 +1427,15 @@ function App() {
                           <i className={`fas ${item.icon}`} style={{ width: '18px', textAlign: 'center' }}></i>
                           {item.label}
                           {item.badge && unreadCount > 0 && (
-                            <span className="badge badge-danger" style={{ marginLeft: 'auto', fontSize: '11px', padding: '1px 6px' }}>
+                            <span style={{
+                              background: '#ef4444',
+                              color: 'white',
+                              borderRadius: '9999px',
+                              padding: '2px 8px',
+                              fontSize: '0.7rem',
+                              fontWeight: 'bold',
+                              marginLeft: 'auto'
+                            }}>
                               {unreadCount}
                             </span>
                           )}
@@ -1473,8 +1445,8 @@ function App() {
                       {/* Leadership & Oversight in Mobile Drawer */}
                       {(currentUser.role === 'admin' || currentUser.email?.toLowerCase() === 'anunand2004@gmail.com' || String(currentUser.empId) === '7017' || String(currentUser.empId) === 'AP7017') && (
                         <>
-                          <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                            Leadership & Oversight
+                          <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#0d9488', textTransform: 'uppercase', paddingLeft: '0.6rem', margin: '10px 0 6px', letterSpacing: '0.08em' }}>
+                            📊 Leadership & Oversight
                           </div>
                           <button
                             className={`sidebar-nav-btn ${activeTab === 'managerReports' ? 'active' : ''}`}
@@ -1489,7 +1461,7 @@ function App() {
                           </button>
                           <button
                             className="sidebar-nav-btn"
-                            style={{ ...sidebarBtnStyle(false), color: '#0284C7', marginTop: '2px' }}
+                            style={{ ...sidebarBtnStyle(false), background: 'rgba(124,58,237,0.08)', color: '#7c3aed', marginTop: '4px' }}
                             onClick={() => {
                               handleTogglePortal('hr')
                               setMobileDrawerOpen(false)
@@ -1505,8 +1477,8 @@ function App() {
                     /* MOBILE DRAWER: BDA MODE */
                     (currentUser.role === 'admin' || isAnuragOrSuperAdmin(currentUser)) ? (
                       <>
-                        <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                          Command Center
+                        <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#2563eb', textTransform: 'uppercase', paddingLeft: '0.4rem', marginBottom: '4px', letterSpacing: '0.08em' }}>
+                          👑 Command Center
                         </div>
                         {ADMIN_NAV.filter(item => item.group === 'Command Center').map(item => (
                           <button
@@ -1523,8 +1495,8 @@ function App() {
                           </button>
                         ))}
 
-                        <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                          Workforce & Logs
+                        <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                          👥 Workforce & Logs
                         </div>
                         {ADMIN_NAV.filter(item => item.group === 'Workforce & Logs').map(item => (
                           <button
@@ -1541,8 +1513,8 @@ function App() {
                           </button>
                         ))}
 
-                        <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '12px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                          Working Portal
+                        <div style={{ fontWeight: '800', fontSize: '0.7rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.4rem', margin: '10px 0 4px', letterSpacing: '0.08em' }}>
+                          🏢 Working Portal
                         </div>
                         {ADMIN_NAV.filter(item => item.group === 'Portal Preview').map(item => (
                           <button
@@ -1561,8 +1533,8 @@ function App() {
                       </>
                     ) : (
                       <>
-                        <div style={{ fontWeight: 700, fontSize: '11px', color: '#626F86', textTransform: 'uppercase', padding: '8px 10px 4px 10px', letterSpacing: '0.04em' }}>
-                          BDA Operations Desk
+                        <div style={{ fontWeight: '800', fontSize: '0.72rem', color: '#059669', textTransform: 'uppercase', paddingLeft: '0.6rem', marginBottom: '8px', letterSpacing: '0.08em' }}>
+                          💼 BDA Calling Portal
                         </div>
 
                         <button
@@ -1691,7 +1663,7 @@ function App() {
                     )
                   )}
 
-                  <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #DFE1E6', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <button
                       onClick={() => {
                         setMobileDrawerOpen(false)
@@ -1699,13 +1671,13 @@ function App() {
                       }}
                       style={{
                         width: '100%',
-                        background: '#FFFFFF',
-                        color: '#172B4D',
-                        border: '1px solid #DFE1E6',
-                        padding: '8px 12px',
-                        borderRadius: '3px',
-                        fontWeight: 600,
-                        fontSize: '13px',
+                        background: 'rgba(56, 189, 248, 0.12)',
+                        color: '#0284c7',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -1713,7 +1685,7 @@ function App() {
                         gap: '8px'
                       }}
                     >
-                      <i className="fas fa-user-circle"></i> Profile & Credentials
+                      <i className="fas fa-user-circle"></i> My Profile & Credentials
                     </button>
 
                     <button
@@ -1723,13 +1695,13 @@ function App() {
                       }}
                       style={{
                         width: '100%',
-                        background: '#FFFFFF',
-                        color: '#172B4D',
-                        border: '1px solid #DFE1E6',
-                        padding: '8px 12px',
-                        borderRadius: '3px',
-                        fontWeight: 600,
-                        fontSize: '13px',
+                        background: 'rgba(37, 99, 235, 0.12)',
+                        color: '#2563eb',
+                        border: '1px solid rgba(37, 99, 235, 0.3)',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -1737,7 +1709,7 @@ function App() {
                         gap: '8px'
                       }}
                     >
-                      <i className="fas fa-key"></i> Edit 4-Digit Passcode
+                      <i className="fas fa-th"></i> Edit 4-Digit PIN
                     </button>
 
                     <button
@@ -1747,13 +1719,13 @@ function App() {
                       }}
                       style={{
                         width: '100%',
-                        background: '#FFEDEB',
-                        color: '#AE2E24',
-                        border: '1px solid #FF8F73',
-                        padding: '8px 12px',
-                        borderRadius: '3px',
-                        fontWeight: 600,
-                        fontSize: '13px',
+                        background: '#fef2f2',
+                        color: '#ef4444',
+                        border: '1px solid #fecaca',
+                        padding: '11px 14px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',

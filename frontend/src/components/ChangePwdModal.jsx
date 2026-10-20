@@ -47,7 +47,7 @@ function ChangePwdModal({ isOpen = true, onClose, email, currentUser, showToast,
       <div className="modal-content" style={{ background: '#ffffff', maxWidth: '420px', width: '90%', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)' }}>
         <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <i className="fas fa-lock" style={{ color: '#0EA5E9' }}></i> Change Account Password
+            <i className="fas fa-lock" style={{ color: '#2563eb' }}></i> Change Account Password
           </h3>
           <button className="close-modal" onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b' }}>&times;</button>
         </div>
