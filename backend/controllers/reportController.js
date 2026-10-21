@@ -48,7 +48,18 @@ export const submitDailyReport = async (req, res) => {
       remarks = ''
     } = req.body
 
-    const isSoftwareReport = reportType === 'software' || user.department === 'Development' || Boolean(tasksCompleted || tasksInProgress || planTomorrow)
+    const userDeptLower = (user.department || '').toLowerCase()
+    const userDesigLower = (user.designation || '').toLowerCase()
+    const userRoleLower = (user.role || '').toLowerCase()
+    const isSoftwareReport = reportType === 'software' ||
+      userDeptLower.includes('development') ||
+      userDeptLower.includes('software') ||
+      userDesigLower.includes('software') ||
+      userDesigLower.includes('developer') ||
+      userDesigLower.includes('engineer') ||
+      userRoleLower === 'developer' ||
+      userRoleLower === 'intern' ||
+      Boolean(tasksCompleted || tasksInProgress || planTomorrow)
     const { dateStr: todayKolkata, timeStr } = getKolkataDateTime()
     const targetDate = reportDate && /^\d{4}-\d{2}-\d{2}$/.test(reportDate) ? reportDate : todayKolkata
 

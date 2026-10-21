@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { repoAPI } from '../services/api'
+import { repoAPI, projectAPI } from '../services/api'
 
 function CodeRepositoryView({ currentUser, showToast }) {
   const [activeTab, setActiveTab] = useState('commits') // 'commits' | 'pulls' | 'branches' | 'issues'
@@ -10,7 +10,41 @@ function CodeRepositoryView({ currentUser, showToast }) {
   const [pulls, setPulls] = useState([])
   const [branches, setBranches] = useState([])
   const [issues, setIssues] = useState([])
-  const [selectedRepo, setSelectedRepo] = useState('anuragaparaitech/aparaitechhratt')
+  const [projectRepos, setProjectRepos] = useState([
+    { name: 'aparaitechAk-SoftwareTeam/BYTALK', title: 'BYTALK App' },
+    { name: 'aparaitechAk-SoftwareTeam/BABY-PREGNANCY-WELLNESS', title: 'BABY PREGNANCY WELLNESS' },
+    { name: 'aparaitechAk-SoftwareTeam/MPSC-UPSC-STUDY-HOURS', title: 'MPSC UPSC STUDY TRACKER' }
+  ])
+  const [selectedRepo, setSelectedRepo] = useState('aparaitechAk-SoftwareTeam/BYTALK')
+
+  useEffect(() => {
+    loadProjectRepos()
+  }, [])
+
+  const loadProjectRepos = async () => {
+    try {
+      const res = await projectAPI.getAll()
+      if (res?.success && res.data && res.data.length > 0) {
+        const extracted = []
+        res.data.forEach(p => {
+          if (p.repositoryUrl) {
+            let clean = p.repositoryUrl.replace('https://github.com/', '').replace('.git', '')
+            if (clean.endsWith('/')) clean = clean.slice(0, -1)
+            if (clean.includes('/tree')) clean = clean.split('/tree')[0]
+            if (clean && !extracted.some(e => e.name === clean)) {
+              extracted.push({ name: clean, title: p.title })
+            }
+          }
+        })
+        if (extracted.length > 0) {
+          setProjectRepos(extracted)
+          setSelectedRepo(extracted[0].name)
+        }
+      }
+    } catch (e) {
+      console.error('Error loading project repos:', e)
+    }
+  }
 
   useEffect(() => {
     loadAllRepoData()
@@ -90,11 +124,31 @@ function CodeRepositoryView({ currentUser, showToast }) {
                 ● Branch: main
               </span>
             </div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: '900', margin: 0, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>{selectedRepo}</span>
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <select
+                value={selectedRepo}
+                onChange={(e) => setSelectedRepo(e.target.value)}
+                style={{
+                  background: '#21262d',
+                  color: '#ffffff',
+                  border: '1px solid #30363d',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  fontSize: '1.1rem',
+                  fontWeight: '800',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {projectRepos.map((pr, i) => (
+                  <option key={i} value={pr.name}>
+                    {pr.name} ({pr.title})
+                  </option>
+                ))}
+              </select>
+            </div>
             <div style={{ fontSize: '0.8rem', color: '#8b949e', marginTop: '4px' }}>
-              Aparaitech Software • Cross-Platform Web & Native Android Workspace
+              Aparaitech Software Engineering Team • Production GitHub Workspaces
             </div>
           </div>
         </div>

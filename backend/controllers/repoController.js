@@ -6,7 +6,7 @@ let repoCache = {
   data: null
 }
 
-const DEFAULT_REPO = 'anuragaparaitech/aparaitechhratt'
+const DEFAULT_REPO = 'aparaitechAk-SoftwareTeam/BYTALK'
 
 // Fallback commits from local git log or structured software history
 const getLocalGitCommits = () => {

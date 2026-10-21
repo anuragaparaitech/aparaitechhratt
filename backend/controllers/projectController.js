@@ -30,89 +30,6 @@ export const getAllProjects = async (req, res) => {
 
     let projects = await Project.find(query).sort({ updatedAt: -1 })
 
-    // If database has 0 projects, seed initial core software projects
-    if (projects.length === 0 && !search && !status && !category && myProjects !== 'true') {
-      const defaultProjects = [
-        {
-          title: 'Aparaitech Enterprise Work & Attendance Portal',
-          code: 'PRJ-HRMS',
-          description: 'High-availability cross-platform workforce management system featuring biometric face recognition, geofencing, daily work logs, and performance tracking.',
-          category: 'Web & Mobile App',
-          techStack: ['React', 'Node.js', 'Express', 'MongoDB', 'Capacitor', 'Vite'],
-          repositoryUrl: 'https://github.com/anuragaparaitech/aparaitechhratt',
-          leadName: 'Anurag Nand',
-          leadEmail: 'anunand2004@gmail.com',
-          deadline: '2026-12-31',
-          status: 'Active',
-          progressPercentage: 85,
-          assignedTeam: [
-            { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', role: 'Technical Lead' },
-            { empId: '7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', role: 'Full Stack Developer' },
-            { empId: '7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', role: 'Frontend Engineer' },
-            { empId: '7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', role: 'Backend Developer' },
-            { empId: '7056', name: 'Mahesh Kadam', email: 'kadammahesh803@gmail.com', role: 'QA & DevOps' }
-          ],
-          milestones: [
-            { title: 'Core Biometric & Geofence Engine', targetDate: '2026-08-15', status: 'Completed', completedAt: new Date('2026-08-14') },
-            { title: 'AI Lead Desk & Analytics Sync', targetDate: '2026-09-30', status: 'Completed', completedAt: new Date('2026-09-28') },
-            { title: 'Software Engineering Work Portal v2.0', targetDate: '2026-10-15', status: 'In Progress' },
-            { title: 'Full Cloud CI/CD & Automated Backups', targetDate: '2026-11-30', status: 'Pending' }
-          ],
-          comments: [
-            { senderName: 'Anurag Nand', senderEmail: 'anunand2004@gmail.com', text: 'Software Engineering portal modules integrated. Next sprint focuses on automated report reminders.', createdAt: new Date() }
-          ]
-        },
-        {
-          title: 'Aparaitech Learning Management System (LMS)',
-          code: 'PRJ-LMS',
-          description: 'Educational technology platform delivering structured engineering bootcamps, automated assignments grading, and student certification.',
-          category: 'Web Application',
-          techStack: ['Next.js', 'React', 'Node.js', 'PostgreSQL', 'TailwindCSS'],
-          repositoryUrl: 'https://github.com/anuragaparaitech/lms-portal',
-          leadName: 'Anurag Nand',
-          leadEmail: 'anunand2004@gmail.com',
-          deadline: '2026-11-20',
-          status: 'In Progress',
-          progressPercentage: 60,
-          assignedTeam: [
-            { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', role: 'Technical Lead' },
-            { empId: '7101', name: 'Rutik Yadav', email: 'rutikyadav2004@gmail.com', role: 'Full Stack Developer' },
-            { empId: '7044', name: 'Vivek Jagtap', email: 'letsmailvivek100@gmail.com', role: 'Backend Developer' }
-          ],
-          milestones: [
-            { title: 'Course Content Management & Video Player', targetDate: '2026-09-10', status: 'Completed', completedAt: new Date('2026-09-08') },
-            { title: 'Student Quiz & Code Playground', targetDate: '2026-10-25', status: 'In Progress' },
-            { title: 'Certificates Generation with Verification Hash', targetDate: '2026-11-15', status: 'Pending' }
-          ]
-        },
-        {
-          title: 'AI Data Distribution & Auto Calling Engine',
-          code: 'PRJ-AI-CRM',
-          description: 'Intelligent lead scoring, call queue balancer, and real-time revenue pipeline tracking for commercial business operations.',
-          category: 'AI & Data Services',
-          techStack: ['Python', 'FastAPI', 'Node.js', 'MongoDB', 'Chart.js'],
-          repositoryUrl: 'https://github.com/anuragaparaitech/ai-calling-engine',
-          leadName: 'Anurag Nand',
-          leadEmail: 'anunand2004@gmail.com',
-          deadline: '2026-10-30',
-          status: 'Active',
-          progressPercentage: 90,
-          assignedTeam: [
-            { empId: '7017', name: 'Anurag Nand', email: 'anunand2004@gmail.com', role: 'Technical Lead' },
-            { empId: '7102', name: 'Pavan Mali', email: 'pavanmali0281@gmail.com', role: 'Frontend Engineer' }
-          ],
-          milestones: [
-            { title: 'Dynamic Weighted Queue Algorithm', targetDate: '2026-09-01', status: 'Completed', completedAt: new Date('2026-08-30') },
-            { title: 'Live Calling Desk UI with Conversion Flow', targetDate: '2026-10-02', status: 'Completed', completedAt: new Date('2026-10-01') },
-            { title: 'WhatsApp Webhook Automation', targetDate: '2026-10-28', status: 'In Progress' }
-          ]
-        }
-      ]
-
-      await Project.insertMany(defaultProjects)
-      projects = await Project.find(query).sort({ updatedAt: -1 })
-    }
-
     res.json({ success: true, count: projects.length, data: projects })
   } catch (error) {
     console.error('getAllProjects error:', error)
@@ -158,7 +75,7 @@ export const createProject = async (req, res) => {
       description,
       category: category || 'Web Application',
       techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map(s => s.trim()) : ['React', 'Node.js']),
-      repositoryUrl: repositoryUrl || 'https://github.com/anuragaparaitech/aparaitechhratt',
+      repositoryUrl: repositoryUrl || '',
       deadline,
       assignedTeam: Array.isArray(assignedTeam) ? assignedTeam : [],
       leadName: leadName || req.user?.name || 'Technical Lead',

@@ -151,13 +151,18 @@ function App() {
     if (user.role === 'admin') {
       return 'hr'
     }
+    const dept = (user.department || '').toLowerCase()
+    const role = (user.role || '').toLowerCase()
+    const desig = (user.designation || '').toLowerCase()
     const isDev = (
-      user.department === 'Development' ||
-      user.department === 'Software' ||
-      user.role === 'developer' ||
-      user.role === 'intern' ||
-      user.designation?.toLowerCase().includes('software') ||
-      user.designation?.toLowerCase().includes('developer')
+      dept.includes('development') ||
+      dept.includes('software') ||
+      role === 'developer' ||
+      role === 'intern' ||
+      desig.includes('software') ||
+      desig.includes('developer') ||
+      desig.includes('engineer') ||
+      desig.includes('intern')
     )
     return isDev ? 'software' : 'bda'
   }
@@ -243,7 +248,9 @@ function App() {
           body: '07:00 PM deadline reached! Please submit your daily engineering / work report.',
           tag: 'daily-report-deadline',
           onClick: () => {
-            if (portalMode === 'software') {
+            const userDept = (currentUser?.department || '').toLowerCase()
+            const isSoftware = portalMode === 'software' || userDept.includes('development') || userDept.includes('software') || currentUser?.role === 'developer'
+            if (isSoftware) {
               setIsGlobalReportModalOpen(true)
             } else {
               setActiveTab('dailyReports')

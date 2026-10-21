@@ -47,7 +47,7 @@ const projectSchema = new mongoose.Schema({
   }],
   repositoryUrl: {
     type: String,
-    default: 'https://github.com/anuragaparaitech/aparaitechhratt'
+    default: ''
   },
   assignedTeam: [{
     empId: String,

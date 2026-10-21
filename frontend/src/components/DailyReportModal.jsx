@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { reportsAPI } from '../services/api'
 import { emitSyncEvent, SYNC_EVENTS } from '../utils/realtimeSync'
+import SoftwareDailyReportModal from './SoftwareDailyReportModal'
 
 function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, targetEmployee, initialReport }) {
   const isAdmin = currentUser?.role === 'admin'
@@ -181,6 +182,26 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
   }
 
   if (!isOpen || !currentUser) return null
+  
+  // If user is a software developer or in development, render SoftwareDailyReportModal directly
+  const targetDept = (activeEmployeeTeam || currentUser?.department || '').toLowerCase()
+  const isSoftwareEmployee = !initialReport && (
+    targetDept.includes('development') ||
+    targetDept.includes('software') ||
+    currentUser?.role === 'developer'
+  )
+
+  if (isSoftwareEmployee && !targetEmployee) {
+    return (
+      <SoftwareDailyReportModal
+        isOpen={isOpen}
+        onClose={onClose}
+        currentUser={currentUser}
+        showToast={showToast}
+        onReportSubmitted={onSuccess}
+      />
+    )
+  }
 
   const handleChange = (e) => {
     if (isLocked) return

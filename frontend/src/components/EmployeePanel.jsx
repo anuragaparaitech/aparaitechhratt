@@ -7,6 +7,7 @@ import ChangePinModal from './ChangePinModal'
 import FaceVerificationModal from './FaceVerificationModal'
 import EmployeeProfileModal from './EmployeeProfileModal'
 import DailyReportModal from './DailyReportModal'
+import SoftwareDailyReportModal from './SoftwareDailyReportModal'
 import ConversionDataFillModal from './ConversionDataFillModal'
 import { SHIFTS, GEOFENCE } from '../utils/shiftsAndGeo'
 
@@ -1119,16 +1120,29 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
         </div>
       )}
 
-      {/* Daily Report Modal */}
-      <DailyReportModal
-        isOpen={dailyModalOpen}
-        onClose={() => setDailyModalOpen(false)}
-        currentUser={currentUser}
-        showToast={showToast}
-        onSuccess={() => {
-          showToast('✅ Daily report submitted successfully!', '#22c55e')
-        }}
-      />
+      {/* Daily Report Modal (Role & Department Aware) */}
+      {(currentUser?.department?.toLowerCase().includes('development') || currentUser?.department?.toLowerCase().includes('software') || currentUser?.role === 'developer') ? (
+        <SoftwareDailyReportModal
+          isOpen={dailyModalOpen}
+          onClose={() => setDailyModalOpen(false)}
+          currentUser={currentUser}
+          showToast={showToast}
+          onReportSubmitted={() => {
+            showToast('✅ Software daily report submitted successfully!', '#22c55e')
+            fetchEmployeeData(true)
+          }}
+        />
+      ) : (
+        <DailyReportModal
+          isOpen={dailyModalOpen}
+          onClose={() => setDailyModalOpen(false)}
+          currentUser={currentUser}
+          showToast={showToast}
+          onSuccess={() => {
+            showToast('✅ Daily report submitted successfully!', '#22c55e')
+          }}
+        />
+      )}
 
       {/* Product Conversion Modal */}
       <ConversionDataFillModal

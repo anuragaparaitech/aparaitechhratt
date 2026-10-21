@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { projectAPI } from '../services/api'
+import { projectAPI, employeeAPI } from '../services/api'
 
 function SoftwareProjectManager({ currentUser, showToast }) {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [employees, setEmployees] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
   const [isAddMilestoneOpen, setIsAddMilestoneOpen] = useState(false)
 
   // New Milestone Form
@@ -15,20 +17,44 @@ function SoftwareProjectManager({ currentUser, showToast }) {
   // Project Comment Form
   const [commentText, setCommentText] = useState('')
 
-  // New Project Form
+  // New Project Form State
   const [newTitle, setNewTitle] = useState('')
   const [newCode, setNewCode] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [newCategory, setNewCategory] = useState('Web & Mobile App')
-  const [newTechStack, setNewTechStack] = useState('React, Node.js, MongoDB, Capacitor')
-  const [newRepoUrl, setNewRepoUrl] = useState('https://github.com/anuragaparaitech/aparaitechhratt')
+  const [newTechStack, setNewTechStack] = useState('React, Node.js, MongoDB, Vite')
+  const [newRepoUrl, setNewRepoUrl] = useState('')
   const [newDeadline, setNewDeadline] = useState('')
+  const [newAssignedTeam, setNewAssignedTeam] = useState([])
   const [creating, setCreating] = useState(false)
 
-  const isManagerOrAdmin = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.email === 'anunand2004@gmail.com'
+  // Edit Project Form State
+  const [editingProject, setEditingProject] = useState(null)
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    category: 'Web & Mobile App',
+    techStack: '',
+    repositoryUrl: '',
+    deadline: '',
+    status: 'Active',
+    progressPercentage: 0,
+    leadName: '',
+    leadEmail: '',
+    assignedTeam: []
+  })
+  const [updating, setUpdating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const isManagerOrAdmin = currentUser?.role === 'admin' ||
+    currentUser?.role === 'manager' ||
+    currentUser?.email === 'anunand2004@gmail.com' ||
+    String(currentUser?.empId) === '7017' ||
+    String(currentUser?.empId) === 'AP7017'
 
   useEffect(() => {
     fetchProjects()
+    fetchEmployees()
   }, [])
 
   const fetchProjects = async () => {
@@ -44,6 +70,85 @@ function SoftwareProjectManager({ currentUser, showToast }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await employeeAPI.getAll()
+      if (res?.success) {
+        setEmployees(res.data || [])
+      }
+    } catch (err) {
+      console.error('Error fetching employees:', err)
+    }
+  }
+
+  // Filter software developers and technical staff
+  const availableDevs = employees.filter(e => {
+    const dept = (e.department || '').toLowerCase()
+    const desig = (e.designation || '').toLowerCase()
+    const role = (e.role || '').toLowerCase()
+    return (
+      dept.includes('development') ||
+      dept.includes('software') ||
+      role === 'developer' ||
+      role === 'intern' ||
+      desig.includes('software') ||
+      desig.includes('developer') ||
+      desig.includes('engineer') ||
+      desig.includes('intern')
+    )
+  })
+
+  // Fallback to all active employees if no developers found
+  const teamPool = availableDevs.length > 0 ? availableDevs : employees
+
+  // Toggle member in New Project form
+  const toggleNewMember = (emp) => {
+    setNewAssignedTeam(prev => {
+      const exists = prev.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+      if (exists) {
+        return prev.filter(m => m.email?.toLowerCase() !== emp.email?.toLowerCase())
+      } else {
+        return [...prev, {
+          empId: emp.empId || 'DEV',
+          name: emp.name,
+          email: emp.email,
+          role: emp.designation || 'Software Developer'
+        }]
+      }
+    })
+  }
+
+  const updateNewMemberRole = (email, role) => {
+    setNewAssignedTeam(prev => prev.map(m => m.email === email ? { ...m, role } : m))
+  }
+
+  // Toggle member in Edit Project form
+  const toggleEditMember = (emp) => {
+    setEditForm(prev => {
+      const currentTeam = prev.assignedTeam || []
+      const exists = currentTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+      let updated
+      if (exists) {
+        updated = currentTeam.filter(m => m.email?.toLowerCase() !== emp.email?.toLowerCase())
+      } else {
+        updated = [...currentTeam, {
+          empId: emp.empId || 'DEV',
+          name: emp.name,
+          email: emp.email,
+          role: emp.designation || 'Software Developer'
+        }]
+      }
+      return { ...prev, assignedTeam: updated }
+    })
+  }
+
+  const updateEditMemberRole = (email, role) => {
+    setEditForm(prev => ({
+      ...prev,
+      assignedTeam: (prev.assignedTeam || []).map(m => m.email === email ? { ...m, role } : m)
+    }))
   }
 
   const handleToggleMilestone = async (projectId, milestoneId, currentStatus) => {
@@ -125,16 +230,20 @@ function SoftwareProjectManager({ currentUser, showToast }) {
         repositoryUrl: newRepoUrl.trim(),
         deadline: newDeadline,
         leadName: currentUser.name,
-        leadEmail: currentUser.email
+        leadEmail: currentUser.email,
+        assignedTeam: newAssignedTeam
       })
 
       if (res.success) {
-        showToast('🚀 Project created successfully!', '#10b981')
+        showToast('🚀 Project created successfully with assigned team!', '#10b981')
         setProjects(prev => [res.data, ...prev])
         setIsCreateOpen(false)
         setNewTitle('')
         setNewCode('')
         setNewDesc('')
+        setNewRepoUrl('')
+        setNewDeadline('')
+        setNewAssignedTeam([])
       } else {
         showToast(`❌ ${res.message || 'Failed to create project'}`, '#ef4444')
       }
@@ -143,6 +252,97 @@ function SoftwareProjectManager({ currentUser, showToast }) {
       showToast(`❌ ${err.response?.data?.message || err.message}`, '#ef4444')
     } finally {
       setCreating(false)
+    }
+  }
+
+  // Open Edit Modal for a project
+  const handleOpenEdit = (project, e) => {
+    if (e) e.stopPropagation()
+    setEditingProject(project)
+    setEditForm({
+      title: project.title || '',
+      description: project.description || '',
+      category: project.category || 'Web & Mobile App',
+      techStack: Array.isArray(project.techStack) ? project.techStack.join(', ') : (project.techStack || ''),
+      repositoryUrl: project.repositoryUrl || '',
+      deadline: project.deadline || '',
+      status: project.status || 'Active',
+      progressPercentage: project.progressPercentage || 0,
+      leadName: project.leadName || currentUser.name,
+      leadEmail: project.leadEmail || currentUser.email,
+      assignedTeam: Array.isArray(project.assignedTeam) ? [...project.assignedTeam] : []
+    })
+    setIsEditOpen(true)
+  }
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault()
+    if (!editingProject) return
+    if (!editForm.title.trim() || !editForm.deadline) {
+      showToast('⚠️ Project title and deadline are required', '#f59e0b')
+      return
+    }
+
+    setUpdating(true)
+    try {
+      const payload = {
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
+        category: editForm.category,
+        techStack: editForm.techStack ? editForm.techStack.split(',').map(s => s.trim()).filter(Boolean) : [],
+        repositoryUrl: editForm.repositoryUrl.trim(),
+        deadline: editForm.deadline,
+        status: editForm.status,
+        progressPercentage: Number(editForm.progressPercentage) || 0,
+        leadName: editForm.leadName,
+        leadEmail: editForm.leadEmail,
+        assignedTeam: editForm.assignedTeam || []
+      }
+
+      const res = await projectAPI.update(editingProject._id, payload)
+      if (res.success) {
+        showToast('✓ Project details updated successfully!', '#10b981')
+        setProjects(prev => prev.map(p => p._id === editingProject._id ? res.data : p))
+        if (selectedProject && selectedProject._id === editingProject._id) {
+          setSelectedProject(res.data)
+        }
+        setIsEditOpen(false)
+        setEditingProject(null)
+      } else {
+        showToast(`❌ ${res.message || 'Failed to update project'}`, '#ef4444')
+      }
+    } catch (err) {
+      console.error('Update project error:', err)
+      showToast(`❌ ${err.response?.data?.message || err.message}`, '#ef4444')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleDeleteProject = async (projectId) => {
+    if (!window.confirm('⚠️ Are you sure you want to delete this project? This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(true)
+    try {
+      const res = await projectAPI.delete(projectId)
+      if (res.success) {
+        showToast('🗑️ Project deleted successfully', '#10b981')
+        setProjects(prev => prev.filter(p => p._id !== projectId))
+        if (selectedProject && selectedProject._id === projectId) {
+          setSelectedProject(null)
+        }
+        setIsEditOpen(false)
+        setEditingProject(null)
+      } else {
+        showToast(`❌ ${res.message || 'Failed to delete project'}`, '#ef4444')
+      }
+    } catch (err) {
+      console.error('Delete project error:', err)
+      showToast(`❌ ${err.response?.data?.message || err.message}`, '#ef4444')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -169,21 +369,24 @@ function SoftwareProjectManager({ currentUser, showToast }) {
             Software Projects & Engineering Milestones
           </h1>
           <p style={{ margin: 0, fontSize: '0.82rem', color: '#93c5fd' }}>
-            Monitor deliverables, technology stacks, sprint progress %, and automated milestone completion.
+            Monitor deliverables, technology stacks, sprint progress %, team assignments, and automated milestone completion.
           </p>
         </div>
 
         {isManagerOrAdmin && (
           <button
-            onClick={() => setIsCreateOpen(true)}
+            onClick={() => {
+              setNewAssignedTeam([])
+              setIsCreateOpen(true)
+            }}
             style={{
               background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
               color: '#ffffff',
               border: 'none',
+              padding: '10px 20px',
               borderRadius: '12px',
-              padding: '10px 18px',
               fontWeight: '800',
-              fontSize: '0.85rem',
+              fontSize: '0.86rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -191,8 +394,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
               boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
             }}
           >
-            <i className="fas fa-plus-circle"></i>
-            Create New Project
+            <i className="fas fa-plus"></i> New Project
           </button>
         )}
       </div>
@@ -206,7 +408,8 @@ function SoftwareProjectManager({ currentUser, showToast }) {
       ) : projects.length === 0 ? (
         <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#64748b', background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
           <i className="fas fa-folder-open" style={{ fontSize: '2.5rem', color: '#94a3b8', marginBottom: '1rem' }}></i>
-          <div style={{ fontWeight: '700', fontSize: '1rem', color: '#334155' }}>No Active Projects Found</div>
+          <div style={{ fontWeight: '700', fontSize: '1.05rem', color: '#334155' }}>No Active Projects Found</div>
+          <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '6px' }}>Click "+ New Project" above to create an enterprise software project and assign developers.</p>
         </div>
       ) : (
         <div style={{
@@ -218,6 +421,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
             const completedCount = project.milestones ? project.milestones.filter(m => m.status === 'Completed').length : 0
             const totalCount = project.milestones ? project.milestones.length : 0
             const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : (project.progressPercentage || 0)
+            const team = project.assignedTeam || []
 
             return (
               <div
@@ -260,10 +464,11 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   <span style={{
                     fontSize: '0.72rem',
                     fontWeight: '800',
-                    color: project.status === 'Completed' ? '#059669' : '#2563eb',
-                    background: project.status === 'Completed' ? '#ecfdf5' : '#eff6ff',
+                    color: project.status === 'Completed' ? '#059669' : (project.status === 'In Progress' ? '#0284c7' : '#d97706'),
+                    background: project.status === 'Completed' ? '#ecfdf5' : (project.status === 'In Progress' ? '#f0f9ff' : '#fffbeb'),
                     padding: '3px 10px',
-                    borderRadius: '999px'
+                    borderRadius: '999px',
+                    border: `1px solid ${project.status === 'Completed' ? '#a7f3d0' : (project.status === 'In Progress' ? '#bae6fd' : '#fde68a')}`
                   }}>
                     ● {project.status}
                   </span>
@@ -298,6 +503,41 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   ))}
                 </div>
 
+                {/* Assigned Team Members Row */}
+                <div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#475569', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <i className="fas fa-users" style={{ color: '#0284c7' }}></i> Assigned Team ({team.length})
+                  </div>
+                  {team.length > 0 ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {team.slice(0, 4).map((member, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            background: '#f0f9ff',
+                            color: '#0369a1',
+                            border: '1px solid #bae6fd',
+                            fontSize: '0.68rem',
+                            fontWeight: '700',
+                            padding: '2px 7px',
+                            borderRadius: '4px'
+                          }}
+                        >
+                          {member.name ? member.name.split(' ')[0] : 'Member'}
+                          <span style={{ color: '#64748b', fontSize: '0.62rem', marginLeft: '3px' }}>({member.role || 'Dev'})</span>
+                        </span>
+                      ))}
+                      {team.length > 4 && (
+                        <span style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.65rem', fontWeight: '700', padding: '2px 6px', borderRadius: '4px' }}>
+                          +{team.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontStyle: 'italic' }}>No members assigned yet</span>
+                  )}
+                </div>
+
                 {/* Progress Bar */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: '800', marginBottom: '4px' }}>
@@ -318,7 +558,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   </div>
                 </div>
 
-                {/* Footer: Lead, Deadline & View button */}
+                {/* Footer: Lead, Target & Action Buttons */}
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -328,28 +568,51 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   marginTop: 'auto'
                 }}>
                   <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                    <div>Lead: <strong style={{ color: '#334155' }}>{project.leadName || 'Anurag Nand'}</strong></div>
                     <div>Target: <strong>{project.deadline}</strong></div>
                   </div>
 
-                  <button
-                    onClick={() => setSelectedProject(project)}
-                    style={{
-                      background: '#0a192f',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '7px 14px',
-                      fontSize: '0.78rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    Milestones <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem' }}></i>
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {isManagerOrAdmin && (
+                      <button
+                        onClick={(e) => handleOpenEdit(project, e)}
+                        style={{
+                          background: '#f8fafc',
+                          color: '#0f172a',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '8px',
+                          padding: '7px 11px',
+                          fontSize: '0.76rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        title="Edit Project Details"
+                      >
+                        <i className="fas fa-edit" style={{ color: '#0284c7' }}></i> Edit
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setSelectedProject(project)}
+                      style={{
+                        background: '#0a192f',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '7px 14px',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      Open Project <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem' }}></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             )
@@ -373,7 +636,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
           <div style={{
             background: '#ffffff',
             borderRadius: '20px',
-            maxWidth: '680px',
+            maxWidth: '720px',
             width: '100%',
             maxHeight: '92vh',
             overflowY: 'auto',
@@ -392,25 +655,92 @@ function SoftwareProjectManager({ currentUser, showToast }) {
               alignItems: 'flex-start'
             }}>
               <div>
-                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>
-                  {selectedProject.code}
-                </span>
-                <h3 style={{ margin: '4px 0 0 0', fontSize: '1.2rem', fontWeight: '900', color: '#0f172a' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>
+                    {selectedProject.code}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b' }}>
+                    Status: <strong style={{ color: '#0f172a' }}>{selectedProject.status}</strong>
+                  </span>
+                </div>
+                <h3 style={{ margin: '4px 0 0 0', fontSize: '1.25rem', fontWeight: '900', color: '#0f172a' }}>
                   {selectedProject.title}
                 </h3>
               </div>
-              <button
-                onClick={() => setSelectedProject(null)}
-                style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer' }}
-              >
-                ✕
-              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {isManagerOrAdmin && (
+                  <button
+                    onClick={() => handleOpenEdit(selectedProject)}
+                    style={{
+                      background: '#0284c7',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '7px 12px',
+                      fontSize: '0.78rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <i className="fas fa-edit"></i> Edit Details
+                  </button>
+                )}
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '800' }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Content */}
             <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.5, background: '#f8fafc', padding: '12px 14px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.5, background: '#f8fafc', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                 {selectedProject.description}
+              </div>
+
+              {/* Assigned Team Members Section */}
+              <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '12px 14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#0f172a', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="fas fa-users" style={{ color: '#0284c7' }}></i> Assigned Engineering Team ({selectedProject.assignedTeam?.length || 0})
+                  </div>
+                  {isManagerOrAdmin && (
+                    <button
+                      onClick={() => handleOpenEdit(selectedProject)}
+                      style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                      + Manage Team
+                    </button>
+                  )}
+                </div>
+
+                {selectedProject.assignedTeam && selectedProject.assignedTeam.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
+                    {selectedProject.assignedTeam.map((mem, i) => (
+                      <div key={i} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#0284c7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: '800' }}>
+                          {mem.name ? mem.name[0] : 'U'}
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {mem.name}
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: '#0284c7', fontWeight: '600' }}>
+                            {mem.role || 'Developer'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>No team members assigned to this project yet. Use "Edit Details" to assign developers.</div>
+                )}
               </div>
 
               {/* Milestones Checklist */}
@@ -565,7 +895,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
         </div>
       )}
 
-      {/* Create Project Modal */}
+      {/* ── CREATE PROJECT MODAL (With Team Assignment) ── */}
       {isCreateOpen && (
         <div style={{
           position: 'fixed',
@@ -581,7 +911,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
           <div style={{
             background: '#ffffff',
             borderRadius: '20px',
-            maxWidth: '560px',
+            maxWidth: '640px',
             width: '100%',
             maxHeight: '90vh',
             overflowY: 'auto',
@@ -597,10 +927,10 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   <i className="fas fa-folder-plus"></i>
                 </div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#0f172a' }}>
-                  Initiate New Project
+                  Initiate New Software Project
                 </h3>
               </div>
-              <button onClick={() => setIsCreateOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer' }}>
+              <button onClick={() => setIsCreateOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '800' }}>
                 ✕
               </button>
             </div>
@@ -613,7 +943,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Aparaitech AI Code Reviewer"
+                    placeholder="e.g. BYTALK App / Telemedicine Portal"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     required
@@ -626,7 +956,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                   </label>
                   <input
                     type="text"
-                    placeholder="PRJ-AICODE"
+                    placeholder="AP-204"
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
                     required
@@ -637,11 +967,11 @@ function SoftwareProjectManager({ currentUser, showToast }) {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
-                  Description & Business Goals
+                  Description & Technical Scope
                 </label>
                 <textarea
-                  rows={3}
-                  placeholder="Outline key deliverables, client architecture, and scope..."
+                  rows={2}
+                  placeholder="Outline key deliverables, tech architecture, and client objectives..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
@@ -685,7 +1015,7 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                 </label>
                 <input
                   type="text"
-                  placeholder="React, Node.js, Express, MongoDB, TailwindCSS"
+                  placeholder="React, Node.js, Express, MongoDB, TailwindCSS, Vite"
                   value={newTechStack}
                   onChange={(e) => setNewTechStack(e.target.value)}
                   style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
@@ -698,11 +1028,68 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                 </label>
                 <input
                   type="url"
-                  placeholder="https://github.com/anuragaparaitech/..."
+                  placeholder="https://github.com/aparaitechAk-SoftwareTeam/..."
                   value={newRepoUrl}
                   onChange={(e) => setNewRepoUrl(e.target.value)}
                   style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
                 />
+              </div>
+
+              {/* ── ASSIGN TEAM MEMBERS SECTION ── */}
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="fas fa-user-plus" style={{ color: '#0284c7' }}></i> Assign Engineering Team Members ({newAssignedTeam.length})
+                  </label>
+                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Select developers below</span>
+                </div>
+
+                <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {teamPool.map(emp => {
+                    const isSelected = newAssignedTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                    const memberObj = newAssignedTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+
+                    return (
+                      <div
+                        key={emp.email}
+                        style={{
+                          background: isSelected ? '#f0f9ff' : '#ffffff',
+                          border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
+                          borderRadius: '8px',
+                          padding: '6px 10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px'
+                        }}
+                      >
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleNewMember(emp)}
+                            style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
+                          />
+                          <div>
+                            <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>{emp.name}</strong>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>({emp.empId}) • {emp.designation || 'Developer'}</span>
+                          </div>
+                        </label>
+
+                        {isSelected && (
+                          <input
+                            type="text"
+                            placeholder="Project Role"
+                            value={memberObj?.role || 'Developer'}
+                            onChange={(e) => updateNewMemberRole(emp.email, e.target.value)}
+                            style={{ width: '130px', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.74rem' }}
+                            title="Assign specific role in this project"
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '0.5rem', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
@@ -720,6 +1107,263 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                 >
                   {creating ? 'Creating...' : 'Create Project'}
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT PROJECT MODAL (Edit Details, Status, Team & Delete) ── */}
+      {isEditOpen && editingProject && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(10, 25, 47, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1200,
+          padding: '1.25rem'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            maxWidth: '660px',
+            width: '100%',
+            maxHeight: '92vh',
+            overflowY: 'auto',
+            padding: '1.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f0f9ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <i className="fas fa-edit"></i>
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#0f172a' }}>
+                    Edit Project Details: {editingProject.code}
+                  </h3>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Update deliverables, assigned team, repository, or progress</div>
+                </div>
+              </div>
+              <button onClick={() => setIsEditOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '800' }}>
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  Project Title <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  required
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  Description & Scope
+                </label>
+                <textarea
+                  rows={2}
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                    Status
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                  >
+                    <option value="Planning">Planning</option>
+                    <option value="Active">Active</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Completed">Completed</option>
+                    <option value="On Hold">On Hold</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                    Target Launch Deadline <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={editForm.deadline}
+                    onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
+                    required
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                    Category
+                  </label>
+                  <select
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                  >
+                    <option value="Web & Mobile App">Web & Mobile App</option>
+                    <option value="Web Application">Web Application</option>
+                    <option value="Mobile App (APK/iOS)">Mobile App</option>
+                    <option value="AI & Data Services">AI & Data Services</option>
+                    <option value="Cloud Architecture">Cloud Architecture</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                    Completion Progress: <strong>{editForm.progressPercentage}%</strong>
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={editForm.progressPercentage}
+                    onChange={(e) => setEditForm({ ...editForm, progressPercentage: Number(e.target.value) })}
+                    style={{ width: '100%', accentColor: '#0284c7', marginTop: '6px' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  Tech Stack (comma separated)
+                </label>
+                <input
+                  type="text"
+                  value={editForm.techStack}
+                  onChange={(e) => setEditForm({ ...editForm, techStack: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  GitHub Repository URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://github.com/aparaitechAk-SoftwareTeam/..."
+                  value={editForm.repositoryUrl}
+                  onChange={(e) => setEditForm({ ...editForm, repositoryUrl: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                />
+              </div>
+
+              {/* ── EDIT ASSIGNED TEAM MEMBERS ── */}
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="fas fa-users-cog" style={{ color: '#0284c7' }}></i> Manage Assigned Team Members ({(editForm.assignedTeam || []).length})
+                  </label>
+                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Check to assign/unassign</span>
+                </div>
+
+                <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {teamPool.map(emp => {
+                    const currentTeam = editForm.assignedTeam || []
+                    const isSelected = currentTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                    const memberObj = currentTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+
+                    return (
+                      <div
+                        key={emp.email}
+                        style={{
+                          background: isSelected ? '#f0f9ff' : '#ffffff',
+                          border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
+                          borderRadius: '8px',
+                          padding: '6px 10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px'
+                        }}
+                      >
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleEditMember(emp)}
+                            style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
+                          />
+                          <div>
+                            <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>{emp.name}</strong>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>({emp.empId}) • {emp.designation || 'Developer'}</span>
+                          </div>
+                        </label>
+
+                        {isSelected && (
+                          <input
+                            type="text"
+                            placeholder="Project Role"
+                            value={memberObj?.role || 'Developer'}
+                            onChange={(e) => updateEditMemberRole(emp.email, e.target.value)}
+                            style={{ width: '130px', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.74rem' }}
+                            title="Assign specific role in this project"
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteProject(editingProject._id)}
+                  disabled={deleting}
+                  style={{
+                    background: '#fef2f2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '8px',
+                    padding: '8px 14px',
+                    fontWeight: '700',
+                    fontSize: '0.8rem',
+                    cursor: deleting ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <i className="fas fa-trash-alt"></i> {deleting ? 'Deleting...' : 'Delete Project'}
+                </button>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditOpen(false)}
+                    style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updating}
+                    style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#0284c7', color: '#ffffff', fontWeight: '800', cursor: 'pointer' }}
+                  >
+                    {updating ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
