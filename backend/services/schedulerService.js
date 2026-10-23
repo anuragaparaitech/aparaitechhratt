@@ -165,7 +165,7 @@ export const runSystemAutoCheckout = async (triggeredBy = 'SYSTEM') => {
     const autoCheckoutTime = AUTO_CHECKOUT_TIME
 
     for (const session of sessions) {
-      const assignedShift = session.shift || (employee && employee.shift) || (session.department === 'Development' ? 'shift_1' : 'shift_2')
+      const assignedShift = session.shift || ((session.department === 'Development' || session.department === 'Software Development') ? 'shift_1' : 'shift_2')
       const status = getAttendanceStatus(session.checkInTime, autoCheckoutTime, assignedShift)
       const workingHours = calcHours(session.checkInTime, autoCheckoutTime)
       const statusReason = `System Auto Checkout (${getStatusReason(session.checkInTime, autoCheckoutTime, assignedShift)})`

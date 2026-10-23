@@ -31,10 +31,25 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
   const [profileTab, setProfileTab] = useState('details')
   const [enrolledFaceUrl, setEnrolledFaceUrl] = useState(null)
 
-  const isBda = currentUser?.department === 'BDA' || currentUser?.shift === 'shift_2' || currentUser?.shift === 'shift_3'
-  const isDev = currentUser?.department === 'Development' || currentUser?.department === 'Software Development' || currentUser?.shift === 'shift_1'
+  const isAshvini = currentUser?.email?.toLowerCase() === 'rajputaashu204@gmail.com' ||
+    String(currentUser?.empId) === 'AP7096' ||
+    String(currentUser?.empId) === '7096' ||
+    (currentUser?.name && currentUser.name.toLowerCase().includes('ashvini'))
+
+  const isDev = currentUser?.department === 'Development' || 
+    currentUser?.department === 'Software Development' || 
+    currentUser?.role === 'developer' || 
+    currentUser?.shift === 'shift_1' ||
+    isAshvini
+
+  const isBda = !isAshvini && !isDev && (currentUser?.department === 'BDA' || currentUser?.shift === 'shift_2' || currentUser?.shift === 'shift_3')
 
   const [selectedShift, setSelectedShift] = useState(() => {
+    if (isAshvini) {
+      const now = new Date()
+      const currentMin = now.getHours() * 60 + now.getMinutes()
+      return currentMin < (11 * 60 + 30) ? 'shift_1' : 'shift_2'
+    }
     if (isBda) {
       const now = new Date()
       const currentMin = now.getHours() * 60 + now.getMinutes()
@@ -104,8 +119,8 @@ function EmployeePanel({ currentUser, setCurrentUser, showToast, onNavigate }) {
       
       const [chH, chM] = time.split(':').map(Number)
       const curMins = (chH || 0) * 60 + (chM || 0)
-      const activeShift = selectedShift || (currentUser?.department === 'BDA' ? 'shift_2' : (currentUser?.shift || 'shift_1'))
-      const isLateBda = activeShift === 'shift_2' && curMins > (11 * 60 + 10)
+      const activeShift = selectedShift || (isAshvini ? 'shift_1' : (currentUser?.department === 'BDA' ? 'shift_2' : (currentUser?.shift || 'shift_1')))
+      const isLateBda = !isAshvini && activeShift === 'shift_2' && curMins > (11 * 60 + 10)
 
       if (isLateBda || checkInRes?.isLateCheckIn) {
         showToast(`⚠️ Checked in at ${time} (After 11:10 AM cutoff — marked as Half Day)`, '#d97706')

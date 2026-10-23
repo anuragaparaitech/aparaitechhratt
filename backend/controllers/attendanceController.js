@@ -165,12 +165,29 @@ export const checkIn = async (req, res) => {
       return res.status(400).json({ message: 'Attendance already completed for today' })
     }
 
-    const isBda = employee.department === 'BDA' || employee.shift === 'shift_2' || employee.shift === 'shift_3'
-    const isDev = employee.department === 'Development' || employee.department === 'Software Development' || employee.shift === 'shift_1'
+    const isAshvini = employee.email?.toLowerCase() === 'rajputaashu204@gmail.com' ||
+      String(employee.empId) === 'AP7096' ||
+      String(employee.empId) === '7096' ||
+      (employee.name && employee.name.toLowerCase().includes('ashvini'))
+
+    const isDev = employee.department === 'Development' || 
+      employee.department === 'Software Development' || 
+      employee.role === 'developer' || 
+      employee.shift === 'shift_1' ||
+      isAshvini
+
+    const isBda = !isAshvini && !isDev && (employee.department === 'BDA' || employee.shift === 'shift_2' || employee.shift === 'shift_3')
 
     let chosenShift = req.body.shift
 
-    if (isBda) {
+    if (isAshvini) {
+      // Ashvini has access to Software and can check in for morning Shift 1 (07:00 AM - 11:00 AM) or Shift 2
+      if (!chosenShift) {
+        const [h, m] = (checkInTime || '08:00').split(':').map(Number)
+        const currentMin = (h || 0) * 60 + (m || 0)
+        chosenShift = currentMin < (11 * 60 + 30) ? 'shift_1' : 'shift_2'
+      }
+    } else if (isBda) {
       // BDA can attend either Shift 2 or Shift 3, but NEVER Shift 1
       if (chosenShift === 'shift_1') {
         return res.status(400).json({
@@ -308,7 +325,7 @@ export const checkOut = async (req, res) => {
       }
     }
 
-    const assignedShift = session.shift || (employee && employee.shift) || (session.department === 'Development' ? 'shift_1' : 'shift_2')
+    const assignedShift = session.shift || (employee && employee.shift) || ((session.department === 'Development' || session.department === 'Software Development') ? 'shift_1' : 'shift_2')
     const shiftInfo = SHIFTS[assignedShift] || SHIFTS.shift_1
 
     // Calculate status and reason according to assigned shift
@@ -412,7 +429,7 @@ export const manualMark = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found' })
     }
 
-    const assignedShift = shift || employee.shift || (employee.department === 'Development' ? 'shift_1' : 'shift_2')
+    const assignedShift = shift || employee.shift || ((employee.department === 'Development' || employee.department === 'Software Development') ? 'shift_1' : 'shift_2')
     
     let finalStatus = status
     if (checkIn && !checkOut) {
@@ -630,7 +647,7 @@ export const performManualCheckout = async (req, res) => {
     const limitMin = timeToMinutes('19:30')
     const isAfter730PM = currentMin > limitMin
 
-    const assignedShift = session.shift || (employee && employee.shift) || (session.department === 'Development' ? 'shift_1' : 'shift_2')
+    const assignedShift = session.shift || (employee && employee.shift) || ((session.department === 'Development' || session.department === 'Software Development') ? 'shift_1' : 'shift_2')
     let status = getAttendanceStatus(session.checkInTime, checkOutTime, assignedShift)
     let statusReason = getStatusReason(session.checkInTime, checkOutTime, assignedShift)
     let finalLogoutType = 'Normal'

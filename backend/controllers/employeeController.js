@@ -34,7 +34,7 @@ const activeEmployeesList = [
   { empId: 'AP7093', name: 'Chetna Kishor Kothawade', email: 'chetnakothawade@gmail.com', phone: '7020855433', dob: '2004-06-12', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7094', name: 'Shital Kantilal Bhade', email: 'shitalbhade74@gmail.com', phone: '8830292849', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7095', name: 'Vaishnavi Deepak Patil', email: 'patilvaishnavi30102003@gmail.com', phone: '7709232088', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
-  { empId: 'AP7096', name: 'Ashvini Sanjay Rajput', email: 'rajputaashu204@gmail.com', phone: '9359549993', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
+  { empId: 'AP7096', name: 'Ashvini Sanjay Rajput', email: 'rajputaashu204@gmail.com', phone: '9359549993', department: 'Software Development', designation: 'Software Developer', role: 'developer', status: 'active', shift: 'shift_1' },
   { empId: 'AP7097', name: 'Vikesh Kumar', email: 'kvikesh535@gmail.com', phone: '8793039515', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7098', name: 'Hemant Pawar', email: 'hemantbp9172@gmail.com', phone: '9172948195', dob: '2001-04-02', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
   { empId: 'AP7099', name: 'Arman Momin', email: 'armanmomin202@gmail.com', phone: '9322955240', dob: '2004-03-21', department: 'BDA', designation: 'BDA', status: 'active', shift: 'shift_2' },
@@ -117,7 +117,7 @@ export const seedDatabase = async () => {
           dob: emp.dob || '',
           role: emp.role || 'employee',
           status: 'active',
-          shift: emp.shift || (emp.department === 'Development' ? 'shift_1' : 'shift_2')
+          shift: emp.shift || (emp.department === 'Development' || emp.department === 'Software Development' ? 'shift_1' : 'shift_2')
         })
       }
     }
@@ -144,7 +144,11 @@ export const getAllEmployees = async (req, res) => {
       }
       return obj
     })
-    res.status(200).json({ employees: formattedEmployees })
+    res.status(200).json({ 
+      success: true, 
+      employees: formattedEmployees, 
+      data: formattedEmployees 
+    })
   } catch (error) {
     console.error(`[API Error] GET /api/employees failed:`, error.stack)
     res.status(500).json({ message: 'Server error', error: error.message })
@@ -193,7 +197,7 @@ export const addEmployee = async (req, res) => {
       department,
       role: 'employee',
       status: 'active',
-      shift: shift || (department === 'Development' ? 'shift_1' : 'shift_2'),
+      shift: shift || (department === 'Development' || department === 'Software Development' ? 'shift_1' : 'shift_2'),
       joinDate: joiningDate || new Date().toISOString().split('T')[0],
       phone: phone || '',
       dob: dob || ''

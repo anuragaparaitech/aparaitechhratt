@@ -49,7 +49,15 @@ function SoftwarePerformanceView({ currentUser, showToast }) {
   const ratingScore = Math.min(5.0, (4.0 + (completionRate * 1.0))).toFixed(1)
 
   // Team Leaderboard (Developers only)
-  const devEmployees = employees.filter(e => e.department === 'Development' || e.designation?.toLowerCase().includes('software') || e.department === 'Management')
+  const devEmployees = employees.filter(e => 
+    e.department === 'Development' || 
+    e.department === 'Software Development' || 
+    e.designation?.toLowerCase().includes('software') || 
+    e.department === 'Management' ||
+    e.email?.toLowerCase() === 'rajputaashu204@gmail.com' ||
+    e.empId === 'AP7096' ||
+    e.empId === '7096'
+  )
   const devLeaderboard = devEmployees.map(dev => {
     const devTasks = tasks.filter(t => t.assignedToEmail === dev.email.toLowerCase())
     const completed = devTasks.filter(t => t.status === 'Done' || t.status === 'Completed').length

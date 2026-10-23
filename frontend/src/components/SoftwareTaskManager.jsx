@@ -1089,7 +1089,16 @@ function SoftwareTaskManager({ currentUser, showToast }) {
                     style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
                   >
                     <option value="">Select Developer...</option>
-                    {employees.filter(e => e.department === 'Development' || e.department === 'Management').map(e => (
+                    {employees.filter(e => 
+                      e.department === 'Development' || 
+                      e.department === 'Software Development' || 
+                      e.department === 'Management' || 
+                      e.role === 'developer' ||
+                      e.designation?.toLowerCase().includes('software') ||
+                      e.email?.toLowerCase() === 'rajputaashu204@gmail.com' ||
+                      e.empId === 'AP7096' ||
+                      e.empId === '7096'
+                    ).map(e => (
                       <option key={e._id || e.email} value={e.email}>
                         {e.name} ({e.designation || 'Software Dev'})
                       </option>

@@ -46,11 +46,29 @@ function SoftwareProjectManager({ currentUser, showToast }) {
   const [updating, setUpdating] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  // Quick Assign Team Modal State
+  const [isAssignOpen, setIsAssignOpen] = useState(false)
+  const [assigningProject, setAssigningProject] = useState(null)
+  const [assignModalTeam, setAssignModalTeam] = useState([])
+  const [assignSearch, setAssignSearch] = useState('')
+  const [assignTab, setAssignTab] = useState('devs') // 'devs' | 'all'
+  const [savingTeam, setSavingTeam] = useState(false)
+
+  // Filter & Search states for New Project & Edit Project modals
+  const [newTeamTab, setNewTeamTab] = useState('devs')
+  const [newTeamSearch, setNewTeamSearch] = useState('')
+  const [editTeamTab, setEditTeamTab] = useState('devs')
+  const [editTeamSearch, setEditTeamSearch] = useState('')
+
   const isManagerOrAdmin = currentUser?.role === 'admin' ||
     currentUser?.role === 'manager' ||
+    currentUser?.role === 'hr' ||
     currentUser?.email === 'anunand2004@gmail.com' ||
+    currentUser?.email === 'rajputaashu204@gmail.com' ||
     String(currentUser?.empId) === '7017' ||
-    String(currentUser?.empId) === 'AP7017'
+    String(currentUser?.empId) === 'AP7017' ||
+    String(currentUser?.empId) === '7096' ||
+    String(currentUser?.empId) === 'AP7096'
 
   useEffect(() => {
     fetchProjects()
@@ -75,19 +93,21 @@ function SoftwareProjectManager({ currentUser, showToast }) {
   const fetchEmployees = async () => {
     try {
       const res = await employeeAPI.getAll()
-      if (res?.success) {
-        setEmployees(res.data || [])
-      }
+      const list = res?.employees || res?.data || (Array.isArray(res) ? res : [])
+      setEmployees(list)
     } catch (err) {
       console.error('Error fetching employees:', err)
     }
   }
 
-  // Filter software developers and technical staff
+  // Filter software developers, technical staff, and Ashvini Rajput
   const availableDevs = employees.filter(e => {
     const dept = (e.department || '').toLowerCase()
     const desig = (e.designation || '').toLowerCase()
     const role = (e.role || '').toLowerCase()
+    const email = (e.email || '').toLowerCase()
+    const name = (e.name || '').toLowerCase()
+    const empId = String(e.empId || '')
     return (
       dept.includes('development') ||
       dept.includes('software') ||
@@ -96,12 +116,73 @@ function SoftwareProjectManager({ currentUser, showToast }) {
       desig.includes('software') ||
       desig.includes('developer') ||
       desig.includes('engineer') ||
-      desig.includes('intern')
+      desig.includes('intern') ||
+      email === 'rajputaashu204@gmail.com' ||
+      name.includes('ashvini') ||
+      empId === 'AP7096' ||
+      empId === '7096'
     )
   })
 
-  // Fallback to all active employees if no developers found
+  // Pool of employees for assignments (devs or full company)
   const teamPool = availableDevs.length > 0 ? availableDevs : employees
+
+  // Open dedicated Quick Assign modal
+  const handleOpenAssignModal = (project, e) => {
+    if (e) e.stopPropagation()
+    setAssigningProject(project)
+    setAssignModalTeam(Array.isArray(project.assignedTeam) ? [...project.assignedTeam] : [])
+    setAssignSearch('')
+    setAssignTab('devs')
+    setIsAssignOpen(true)
+  }
+
+  // Toggle member in Quick Assign modal
+  const toggleAssignModalMember = (emp) => {
+    setAssignModalTeam(prev => {
+      const exists = prev.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+      if (exists) {
+        return prev.filter(m => m.email?.toLowerCase() !== emp.email?.toLowerCase())
+      } else {
+        return [...prev, {
+          empId: emp.empId || 'DEV',
+          name: emp.name,
+          email: emp.email,
+          role: emp.designation || 'Software Developer'
+        }]
+      }
+    })
+  }
+
+  const updateAssignModalRole = (email, role) => {
+    setAssignModalTeam(prev => prev.map(m => m.email === email ? { ...m, role } : m))
+  }
+
+  const handleSaveAssignedTeam = async () => {
+    if (!assigningProject) return
+    setSavingTeam(true)
+    try {
+      const res = await projectAPI.update(assigningProject._id, {
+        assignedTeam: assignModalTeam
+      })
+      if (res.success) {
+        showToast(`✓ Assigned team updated for ${assigningProject.title}`, '#10b981')
+        setProjects(prev => prev.map(p => p._id === assigningProject._id ? res.data : p))
+        if (selectedProject && selectedProject._id === assigningProject._id) {
+          setSelectedProject(res.data)
+        }
+        setIsAssignOpen(false)
+        setAssigningProject(null)
+      } else {
+        showToast(`❌ ${res.message || 'Failed to update team'}`, '#ef4444')
+      }
+    } catch (err) {
+      console.error('Assign team error:', err)
+      showToast(`❌ ${err.response?.data?.message || err.message}`, '#ef4444')
+    } finally {
+      setSavingTeam(false)
+    }
+  }
 
   // Toggle member in New Project form
   const toggleNewMember = (emp) => {
@@ -571,27 +652,49 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                     <div>Target: <strong>{project.deadline}</strong></div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '6px' }}>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {isManagerOrAdmin && (
-                      <button
-                        onClick={(e) => handleOpenEdit(project, e)}
-                        style={{
-                          background: '#f8fafc',
-                          color: '#0f172a',
-                          border: '1px solid #cbd5e1',
-                          borderRadius: '8px',
-                          padding: '7px 11px',
-                          fontSize: '0.76rem',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                        title="Edit Project Details"
-                      >
-                        <i className="fas fa-edit" style={{ color: '#0284c7' }}></i> Edit
-                      </button>
+                      <>
+                        <button
+                          onClick={(e) => handleOpenAssignModal(project, e)}
+                          style={{
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1.5px solid #bfdbfe',
+                            borderRadius: '8px',
+                            padding: '7px 11px',
+                            fontSize: '0.76rem',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Assign or change team members for this project"
+                        >
+                          <i className="fas fa-user-plus" style={{ color: '#2563eb' }}></i> Assign Member
+                        </button>
+
+                        <button
+                          onClick={(e) => handleOpenEdit(project, e)}
+                          style={{
+                            background: '#f8fafc',
+                            color: '#0f172a',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '8px',
+                            padding: '7px 11px',
+                            fontSize: '0.76rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Edit Project Details"
+                        >
+                          <i className="fas fa-edit" style={{ color: '#0284c7' }}></i> Edit
+                        </button>
+                      </>
                     )}
 
                     <button
@@ -711,12 +814,32 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                     <i className="fas fa-users" style={{ color: '#0284c7' }}></i> Assigned Engineering Team ({selectedProject.assignedTeam?.length || 0})
                   </div>
                   {isManagerOrAdmin && (
-                    <button
-                      onClick={() => handleOpenEdit(selectedProject)}
-                      style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
-                    >
-                      + Manage Team
-                    </button>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => handleOpenAssignModal(selectedProject)}
+                        style={{
+                          background: '#0284c7',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          fontSize: '0.74rem',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        <i className="fas fa-user-plus"></i> + Assign Members
+                      </button>
+                      <button
+                        onClick={() => handleOpenEdit(selectedProject)}
+                        style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', borderRadius: '6px', padding: '4px 8px', fontSize: '0.74rem', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Edit Details
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -739,7 +862,29 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>No team members assigned to this project yet. Use "Edit Details" to assign developers.</div>
+                  <div style={{ padding: '16px', background: '#ffffff', borderRadius: '8px', border: '1.5px dashed #cbd5e1', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>No team members assigned to this project yet.</div>
+                    {isManagerOrAdmin && (
+                      <button
+                        onClick={() => handleOpenAssignModal(selectedProject)}
+                        style={{
+                          background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '6px 14px',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <i className="fas fa-user-plus"></i> Assign Team Members Now
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -1037,58 +1182,127 @@ function SoftwareProjectManager({ currentUser, showToast }) {
 
               {/* ── ASSIGN TEAM MEMBERS SECTION ── */}
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
                   <label style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <i className="fas fa-user-plus" style={{ color: '#0284c7' }}></i> Assign Engineering Team Members ({newAssignedTeam.length})
                   </label>
-                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Select developers below</span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setNewTeamTab('devs')}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: newTeamTab === 'devs' ? '#0284c7' : '#e2e8f0',
+                        color: newTeamTab === 'devs' ? '#fff' : '#475569'
+                      }}
+                    >
+                      💻 Software Team ({availableDevs.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewTeamTab('all')}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: newTeamTab === 'all' ? '#0284c7' : '#e2e8f0',
+                        color: newTeamTab === 'all' ? '#fff' : '#475569'
+                      }}
+                    >
+                      👥 All Employees ({employees.length})
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '8px', position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="Search developers by name, ID or role..."
+                    value={newTeamSearch}
+                    onChange={(e) => setNewTeamSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.76rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
                 </div>
 
                 <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {teamPool.map(emp => {
-                    const isSelected = newAssignedTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
-                    const memberObj = newAssignedTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                  {(() => {
+                    const pool = newTeamTab === 'devs' ? (availableDevs.length > 0 ? availableDevs : employees) : employees
+                    const q = newTeamSearch.trim().toLowerCase()
+                    const filtered = pool.filter(e => {
+                      if (!q) return true
+                      return (
+                        (e.name || '').toLowerCase().includes(q) ||
+                        (e.empId || '').toLowerCase().includes(q) ||
+                        (e.designation || '').toLowerCase().includes(q) ||
+                        (e.department || '').toLowerCase().includes(q)
+                      )
+                    })
 
-                    return (
-                      <div
-                        key={emp.email}
-                        style={{
-                          background: isSelected ? '#f0f9ff' : '#ffffff',
-                          border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
-                          borderRadius: '8px',
-                          padding: '6px 10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '8px'
-                        }}
-                      >
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleNewMember(emp)}
-                            style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
-                          />
-                          <div>
-                            <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>{emp.name}</strong>
-                            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>({emp.empId}) • {emp.designation || 'Developer'}</span>
-                          </div>
-                        </label>
+                    if (filtered.length === 0) {
+                      return <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', padding: '10px' }}>No matching team members found.</div>
+                    }
 
-                        {isSelected && (
-                          <input
-                            type="text"
-                            placeholder="Project Role"
-                            value={memberObj?.role || 'Developer'}
-                            onChange={(e) => updateNewMemberRole(emp.email, e.target.value)}
-                            style={{ width: '130px', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.74rem' }}
-                            title="Assign specific role in this project"
-                          />
-                        )}
-                      </div>
-                    )
-                  })}
+                    return filtered.map(emp => {
+                      const isSelected = newAssignedTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                      const memberObj = newAssignedTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+
+                      return (
+                        <div
+                          key={emp.email}
+                          style={{
+                            background: isSelected ? '#f0f9ff' : '#ffffff',
+                            border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '8px'
+                          }}
+                        >
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleNewMember(emp)}
+                              style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
+                            />
+                            <div>
+                              <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>{emp.name}</strong>
+                              <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>({emp.empId}) • {emp.designation || 'Developer'}</span>
+                            </div>
+                          </label>
+
+                          {isSelected && (
+                            <input
+                              type="text"
+                              placeholder="Project Role"
+                              value={memberObj?.role || 'Developer'}
+                              onChange={(e) => updateNewMemberRole(emp.email, e.target.value)}
+                              style={{ width: '130px', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.74rem' }}
+                              title="Assign specific role in this project"
+                            />
+                          )}
+                        </div>
+                      )
+                    })
+                  })()}
                 </div>
               </div>
 
@@ -1273,59 +1487,128 @@ function SoftwareProjectManager({ currentUser, showToast }) {
 
               {/* ── EDIT ASSIGNED TEAM MEMBERS ── */}
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
                   <label style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <i className="fas fa-users-cog" style={{ color: '#0284c7' }}></i> Manage Assigned Team Members ({(editForm.assignedTeam || []).length})
                   </label>
-                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Check to assign/unassign</span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditTeamTab('devs')}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: editTeamTab === 'devs' ? '#0284c7' : '#e2e8f0',
+                        color: editTeamTab === 'devs' ? '#fff' : '#475569'
+                      }}
+                    >
+                      💻 Software Team ({availableDevs.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditTeamTab('all')}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: editTeamTab === 'all' ? '#0284c7' : '#e2e8f0',
+                        color: editTeamTab === 'all' ? '#fff' : '#475569'
+                      }}
+                    >
+                      👥 All Employees ({employees.length})
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '8px', position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="Search developers by name, ID or role..."
+                    value={editTeamSearch}
+                    onChange={(e) => setEditTeamSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.76rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
                 </div>
 
                 <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {teamPool.map(emp => {
-                    const currentTeam = editForm.assignedTeam || []
-                    const isSelected = currentTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
-                    const memberObj = currentTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                  {(() => {
+                    const pool = editTeamTab === 'devs' ? (availableDevs.length > 0 ? availableDevs : employees) : employees
+                    const q = editTeamSearch.trim().toLowerCase()
+                    const filtered = pool.filter(e => {
+                      if (!q) return true
+                      return (
+                        (e.name || '').toLowerCase().includes(q) ||
+                        (e.empId || '').toLowerCase().includes(q) ||
+                        (e.designation || '').toLowerCase().includes(q) ||
+                        (e.department || '').toLowerCase().includes(q)
+                      )
+                    })
 
-                    return (
-                      <div
-                        key={emp.email}
-                        style={{
-                          background: isSelected ? '#f0f9ff' : '#ffffff',
-                          border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
-                          borderRadius: '8px',
-                          padding: '6px 10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '8px'
-                        }}
-                      >
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleEditMember(emp)}
-                            style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
-                          />
-                          <div>
-                            <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>{emp.name}</strong>
-                            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>({emp.empId}) • {emp.designation || 'Developer'}</span>
-                          </div>
-                        </label>
+                    if (filtered.length === 0) {
+                      return <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', padding: '10px' }}>No matching team members found.</div>
+                    }
 
-                        {isSelected && (
-                          <input
-                            type="text"
-                            placeholder="Project Role"
-                            value={memberObj?.role || 'Developer'}
-                            onChange={(e) => updateEditMemberRole(emp.email, e.target.value)}
-                            style={{ width: '130px', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.74rem' }}
-                            title="Assign specific role in this project"
-                          />
-                        )}
-                      </div>
-                    )
-                  })}
+                    return filtered.map(emp => {
+                      const currentTeam = editForm.assignedTeam || []
+                      const isSelected = currentTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                      const memberObj = currentTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+
+                      return (
+                        <div
+                          key={emp.email}
+                          style={{
+                            background: isSelected ? '#f0f9ff' : '#ffffff',
+                            border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '8px'
+                          }}
+                        >
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleEditMember(emp)}
+                              style={{ accentColor: '#0284c7', width: '16px', height: '16px' }}
+                            />
+                            <div>
+                              <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>{emp.name}</strong>
+                              <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>({emp.empId}) • {emp.designation || 'Developer'}</span>
+                            </div>
+                          </label>
+
+                          {isSelected && (
+                            <input
+                              type="text"
+                              placeholder="Project Role"
+                              value={memberObj?.role || 'Developer'}
+                              onChange={(e) => updateEditMemberRole(emp.email, e.target.value)}
+                              style={{ width: '130px', padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.74rem' }}
+                              title="Assign specific role in this project"
+                            />
+                          )}
+                        </div>
+                      )
+                    })
+                  })()}
                 </div>
               </div>
 
@@ -1366,6 +1649,330 @@ function SoftwareProjectManager({ currentUser, showToast }) {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── DEDICATED QUICK ASSIGN TEAM MEMBERS MODAL ── */}
+      {isAssignOpen && assigningProject && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(10, 25, 47, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1200,
+          padding: '1.25rem'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            maxWidth: '640px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+            border: '1px solid #e2e8f0',
+            overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '1.2rem 1.5rem',
+              background: 'linear-gradient(135deg, #0a192f 0%, #1e3a8a 100%)',
+              color: '#ffffff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '6px' }}>
+                    {assigningProject.code}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#93c5fd', fontWeight: '700' }}>
+                    TEAM ASSIGNMENT PORTAL
+                  </span>
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#ffffff' }}>
+                  Assign Team Members: {assigningProject.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsAssignOpen(false)
+                  setAssigningProject(null)
+                }}
+                style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#ffffff', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1rem', fontWeight: '800' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Filter Tabs & Search */}
+            <div style={{ padding: '1rem 1.5rem 0.6rem', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAssignTab('devs')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.76rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      border: 'none',
+                      background: assignTab === 'devs' ? '#0284c7' : '#e2e8f0',
+                      color: assignTab === 'devs' ? '#ffffff' : '#475569'
+                    }}
+                  >
+                    💻 Software Team ({availableDevs.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAssignTab('all')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.76rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      border: 'none',
+                      background: assignTab === 'all' ? '#0284c7' : '#e2e8f0',
+                      color: assignTab === 'all' ? '#ffffff' : '#475569'
+                    }}
+                  >
+                    👥 All Employees ({employees.length})
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '0.76rem', fontWeight: '800', color: '#0369a1' }}>
+                  Selected: {assignModalTeam.length} member{assignModalTeam.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div style={{ position: 'relative' }}>
+                <i className="fas fa-search" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.8rem' }}></i>
+                <input
+                  type="text"
+                  placeholder="Search by name, Emp ID, designation, or department..."
+                  value={assignSearch}
+                  onChange={(e) => setAssignSearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px 8px 34px',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.82rem',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              {/* Selected Badges Row */}
+              {assignModalTeam.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxHeight: '64px', overflowY: 'auto', paddingTop: '4px' }}>
+                  {assignModalTeam.map(m => (
+                    <span
+                      key={m.email}
+                      style={{
+                        background: '#e0f2fe',
+                        border: '1px solid #7dd3fc',
+                        color: '#0369a1',
+                        borderRadius: '6px',
+                        padding: '2px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      {m.name ? m.name.split(' ')[0] : 'Member'} ({m.role || 'Dev'})
+                      <button
+                        type="button"
+                        onClick={() => toggleAssignModalMember({ email: m.email })}
+                        style={{ background: 'none', border: 'none', color: '#0369a1', cursor: 'pointer', padding: 0, fontWeight: '800', fontSize: '0.82rem' }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* List of Employees */}
+            <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', maxHeight: '380px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(() => {
+                const baseList = assignTab === 'devs' ? (availableDevs.length > 0 ? availableDevs : employees) : employees
+                const q = assignSearch.trim().toLowerCase()
+                const filtered = baseList.filter(e => {
+                  if (!q) return true
+                  return (
+                    (e.name || '').toLowerCase().includes(q) ||
+                    (e.empId || '').toLowerCase().includes(q) ||
+                    (e.designation || '').toLowerCase().includes(q) ||
+                    (e.department || '').toLowerCase().includes(q) ||
+                    (e.email || '').toLowerCase().includes(q)
+                  )
+                })
+
+                if (filtered.length === 0) {
+                  return (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                      No employees match your search query.
+                    </div>
+                  )
+                }
+
+                return filtered.map(emp => {
+                  const isSelected = assignModalTeam.some(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+                  const memberObj = assignModalTeam.find(m => m.email?.toLowerCase() === emp.email?.toLowerCase())
+
+                  return (
+                    <div
+                      key={emp.email}
+                      style={{
+                        background: isSelected ? '#f0f9ff' : '#ffffff',
+                        border: `1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}`,
+                        borderRadius: '10px',
+                        padding: '8px 12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '10px'
+                      }}
+                    >
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1, minWidth: 0 }}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleAssignModalMember(emp)}
+                          style={{ accentColor: '#0284c7', width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: isSelected ? '#0284c7' : '#e2e8f0',
+                          color: isSelected ? '#ffffff' : '#475569',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: '800',
+                          fontSize: '0.78rem',
+                          flexShrink: 0
+                        }}>
+                          {emp.name ? emp.name[0] : 'U'}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.84rem', fontWeight: '800', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {emp.name}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                            <span style={{ fontWeight: '700', color: '#0284c7' }}>{emp.empId}</span> • {emp.designation || 'Software Developer'} • {emp.department}
+                          </div>
+                        </div>
+                      </label>
+
+                      {isSelected && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '600' }}>Role:</span>
+                          <input
+                            type="text"
+                            placeholder="e.g. Lead, Frontend, QA"
+                            value={memberObj?.role || 'Software Developer'}
+                            onChange={(e) => updateAssignModalRole(emp.email, e.target.value)}
+                            style={{
+                              width: '140px',
+                              padding: '5px 8px',
+                              borderRadius: '6px',
+                              border: '1.5px solid #0284c7',
+                              fontSize: '0.76rem',
+                              fontWeight: '600',
+                              outline: 'none',
+                              background: '#ffffff'
+                            }}
+                            title="Set role for this member in this project"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              })()}
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '1rem 1.5rem',
+              background: '#f8fafc',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                {assignModalTeam.length} member{assignModalTeam.length !== 1 ? 's' : ''} assigned
+              </span>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAssignOpen(false)
+                    setAssigningProject(null)
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#64748b',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    fontSize: '0.82rem'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveAssignedTeam}
+                  disabled={savingTeam}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                    color: '#ffffff',
+                    fontWeight: '800',
+                    cursor: savingTeam ? 'not-allowed' : 'pointer',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(2, 132, 199, 0.35)'
+                  }}
+                >
+                  {savingTeam ? (
+                    <>
+                      <i className="fas fa-circle-notch fa-spin"></i> Saving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-check"></i> Save Assigned Team
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

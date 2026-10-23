@@ -1320,7 +1320,7 @@ function AdminPanel({ currentUser, showToast, activeSection = 'overview', onSect
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
                   {liveSessions.slice(0, 5).map(emp => {
-                    const sKey = emp.shift || (emp.department === 'Development' ? 'shift_1' : 'shift_2')
+                    const sKey = emp.shift || (emp.department === 'Development' || emp.department === 'Software Development' ? 'shift_1' : 'shift_2')
                     const sInfo = SHIFTS[sKey] || SHIFTS.shift_1
                     return (
                       <div

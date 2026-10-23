@@ -113,7 +113,14 @@ function App() {
     return saved ? JSON.parse(saved) : null
   })
 
-  // Permission helpers: Anurag (Management/Lead), HR, and Super Admin can switch portals.
+  const isAshvini = (u) => {
+    if (!u) return false
+    const email = u.email?.toLowerCase().trim() || ''
+    const empId = String(u.empId || '').trim()
+    return email === 'rajputaashu204@gmail.com' || empId === '7096' || empId === 'AP7096' || (u.name && u.name.toLowerCase().includes('ashvini'))
+  }
+
+  // Permission helpers: Anurag (Management/Lead), HR, Super Admin, and Ashvini can switch portals.
   // Vivek and Mahesh are strictly software developers and stay in the software portal.
   const isAnuragOrSuperAdmin = (u) => {
     if (!u) return false
@@ -135,17 +142,21 @@ function App() {
     )
   }
 
-  const canSwitchPortal = isAnuragOrSuperAdmin(currentUser)
+  const canSwitchPortal = isAnuragOrSuperAdmin(currentUser) || isAshvini(currentUser)
 
   const getInitialPortalMode = (user) => {
     if (!user) return 'bda'
     const saved = localStorage.getItem('aparaitech_portal_mode')
-    if (saved && ['software', 'bda', 'hr'].includes(saved) && (user.role === 'admin' || user.role === 'hr' || user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7017')) {
+    if (saved && ['software', 'bda', 'hr'].includes(saved) && (user.role === 'admin' || user.role === 'hr' || user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7017' || isAshvini(user))) {
       return saved
     }
     if (user.role === 'hr') return 'hr'
     // Anurag Nand default is Software Portal with HR & BDA access
     if (user.email?.toLowerCase() === 'anunand2004@gmail.com' || String(user.empId) === '7017' || String(user.empId) === 'AP7017') {
+      return 'software'
+    }
+    // Ashvini has access to Software portal as well
+    if (isAshvini(user)) {
       return 'software'
     }
     if (user.role === 'admin') {
@@ -162,7 +173,8 @@ function App() {
       desig.includes('software') ||
       desig.includes('developer') ||
       desig.includes('engineer') ||
-      desig.includes('intern')
+      desig.includes('intern') ||
+      isAshvini(user)
     )
     return isDev ? 'software' : 'bda'
   }
@@ -538,29 +550,31 @@ function App() {
                     <i className="fas fa-headset"></i>
                     BDA
                   </button>
-                  <button
-                    onClick={() => handleTogglePortal('hr')}
-                    style={{
-                      flex: 1,
-                      padding: '8px 8px',
-                      borderRadius: '10px',
-                      border: 'none',
-                      fontSize: '0.74rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '5px',
-                      background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
-                      color: portalMode === 'hr' ? '#ffffff' : '#64748b',
-                      boxShadow: portalMode === 'hr' ? '0 2px 8px rgba(124,58,237,0.3)' : 'none',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <i className="fas fa-users-cog"></i>
-                    HR
-                  </button>
+                  {(currentUser?.role === 'admin' || currentUser?.role === 'hr' || currentUser?.email === 'anunand2004@gmail.com') && (
+                    <button
+                      onClick={() => handleTogglePortal('hr')}
+                      style={{
+                        flex: 1,
+                        padding: '8px 8px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        fontSize: '0.74rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                        color: portalMode === 'hr' ? '#ffffff' : '#64748b',
+                        boxShadow: portalMode === 'hr' ? '0 2px 8px rgba(124,58,237,0.3)' : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <i className="fas fa-users-cog"></i>
+                      HR
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -1297,29 +1311,31 @@ function App() {
                       >
                         <i className="fas fa-headset"></i> BDA
                       </button>
-                      <button
-                        onClick={() => {
-                          handleTogglePortal('hr')
-                          setMobileDrawerOpen(false)
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: '8px 6px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          fontSize: '0.74rem',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '5px',
-                          background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
-                          color: portalMode === 'hr' ? '#ffffff' : '#64748b'
-                        }}
-                      >
-                        <i className="fas fa-users-cog"></i> HR
-                      </button>
+                      {(currentUser?.role === 'admin' || currentUser?.role === 'hr' || currentUser?.email === 'anunand2004@gmail.com') && (
+                        <button
+                          onClick={() => {
+                            handleTogglePortal('hr')
+                            setMobileDrawerOpen(false)
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '8px 6px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            fontSize: '0.74rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '5px',
+                            background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                            color: portalMode === 'hr' ? '#ffffff' : '#64748b'
+                          }}
+                        >
+                          <i className="fas fa-users-cog"></i> HR
+                        </button>
+                      )}
                     </div>
                   )}
 

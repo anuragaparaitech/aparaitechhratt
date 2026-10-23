@@ -183,12 +183,22 @@ function DailyReportModal({ isOpen, onClose, currentUser, onSuccess, showToast, 
 
   if (!isOpen || !currentUser) return null
   
-  // If user is a software developer or in development, render SoftwareDailyReportModal directly
+  // Check active portal mode ('software' vs 'bda')
+  const activePortal = typeof window !== 'undefined' ? (localStorage.getItem('aparaitech_portal_mode') || 'software') : 'software'
+  const isAshvini = currentUser?.email?.toLowerCase() === 'rajputaashu204@gmail.com' ||
+    String(currentUser?.empId) === 'AP7096' ||
+    String(currentUser?.empId) === '7096'
+
+  // If Ashvini is in BDA portal mode, render BDA report form!
+  // If in Software portal mode, render SoftwareDailyReportModal!
   const targetDept = (activeEmployeeTeam || currentUser?.department || '').toLowerCase()
   const isSoftwareEmployee = !initialReport && (
-    targetDept.includes('development') ||
-    targetDept.includes('software') ||
-    currentUser?.role === 'developer'
+    (isAshvini && activePortal === 'bda') ? false : (
+      targetDept.includes('development') ||
+      targetDept.includes('software') ||
+      currentUser?.role === 'developer' ||
+      isAshvini
+    )
   )
 
   if (isSoftwareEmployee && !targetEmployee) {

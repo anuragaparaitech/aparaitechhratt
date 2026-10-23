@@ -210,28 +210,30 @@ function Navbar({
             <i className="fas fa-headset"></i>
             <span>BDA Portal</span>
           </button>
-          <button
-            onClick={() => onTogglePortal('hr')}
-            title="Switch to Human Resources (HR) Operations Portal"
-            style={{
-              background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
-              color: portalMode === 'hr' ? '#ffffff' : '#94a3b8',
-              border: 'none',
-              borderRadius: '9px',
-              padding: '6px 12px',
-              fontSize: '0.78rem',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease',
-              boxShadow: portalMode === 'hr' ? '0 2px 8px rgba(124,58,237,0.45)' : 'none'
-            }}
-          >
-            <i className="fas fa-users-cog"></i>
-            <span>HR Portal</span>
-          </button>
+          {(currentUser?.role === 'admin' || currentUser?.role === 'hr' || currentUser?.email === 'anunand2004@gmail.com') && (
+            <button
+              onClick={() => onTogglePortal('hr')}
+              title="Switch to Human Resources (HR) Operations Portal"
+              style={{
+                background: portalMode === 'hr' ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'transparent',
+                color: portalMode === 'hr' ? '#ffffff' : '#94a3b8',
+                border: 'none',
+                borderRadius: '9px',
+                padding: '6px 12px',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease',
+                boxShadow: portalMode === 'hr' ? '0 2px 8px rgba(124,58,237,0.45)' : 'none'
+              }}
+            >
+              <i className="fas fa-users-cog"></i>
+              <span>HR Portal</span>
+            </button>
+          )}
         </div>
       )}
 

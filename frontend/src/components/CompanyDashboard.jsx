@@ -98,7 +98,7 @@ function CompanyDashboard({ currentUser, onNavigate, showToast, unreadMessagesCo
   const currentHour = now.getHours()
   const isPastEveningReminder = currentHour >= 19 // Past 7 PM
 
-  const userShiftKey = currentUser?.shift || (currentUser?.department === 'Development' ? 'shift_1' : 'shift_2')
+  const userShiftKey = currentUser?.shift || (currentUser?.department === 'Development' || currentUser?.department === 'Software Development' ? 'shift_1' : 'shift_2')
   const userShift = SHIFTS[userShiftKey] || SHIFTS.shift_1
 
   const todayRevenue = (performance?.today?.todayConversions || 0) * 6000
